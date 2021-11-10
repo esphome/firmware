@@ -1,0 +1,40 @@
+substitutions:
+  name: esp-web-tools-example
+
+esphome:
+  name: "${name}"
+  platform: ESP32
+  board: esp32dev
+  name_add_mac_suffix: true
+  project:
+    name: esphome.esp_web_tools_example
+    version: "1.0"
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow OTA updates
+ota:
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  # Set up a wifi access point
+  ap:
+    ssid: "ESP Web Tools"
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/example-configs/esp-web-tools/esp32.yaml@v1
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
