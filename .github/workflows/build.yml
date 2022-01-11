@@ -1,0 +1,31 @@
+name: Build ESPHome example firmwares
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  build:
+    name: Build ESPHome binary for ${{ matrix.firmware }}-${{ matrix.chip }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        firmware:
+          - esp-web-tools
+          - esphome-web
+        chip:
+          - esp8266
+          - esp32
+    steps:
+      - uses: actions/checkout@v2.4.0
+      - uses: esphome/build-action@v1.1.0
+        id: esphome-build
+        with:
+          yaml_file: ${{ matrix.firmware }}/${{ matrix.chip }}.yaml
+      - uses: actions/upload-artifact@v2.3.0
+        with:
+          name: ${{ matrix.firmware }}-${{ matrix.chip }}
+          path: ${{ steps.esphome-build.outputs.name }}
