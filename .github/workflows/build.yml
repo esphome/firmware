@@ -20,12 +20,12 @@ jobs:
           - esp8266
           - esp32
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: esphome/build-action@v1.1.0
+      - uses: actions/checkout@v3.0.0
+      - uses: esphome/build-action@v1.3.1
         id: esphome-build
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.chip }}.yaml
-      - uses: actions/upload-artifact@v2.3.0
+      - uses: actions/upload-artifact@v3.0.0
         with:
           name: ${{ matrix.firmware }}-${{ matrix.chip }}
           path: ${{ steps.esphome-build.outputs.name }}
