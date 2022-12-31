@@ -21,7 +21,7 @@ jobs:
           - esp32
     steps:
       - uses: actions/checkout@v3.0.0
-      - uses: esphome/build-action@v1.5.0
+      - uses: esphome/build-action@v1.5.2
         id: esphome-build
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.chip }}.yaml
