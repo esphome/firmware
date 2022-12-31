@@ -19,6 +19,10 @@ jobs:
         chip:
           - esp8266
           - esp32
+        include:
+          - firmware: esphome-web
+            chip: pico-w
+
     steps:
       - uses: actions/checkout@v3.0.0
       - uses: esphome/build-action@v1.5.2
