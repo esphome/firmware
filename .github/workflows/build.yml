@@ -21,11 +21,14 @@ jobs:
           - esp32
     steps:
       - uses: actions/checkout@v3.0.0
-      - uses: esphome/build-action@v1.5.0
+      - uses: esphome/build-action@v1.5.2
         id: esphome-build
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.chip }}.yaml
-      - uses: actions/upload-artifact@v3.0.0
+      - run: |
+          mkdir output
+          mv "${{ steps.esphome-build.outputs.name }}" output/
+      - uses: actions/upload-artifact@v3.1.1
         with:
           name: ${{ matrix.firmware }}-${{ matrix.chip }}
-          path: ${{ steps.esphome-build.outputs.name }}
+          path: output
