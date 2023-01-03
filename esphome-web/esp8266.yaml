@@ -33,3 +33,6 @@ captive_portal:
 dashboard_import:
   package_import_url: github://esphome/example-configs/esphome-web/esp8266.yaml@main
   import_full_config: true
+
+# To have a "next url" for improv serial
+web_server:
