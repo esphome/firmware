@@ -3,12 +3,16 @@ substitutions:
 
 esphome:
   name: "${name}"
-  platform: ESP8266
-  board: esp01_1m
   name_add_mac_suffix: true
   project:
     name: esphome.web
     version: "1.0"
+
+rp2040:
+  board: rpipicow
+  framework:
+    # Required until https://github.com/platformio/platform-raspberrypi/pull/36 is merged
+    platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git
 
 # Enable logging
 logger:
@@ -23,16 +27,7 @@ ota:
 improv_serial:
 
 wifi:
-  # Set up a wifi access point
-  ap: {}
-
-# In combination with the `ap` this allows the user
-# to provision wifi credentials to the device via WiFi AP.
-captive_portal:
 
 dashboard_import:
-  package_import_url: github://esphome/example-configs/esphome-web/esp8266.yaml@main
+  package_import_url: github://esphome/example-configs/esphome-web/pico-w.yaml@main
   import_full_config: true
-
-# To have a "next url" for improv serial
-web_server:

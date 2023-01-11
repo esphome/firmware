@@ -16,7 +16,7 @@ logger:
 # Enable Home Assistant API
 api:
 
-# Allow OTA updates
+# Allow Over-The-Air updates
 ota:
 
 # Allow provisioning Wi-Fi via serial
