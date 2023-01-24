@@ -36,3 +36,36 @@ jobs:
         with:
           name: ${{ matrix.firmware }}-${{ matrix.chip }}
           path: output
+
+  consolidate:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    name: Consolidate firmwares
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          path: output
+      - run: cp -R static/* output/
+      - uses: actions/upload-pages-artifact@v1.0.7
+        with:
+          path: output
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: consolidate
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1.2.3
