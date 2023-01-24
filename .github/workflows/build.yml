@@ -12,6 +12,7 @@ jobs:
     name: Build ESPHome binary for ${{ matrix.firmware }}-${{ matrix.chip }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         firmware:
           - esp-web-tools
