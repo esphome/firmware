@@ -3,12 +3,15 @@ substitutions:
 
 esphome:
   name: "${name}"
-  platform: ESP32
-  board: esp32dev
   name_add_mac_suffix: true
   project:
     name: esphome.esp_web_tools_example
     version: "1.0"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
 
 # Enable logging
 logger:
