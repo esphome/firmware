@@ -20,6 +20,7 @@ jobs:
         chip:
           - esp8266
           - esp32
+          - esp32c3
         include:
           - firmware: esphome-web
             chip: pico-w
