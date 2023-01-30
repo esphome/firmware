@@ -1,0 +1,41 @@
+substitutions:
+  name: esp-web-tools-example
+
+esphome:
+  name: "${name}"
+  name_add_mac_suffix: true
+  project:
+    name: esphome.esp_web_tools_example
+    version: "1.0"
+
+esp32:
+  board: esp32-s2-saola-1
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow OTA updates
+ota:
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  # Set up a wifi access point
+  ap:
+    ssid: "ESP Web Tools"
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/esp-web-tools/esp32s2.yaml@v2
+
+# To have a "next url" for improv serial
+web_server:
