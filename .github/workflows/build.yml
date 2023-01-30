@@ -20,13 +20,16 @@ jobs:
         chip:
           - esp8266
           - esp32
+          - esp32c3
+          - esp32s2
+          - esp32s3
         include:
           - firmware: esphome-web
             chip: pico-w
 
     steps:
       - uses: actions/checkout@v3.3.0
-      - uses: esphome/build-action@v1.7.0
+      - uses: esphome/build-action@v1.8.0
         id: esphome-build
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.chip }}.yaml
