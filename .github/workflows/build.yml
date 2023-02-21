@@ -6,6 +6,13 @@ on:
       - main
   workflow_dispatch:
   pull_request:
+  schedule:
+    - cron: '0 5 * * 1'
+
+concurrency:
+  # yamllint disable-line rule:line-length
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
