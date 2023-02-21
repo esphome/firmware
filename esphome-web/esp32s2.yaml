@@ -1,8 +1,10 @@
 substitutions:
   name: esphome-web
+  friendly_name: ESPHome Web
 
 esphome:
   name: "${name}"
+  friendly_name: "${friendly_name}"
   name_add_mac_suffix: true
   project:
     name: esphome.web

@@ -1,8 +1,10 @@
 substitutions:
   name: esp-web-tools-example
+  friendly_name: ESP Web Tools Example
 
 esphome:
   name: "${name}"
+  friendly_name: "${friendly_name}"
   name_add_mac_suffix: true
   project:
     name: esphome.esp_web_tools_example
