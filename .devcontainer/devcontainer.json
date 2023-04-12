@@ -1,0 +1,15 @@
+{
+  "name": "ESPHome - Firmware",
+  "image": "mcr.microsoft.com/vscode/devcontainers/python:0-3.10",
+  "postCreateCommand": "pip3 install esphome",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "esphome.validator": "local"
+      },
+      "extensions": [
+        "ESPHome.esphome-vscode"
+      ]
+    }
+  }
+}
