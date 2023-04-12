@@ -1,4 +1,4 @@
-name: Build ESPHome example firmwares
+name: Build
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build ESPHome binary for ${{ matrix.firmware }}-${{ matrix.device }}
+    name: ${{ matrix.firmware }}-${{ matrix.device }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -63,7 +63,7 @@ jobs:
         with:
           path: output
       - run: cp -R static/* output/
-      - uses: actions/upload-pages-artifact@v1.0.7
+      - uses: actions/upload-pages-artifact@v1.0.8
         with:
           path: output
 
@@ -83,4 +83,4 @@ jobs:
         uses: actions/configure-pages@v3
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1.2.4
+        uses: actions/deploy-pages@v2.0.0
