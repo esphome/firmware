@@ -7,7 +7,7 @@ esphome:
   friendly_name: "${friendly_name}"
   name_add_mac_suffix: true
   project:
-    name: m5stack.atom-echo
+    name: m5stack.atom-echo-voice-assistant
     version: "1.0"
 
 esp32:
