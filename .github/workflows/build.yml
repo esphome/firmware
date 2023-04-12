@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build ESPHome binary for ${{ matrix.firmware }}-${{ matrix.chip }}
+    name: Build ESPHome binary for ${{ matrix.firmware }}-${{ matrix.device }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -24,7 +24,7 @@ jobs:
         firmware:
           - esp-web-tools
           - esphome-web
-        chip:
+        device:
           - esp8266
           - esp32
           - esp32c3
@@ -32,20 +32,24 @@ jobs:
           - esp32s3
         include:
           - firmware: esphome-web
-            chip: pico-w
+            device: pico-w
+          - firmware: voice-assistant
+            device: m5stack-atom-echo
+            version: dev
 
     steps:
       - uses: actions/checkout@v3.3.0
       - uses: esphome/build-action@v1.8.0
         id: esphome-build
         with:
-          yaml_file: ${{ matrix.firmware }}/${{ matrix.chip }}.yaml
+          yaml_file: ${{ matrix.firmware }}/${{ matrix.device }}.yaml
+          version: ${{ matrix.version || 'latest' }}
       - run: |
           mkdir output
           mv ${{ steps.esphome-build.outputs.name }}/* output/
       - uses: actions/upload-artifact@v3.1.2
         with:
-          name: ${{ matrix.firmware }}-${{ matrix.chip }}
+          name: ${{ matrix.firmware }}-${{ matrix.device }}
           path: output
 
   consolidate:
