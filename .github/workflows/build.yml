@@ -1,4 +1,4 @@
-name: Build ESPHome example firmwares
+name: Build
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build ESPHome binary for ${{ matrix.firmware }}-${{ matrix.chip }}
+    name: ${{ matrix.firmware }}-${{ matrix.chip }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
