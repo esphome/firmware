@@ -49,6 +49,45 @@ media_player:
 
 voice_assistant:
   microphone: echo_microphone
+  on_start:
+    - light.turn_on:
+        id: led
+        blue: 100%
+        red: 0%
+        green: 0%
+  on_tts_start:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 0%
+        green: 100%
+  on_tts_end:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 0%
+        green: 100%
+    - media_player.play_media: !lambda return x;
+  on_end:
+    - delay: 1s
+    - if:
+        condition:
+            media_player.is_playing:
+        then:
+          - wait_until:
+              media_player.is_idle:
+          - light.turn_off: led
+        else:
+          - light.turn_off: led
+  on_error:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 100%
+        green: 0%
+    - delay: 1s
+    - light.turn_off: led
+
 
 binary_sensor:
   - platform: gpio
@@ -56,21 +95,20 @@ binary_sensor:
       number: GPIO39
       inverted: true
     name: Button
+    disabled_by_default: true
     id: echo_button
     on_press:
-      - light.turn_on:
-          id: led
-          blue: 100%
       - voice_assistant.start:
     on_release:
-      - light.turn_off: led
       - voice_assistant.stop:
 
 light:
   - platform: fastled_clockless
     id: led
     name: None
+    disabled_by_default: true
     pin: GPIO27
+    default_transition_length: 0s
     chipset: SK6812
     num_leds: 1
     rgb_order: grb
