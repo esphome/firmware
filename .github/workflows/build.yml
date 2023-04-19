@@ -46,18 +46,17 @@ jobs:
           version: ${{ matrix.version || 'latest' }}
       - name: Move generated files to output
         run: |
-          mkdir output
-          mv ${{ steps.esphome-build.outputs.name }}/* output/
+          mkdir -p output/${{ matrix.device }}
+          mv ${{ steps.esphome-build.outputs.name }}/* output/${{ matrix.device }}/
       - name: Alter manifest path
         run: |
-          sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}-${{ matrix.device }}\//g' output/manifest.json
+          sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/manifest.json
       - uses: actions/upload-artifact@v3.1.2
         with:
-          name: ${{ matrix.firmware }}-${{ matrix.device }}
+          name: ${{ matrix.firmware }}
           path: output
 
   consolidate:
-    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
     name: Consolidate firmwares
     runs-on: ubuntu-latest
     needs: build
