@@ -44,9 +44,13 @@ jobs:
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.device }}.yaml
           version: ${{ matrix.version || 'latest' }}
-      - run: |
+      - name: Move generated files to output
+        run: |
           mkdir output
           mv ${{ steps.esphome-build.outputs.name }}/* output/
+      - name: Alter manifest path
+        run: |
+          sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}-${{ matrix.device }}\//g' output/manifest.json
       - uses: actions/upload-artifact@v3.1.2
         with:
           name: ${{ matrix.firmware }}-${{ matrix.device }}
