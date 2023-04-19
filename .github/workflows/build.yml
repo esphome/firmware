@@ -51,7 +51,7 @@ jobs:
           mv ${{ steps.esphome-build.outputs.name }}/* output/${{ matrix.device }}/
       - name: Alter manifest path
         run: |
-          sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/manifest.json
+          sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/${{ matrix.device }}/manifest.json
       - uses: actions/upload-artifact@v3.1.2
         with:
           name: ${{ matrix.firmware }}
