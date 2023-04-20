@@ -36,7 +36,6 @@ jobs:
             device: pico-w
           - firmware: voice-assistant
             device: m5stack-atom-echo
-            version: beta
 
     steps:
       - uses: actions/checkout@v3.3.0
