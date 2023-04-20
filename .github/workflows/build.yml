@@ -19,6 +19,7 @@ jobs:
     name: ${{ matrix.firmware }}-${{ matrix.device }}
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 5
       fail-fast: false
       matrix:
         firmware:
@@ -30,12 +31,13 @@ jobs:
           - esp32c3
           - esp32s2
           - esp32s3
+        version:
+          - latest
         include:
           - firmware: esphome-web
             device: pico-w
           - firmware: voice-assistant
             device: m5stack-atom-echo
-            version: beta
 
     steps:
       - uses: actions/checkout@v3.3.0
@@ -44,19 +46,83 @@ jobs:
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.device }}.yaml
           version: ${{ matrix.version || 'latest' }}
-      - run: |
-          mkdir output
-          mv ${{ steps.esphome-build.outputs.name }}/* output/
+      - name: Move generated files to output
+        run: |
+          mkdir -p output/${{ matrix.device }}
+          mv ${{ steps.esphome-build.outputs.name }}/* output/${{ matrix.device }}/
+          echo ${{ steps.esphome-build.outputs.version }} > output/${{ matrix.device }}/version
+      - name: Alter manifest path
+        if: ${{ matrix.device != 'pico-w' }}
+        run: |
+          sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/${{ matrix.device }}/manifest.json
       - uses: actions/upload-artifact@v3.1.2
         with:
-          name: ${{ matrix.firmware }}-${{ matrix.device }}
+          name: ${{ matrix.firmware }}
+          path: output
+
+  combined-manifests:
+    name: Combine ${{ matrix.project }} manifests
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: esp-web-tools
+            name: ESP Web Tools
+          - project: esphome-web
+            name: ESPHome Web
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.project }}
+          path: files
+      - name: Generate manifest.json
+        run: |
+          version=$(cat files/*/version | sort -V | tail -n 1)
+          jq -s --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":.}' files/*/manifest.json > manifest.json
+      - uses: actions/upload-artifact@v3.1.2
+        with:
+          name: ${{ matrix.project }}
+          path: manifest.json
+
+
+  full-manifests:
+    name: Create ${{ matrix.project }} manifest
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: voice-assistant
+            name: Voice Assistant
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.project }}
+          path: files
+      - name: Generate manifest.json files
+        run: |
+          cd files
+          for device in */; do
+            mkdir -p ../output/$device
+            pushd $device
+            version=$(cat version)
+            jq --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":.}' manifest.json > ../../output/$device/manifest.json
+            popd
+          done
+      - uses: actions/upload-artifact@v3.1.2
+        with:
+          name: ${{ matrix.project }}
           path: output
 
   consolidate:
-    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
     name: Consolidate firmwares
     runs-on: ubuntu-latest
-    needs: build
+    needs:
+      - combined-manifests
+      - full-manifests
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
