@@ -31,6 +31,8 @@ jobs:
           - esp32c3
           - esp32s2
           - esp32s3
+        version:
+          - latest
         include:
           - firmware: esphome-web
             device: pico-w
@@ -104,7 +106,7 @@ jobs:
         run: |
           cd files
           for device in */; do
-            mkdir -p output/$device
+            mkdir -p ../output/$device
             pushd $device
             version=$(cat version)
             jq '{"name": "${{ matrix.name }}", "version": "$version", "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":.}' manifest.json > ../../output/$device/manifest.json
