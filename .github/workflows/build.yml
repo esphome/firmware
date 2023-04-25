@@ -109,7 +109,7 @@ jobs:
             mkdir -p ../output/$device
             pushd $device
             version=$(cat version)
-            jq --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":.}' manifest.json > ../../output/$device/manifest.json
+            jq --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":[.]}' manifest.json > ../../output/$device/manifest.json
             popd
           done
       - uses: actions/upload-artifact@v3.1.2
