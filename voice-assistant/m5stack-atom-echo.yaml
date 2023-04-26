@@ -96,6 +96,7 @@ binary_sensor:
       inverted: true
     name: Button
     disabled_by_default: true
+    entity_category: diagnostic
     id: echo_button
     on_press:
       - voice_assistant.start:
@@ -107,6 +108,7 @@ light:
     id: led
     name: None
     disabled_by_default: true
+    entity_category: config
     pin: GPIO27
     default_transition_length: 0s
     chipset: SK6812
