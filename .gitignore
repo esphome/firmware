@@ -1,2 +1,4 @@
 .esphome/
 secrets.yaml
+*/.gitignore
+!/.gitignore
