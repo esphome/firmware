@@ -129,7 +129,7 @@ jobs:
         with:
           path: output
       - run: cp -R static/* output/
-      - uses: actions/upload-pages-artifact@v1.0.8
+      - uses: actions/upload-pages-artifact@v1.0.9
         with:
           path: output
 
