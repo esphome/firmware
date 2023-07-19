@@ -122,7 +122,7 @@ binary_sensor:
                 green: 0%
                 brightness: 50%
                 effect: none
-            - voice_assistant.start_continuous:
+            - voice_assistant.start:
 
 light:
   - platform: esp32_rmt_led_strip
