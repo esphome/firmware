@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   pull_request:
   schedule:
-    - cron: '0 5 * * 1'
+    - cron: "0 5 * * 1"
 
 concurrency:
   # yamllint disable-line rule:line-length
@@ -38,6 +38,9 @@ jobs:
             device: pico-w
           - firmware: voice-assistant
             device: m5stack-atom-echo
+          - firmware: voice-assistant
+            device: esp32-s3-box
+            version: dev
 
     steps:
       - uses: actions/checkout@v4
@@ -85,7 +88,6 @@ jobs:
         with:
           name: ${{ matrix.project }}
           path: manifest.json
-
 
   full-manifests:
     name: Create ${{ matrix.project }} manifest

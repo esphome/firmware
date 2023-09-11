@@ -1,0 +1,117 @@
+esphome:
+  name: esp32-s3-box
+  friendly_name: ESP32 S3 Box
+  platformio_options:
+    board_build.flash_mode: dio
+
+  on_boot:
+    - priority: -100
+      then:
+        - wait_until: api.connected
+        - delay: 1s
+        - voice_assistant.start_continuous:
+  project:
+    name: esphome.esp32-s3-box-voice-assistant
+    version: "1.0"
+  min_version: "2023.9.0-dev"
+
+esp32:
+  board: esp32s3box
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+
+wifi:
+  ap:
+
+api:
+ota:
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO1
+      inverted: true
+    name: "Mute"
+
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: Top Left Button
+    disabled_by_default: true
+    on_click:
+      - if:
+          condition: voice_assistant.is_running
+          then:
+            - voice_assistant.stop:
+          else:
+            - voice_assistant.start_continuous:
+
+output:
+  - platform: ledc
+    pin: GPIO45
+    id: backlight_output
+
+light:
+  - platform: monochromatic
+    output: backlight_output
+    name: LCD Backlight
+    id: backlight
+    restore_mode: ALWAYS_OFF
+    disabled_by_default: true
+    default_transition_length: 0s
+    effects:
+      - pulse:
+          transition_length: 250ms
+          update_interval: 250ms
+
+microphone:
+  - platform: esp_adf
+    id: box_mic
+
+speaker:
+  - platform: esp_adf
+    id: box_speaker
+
+voice_assistant:
+  microphone: box_mic
+  use_wake_word: true
+  speaker: box_speaker
+  on_start:
+    - light.turn_on:
+        id: backlight
+        brightness: 100%
+  on_tts_end:
+    - light.turn_on:
+        id: backlight
+        brightness: 100%
+  on_end:
+    - delay: 100ms
+    - wait_until:
+        not:
+          speaker.is_playing:
+    - light.turn_off: backlight
+  on_error:
+    - light.turn_off:
+        id: backlight
+
+external_components:
+  - source: github://pr#5230
+    components: esp_adf
+    refresh: 0s
+  - source: github://pr#5229
+    components:
+      - voice_assistant
+      - api
+    refresh: 0s
+
+psram:
+  mode: octal
+  speed: 80MHz
