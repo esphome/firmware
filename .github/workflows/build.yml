@@ -40,6 +40,7 @@ jobs:
             device: m5stack-atom-echo
           - firmware: voice-assistant
             device: esp32-s3-box
+            version: dev
 
     steps:
       - uses: actions/checkout@v4
