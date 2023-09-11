@@ -40,7 +40,7 @@ jobs:
             device: m5stack-atom-echo
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4
       - uses: esphome/build-action@v1.8.0
         id: esphome-build
         with:
@@ -124,7 +124,7 @@ jobs:
       - combined-manifests
       - full-manifests
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v3
         with:
           path: output
