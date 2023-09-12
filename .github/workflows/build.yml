@@ -41,6 +41,9 @@ jobs:
           - firmware: voice-assistant
             device: esp32-s3-box
             version: dev
+          - firmware: voice-assistant
+            device: esp32-s3-box-lite
+            version: dev
 
     steps:
       - uses: actions/checkout@v4

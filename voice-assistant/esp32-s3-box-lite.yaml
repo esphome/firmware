@@ -1,0 +1,170 @@
+esphome:
+  name: esp32-s3-box-lite
+  friendly_name: ESP32 S3 Box Lite
+  platformio_options:
+    board_build.flash_mode: dio
+
+  on_boot:
+    - priority: -100
+      then:
+        - wait_until: api.connected
+        - delay: 1s
+        - voice_assistant.start_continuous:
+
+  project:
+    name: esphome.voice-assistant
+    version: "1.0"
+  min_version: "2023.9.0-dev"
+
+esp32:
+  board: esp32s3box
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+
+wifi:
+  ap:
+
+api:
+ota:
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+  logs:
+    sensor: INFO
+
+sensor:
+  - platform: adc
+    pin: GPIO1
+    id: front_buttons
+    update_interval: 16ms
+    attenuation: 11db
+    on_value:
+      - lambda: |-
+          // none: 3.121
+          // left: 2.392
+          // middle: 1.965
+          // left+middle: 1.600
+          // right: 0.794
+          // left+right: 0.726
+          // middle+right: 0.682
+          // all: 0.632
+          if (x > 3) {
+            id(left).publish_state(false);
+            id(middle).publish_state(false);
+            id(right).publish_state(false);
+          } else if (x > 2.3) {
+            id(left).publish_state(true);
+            id(middle).publish_state(false);
+            id(right).publish_state(false);
+          } else if (x > 1.9) {
+            id(left).publish_state(false);
+            id(middle).publish_state(true);
+            id(right).publish_state(false);
+          } else if (x > 1) {
+            id(left).publish_state(true);
+            id(middle).publish_state(true);
+            id(right).publish_state(false);
+          } else if (x > 0.73) {
+            id(left).publish_state(false);
+            id(middle).publish_state(false);
+            id(right).publish_state(true);
+          } else if (x > 0.7) {
+            id(left).publish_state(true);
+            id(middle).publish_state(false);
+            id(right).publish_state(true);
+          } else if (x > 0.65) {
+            id(left).publish_state(false);
+            id(middle).publish_state(true);
+            id(right).publish_state(true);
+          } else {
+            id(left).publish_state(true);
+            id(middle).publish_state(true);
+            id(right).publish_state(true);
+          }
+
+binary_sensor:
+  - platform: template
+    id: left
+    name: "Left"
+  - platform: template
+    id: middle
+    name: "Middle"
+  - platform: template
+    id: right
+    name: "Right"
+
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: Left Top Button
+    on_click:
+      - if:
+          condition: voice_assistant.is_running
+          then:
+            - voice_assistant.stop:
+          else:
+            - voice_assistant.start_continuous:
+
+output:
+  - platform: ledc
+    pin: GPIO45
+    inverted: true
+    id: backlight_output
+
+light:
+  - platform: monochromatic
+    output: backlight_output
+    name: LCD Backlight
+    id: backlight
+    restore_mode: ALWAYS_OFF
+    disabled_by_default: true
+    default_transition_length: 0s
+
+esp_adf:
+  board: esp32s3boxlite
+
+microphone:
+  - platform: esp_adf
+    id: box_mic
+
+speaker:
+  - platform: esp_adf
+    id: box_speaker
+
+voice_assistant:
+  microphone: box_mic
+  use_wake_word: true
+  speaker: box_speaker
+  on_start:
+    - light.turn_on:
+        id: backlight
+        brightness: 100%
+  on_tts_end:
+    - light.turn_on:
+        id: backlight
+        brightness: 100%
+  on_end:
+    - delay: 100ms
+    - wait_until:
+        not:
+          speaker.is_playing:
+    - light.turn_off: backlight
+
+external_components:
+  - source: github://pr#5230
+    components: esp_adf
+    refresh: 0s
+  - source: github://pr#5229
+    components:
+      - voice_assistant
+      - api
+    refresh: 0s
+
+psram:
+  mode: octal
+  speed: 80MHz
