@@ -40,7 +40,14 @@ jobs:
             device: m5stack-atom-echo
           - firmware: voice-assistant
             device: esp32-s3-box
-            version: dev
+          - firmware: voice-assistant
+            device: esp32-s3-box-lite
+          - firmware: voice-assistant
+            device: raspiaudio-muse-luxe
+          - firmware: voice-assistant
+            device: raspiaudio-muse-proto
+          - firmware: voice-assistant
+            device: quinled-dig2go
 
     steps:
       - uses: actions/checkout@v4

@@ -1,7 +1,7 @@
 ---
 esphome:
-  name: esp32-s3-box
-  friendly_name: ESP32 S3 Box
+  name: esp32-s3-box-lite
+  friendly_name: ESP32 S3 Box Lite
   platformio_options:
     board_build.flash_mode: dio
   project:
@@ -28,31 +28,85 @@ esp32:
       CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
       CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
 
-logger:
-  hardware_uart: USB_SERIAL_JTAG
 api:
 ota:
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+  logs:
+    sensor: INFO
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box.yaml@main
+  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box-lite.yaml@main
 
 wifi:
   ap:
 
+sensor:
+  - platform: adc
+    pin: GPIO1
+    id: front_buttons
+    update_interval: 16ms
+    attenuation: 11db
+    on_value:
+      - lambda: |-
+          // none: 3.121
+          // left: 2.392
+          // middle: 1.965
+          // left+middle: 1.600
+          // right: 0.794
+          // left+right: 0.726
+          // middle+right: 0.682
+          // all: 0.632
+          if (x > 3) {
+            id(left).publish_state(false);
+            id(middle).publish_state(false);
+            id(right).publish_state(false);
+          } else if (x > 2.3) {
+            id(left).publish_state(true);
+            id(middle).publish_state(false);
+            id(right).publish_state(false);
+          } else if (x > 1.9) {
+            id(left).publish_state(false);
+            id(middle).publish_state(true);
+            id(right).publish_state(false);
+          } else if (x > 1) {
+            id(left).publish_state(true);
+            id(middle).publish_state(true);
+            id(right).publish_state(false);
+          } else if (x > 0.73) {
+            id(left).publish_state(false);
+            id(middle).publish_state(false);
+            id(right).publish_state(true);
+          } else if (x > 0.7) {
+            id(left).publish_state(true);
+            id(middle).publish_state(false);
+            id(right).publish_state(true);
+          } else if (x > 0.65) {
+            id(left).publish_state(false);
+            id(middle).publish_state(true);
+            id(right).publish_state(true);
+          } else {
+            id(left).publish_state(true);
+            id(middle).publish_state(true);
+            id(right).publish_state(true);
+          }
 binary_sensor:
-  - platform: gpio
-    pin:
-      number: GPIO1
-      inverted: true
-    name: "Mute"
+  - platform: template
+    id: left
+    name: "Left"
+  - platform: template
+    id: middle
+    name: "Middle"
+  - platform: template
+    id: right
+    name: "Right"
 
   - platform: gpio
     pin:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: true
-    name: Top Left Button
-    disabled_by_default: true
+    name: Left Top Button
     on_click:
       - if:
           condition:
@@ -75,6 +129,7 @@ binary_sensor:
 output:
   - platform: ledc
     pin: GPIO45
+    inverted: true
     id: backlight_output
 
 light:
@@ -91,6 +146,7 @@ light:
           update_interval: 250ms
 
 esp_adf:
+  board: esp32s3boxlite
 
 microphone:
   - platform: esp_adf

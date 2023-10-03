@@ -1,11 +1,10 @@
 ---
 esphome:
-  name: esp32-s3-box
-  friendly_name: ESP32 S3 Box
-  platformio_options:
-    board_build.flash_mode: dio
+  name: dig2go
+  friendly_name: dig2go
+  name_add_mac_suffix: true
   project:
-    name: esphome.voice-assistant
+    name: quinled.dig2go-voice-assistant
     version: "1.0"
   min_version: 2023.9.0
   on_boot:
@@ -20,90 +19,51 @@ esphome:
               - voice_assistant.start_continuous:
 
 esp32:
-  board: esp32s3box
+  board: esp32dev
   framework:
     type: esp-idf
-    sdkconfig_options:
-      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
-      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
-      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
 
 logger:
-  hardware_uart: USB_SERIAL_JTAG
 api:
 ota:
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box.yaml@main
+  package_import_url: github://esphome/firmware/voice-assistant/quinled-dig2go.yaml@main
 
 wifi:
   ap:
 
-binary_sensor:
-  - platform: gpio
-    pin:
-      number: GPIO1
-      inverted: true
-    name: "Mute"
+captive_portal:
 
-  - platform: gpio
-    pin:
-      number: GPIO0
-      mode: INPUT_PULLUP
-      inverted: true
-    name: Top Left Button
-    disabled_by_default: true
-    on_click:
-      - if:
-          condition:
-            switch.is_off: use_wake_word
-          then:
-            - if:
-                condition: voice_assistant.is_running
-                then:
-                  - voice_assistant.stop:
-                  - script.execute: reset_led
-                else:
-                  - voice_assistant.start:
-          else:
-            - voice_assistant.stop
-            - delay: 1s
-            - script.execute: reset_led
-            - script.wait: reset_led
-            - voice_assistant.start_continuous:
+improv_serial:
 
-output:
-  - platform: ledc
-    pin: GPIO45
-    id: backlight_output
+external_components:
+  - source: github://pr#5230
+    components:
+      - esp_adf
+  - source: github://pr#5229
+    components:
+      - voice_assistant
+      - api
+    refresh: 0s
 
-light:
-  - platform: monochromatic
-    output: backlight_output
-    name: LCD Backlight
-    id: led
-    restore_mode: ALWAYS_OFF
-    disabled_by_default: true
-    default_transition_length: 0s
-    effects:
-      - pulse:
-          transition_length: 250ms
-          update_interval: 250ms
+i2s_audio:
+  i2s_lrclk_pin: GPIO4
+  i2s_bclk_pin: GPIO18
+
+microphone:
+  - platform: i2s_audio
+    id: dig2go_mic
+    adc_type: external
+    i2s_din_pin: GPIO19
+    pdm: false
+    channel: right
 
 esp_adf:
 
-microphone:
-  - platform: esp_adf
-    id: box_mic
-
-speaker:
-  - platform: esp_adf
-    id: box_speaker
-
 voice_assistant:
   id: va
-  microphone: box_mic
-  speaker: box_speaker
+  microphone: dig2go_mic
   use_wake_word: true
   on_listening:
     - light.turn_on:
@@ -122,10 +82,6 @@ voice_assistant:
         brightness: 100%
         effect: pulse
   on_end:
-    - delay: 100ms
-    - wait_until:
-        not:
-          speaker.is_playing:
     - script.execute: reset_led
   on_error:
     - light.turn_on:
@@ -142,6 +98,52 @@ voice_assistant:
         if (code == "wake-provider-missing") {
           id(use_wake_word).turn_off();
         }
+
+power_supply:
+  - id: led_power
+    pin: GPIO12
+
+remote_receiver:
+  - pin: GPIO5
+    dump: all
+
+light:
+  - platform: esp32_rmt_led_strip
+    name: None
+    id: led
+    power_supply: led_power
+    is_rgbw: true
+    pin: GPIO16
+    rgb_order: grb
+    chipset: sk6812
+    num_leds: 300
+    rmt_channel: 2
+
+binary_sensor:
+  - platform: gpio
+    name: Button
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+      - if:
+          condition:
+            switch.is_off: use_wake_word
+          then:
+            - if:
+                condition: voice_assistant.is_running
+                then:
+                  - voice_assistant.stop:
+                  - script.execute: reset_led
+                else:
+                  - voice_assistant.start:
+          else:
+            - voice_assistant.stop
+            - delay: 1s
+            - script.execute: reset_led
+            - script.wait: reset_led
+            - voice_assistant.start_continuous:
 
 script:
   - id: reset_led
@@ -179,17 +181,3 @@ switch:
       - voice_assistant.stop
       - lambda: id(va).set_use_wake_word(false);
       - script.execute: reset_led
-
-external_components:
-  - source: github://pr#5230
-    components: esp_adf
-    refresh: 0s
-  - source: github://pr#5229
-    components:
-      - voice_assistant
-      - api
-    refresh: 0s
-
-psram:
-  mode: octal
-  speed: 80MHz
