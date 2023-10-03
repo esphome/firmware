@@ -1,15 +1,22 @@
-substitutions:
-  name: "m5stack-atom-echo"
-  friendly_name: "M5Stack Atom Echo"
-
+---
 esphome:
-  name: "${name}"
-  friendly_name: "${friendly_name}"
+  name: m5stack-atom-echo
+  friendly_name: M5Stack Atom Echo
   name_add_mac_suffix: true
   project:
     name: m5stack.atom-echo-voice-assistant
     version: "1.0"
-  min_version: 2023.7.0
+  min_version: 2023.9.0
+  on_boot:
+    - priority: -100
+      then:
+        - wait_until: api.connected
+        - delay: 1s
+        - if:
+            condition:
+              switch.is_on: use_wake_word
+            then:
+              - voice_assistant.start_continuous:
 
 esp32:
   board: m5stack-atom
@@ -47,17 +54,14 @@ speaker:
     mode: mono
 
 voice_assistant:
+  id: va
   microphone: echo_microphone
   speaker: echo_speaker
-  silence_detection: true
+  noise_suppression_level: 2
+  auto_gain: 31dBFS
+  volume_multiplier: 2.0
+  vad_threshold: 3
   on_listening:
-    - light.turn_on:
-        id: led
-        blue: 100%
-        red: 0%
-        green: 0%
-        brightness: 50%
-  on_start:
     - light.turn_on:
         id: led
         blue: 100%
@@ -72,21 +76,13 @@ voice_assistant:
         red: 0%
         green: 100%
         brightness: 100%
-        effect: none
-  on_tts_end:
-    - light.turn_on:
-        id: led
-        blue: 0%
-        red: 0%
-        green: 100%
-        brightness: 100%
         effect: pulse
   on_end:
     - delay: 100ms
     - wait_until:
         not:
           speaker.is_playing:
-    - light.turn_off: led
+    - script.execute: reset_led
   on_error:
     - light.turn_on:
         id: led
@@ -96,8 +92,12 @@ voice_assistant:
         brightness: 100%
         effect: none
     - delay: 1s
-    - light.turn_off: led
-
+    - script.execute: reset_led
+    - script.wait: reset_led
+    - lambda: |-
+        if (code == "wake-provider-missing") {
+          id(use_wake_word).turn_off();
+        }
 
 binary_sensor:
   - platform: gpio
@@ -110,19 +110,22 @@ binary_sensor:
     id: echo_button
     on_click:
       - if:
-          condition: voice_assistant.is_running
+          condition:
+            switch.is_off: use_wake_word
           then:
-            - light.turn_off: led
-            - voice_assistant.stop:
+            - if:
+                condition: voice_assistant.is_running
+                then:
+                  - voice_assistant.stop:
+                  - script.execute: reset_led
+                else:
+                  - voice_assistant.start:
           else:
-            - light.turn_on:
-                id: led
-                blue: 100%
-                red: 0%
-                green: 0%
-                brightness: 50%
-                effect: none
-            - voice_assistant.start:
+            - voice_assistant.stop
+            - delay: 1s
+            - script.execute: reset_led
+            - script.wait: reset_led
+            - voice_assistant.start_continuous:
 
 light:
   - platform: esp32_rmt_led_strip
@@ -140,3 +143,52 @@ light:
       - pulse:
           transition_length: 250ms
           update_interval: 250ms
+
+script:
+  - id: reset_led
+    then:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - light.turn_on:
+                id: led
+                blue: 100%
+                red: 100%
+                green: 0%
+                brightness: 100%
+                effect: none
+          else:
+            - light.turn_off: led
+
+switch:
+  - platform: template
+    name: Use Wake Word
+    id: use_wake_word
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+      - lambda: id(va).set_use_wake_word(true);
+      - if:
+          condition:
+            not:
+              - voice_assistant.is_running
+          then:
+            - voice_assistant.start_continuous
+      - script.execute: reset_led
+    on_turn_off:
+      - voice_assistant.stop
+      - lambda: id(va).set_use_wake_word(false);
+      - script.execute: reset_led
+
+external_components:
+  - source: github://pr#5230
+    components:
+      - esp_adf
+  - source: github://pr#5229
+    components:
+      - voice_assistant
+      - api
+    refresh: 0s
+
+esp_adf:
