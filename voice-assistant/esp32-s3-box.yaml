@@ -90,6 +90,8 @@ light:
           transition_length: 250ms
           update_interval: 250ms
 
+esp_adf:
+
 microphone:
   - platform: esp_adf
     id: box_mic
