@@ -107,7 +107,7 @@ voice_assistant:
     - script.execute: reset_led
     - script.wait: reset_led
     - lambda: |-
-        if (code == "wake-provider-missing") {
+        if (code == "wake-provider-missing" || code == "wake-engine-missing") {
           id(use_wake_word).turn_off();
         }
 
