@@ -40,7 +40,10 @@ jobs:
             device: m5stack-atom-echo
           - firmware: voice-assistant
             device: esp32-s3-box
-            version: dev
+          - firmware: voice-assistant
+            device: raspiaudio-muse-luxe
+          - firmware: voice-assistant
+            device: raspiaudio-muse-proto
 
     steps:
       - uses: actions/checkout@v4

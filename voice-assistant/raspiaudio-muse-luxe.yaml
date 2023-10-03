@@ -1,0 +1,239 @@
+---
+esphome:
+  name: raspiaudio-muse-luxe
+  friendly_name: RaspiAudio Muse Luxe
+  name_add_mac_suffix: true
+  project:
+    name: raspiaudio.muse-luxe-voice-assistant
+    version: "1.0"
+  min_version: 2023.9.0
+  on_boot:
+    - priority: -100
+      then:
+        - wait_until: api.connected
+        - delay: 1s
+        - if:
+            condition:
+              switch.is_on: use_wake_word
+            then:
+              - voice_assistant.start_continuous:
+
+esp32:
+  board: esp-wrover-kit
+  framework:
+    type: esp-idf
+
+logger:
+api:
+ota:
+
+i2c:
+  sda: GPIO18
+  scl: GPIO23
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/voice-assistant/raspiaudio-muse-luxe.yaml@main
+
+wifi:
+  ap:
+
+captive_portal:
+
+improv_serial:
+
+external_components:
+  - source: github://pr#3552 # DAC support https://github.com/esphome/esphome/pull/3552
+    components: [es8388]
+    refresh: 0s
+  - source: github://pr#5230
+    components:
+      - esp_adf
+  - source: github://pr#5229
+    components:
+      - voice_assistant
+      - api
+    refresh: 0s
+
+es8388:
+
+i2s_audio:
+  - i2s_lrclk_pin: GPIO25
+    i2s_bclk_pin: GPIO5
+
+microphone:
+  - platform: i2s_audio
+    id: luxe_microphone
+    i2s_din_pin: GPIO35
+    adc_type: external
+    pdm: false
+
+speaker:
+  - platform: i2s_audio
+    id: luxe_out
+    dac_type: external
+    i2s_dout_pin: GPIO26
+    mode: stereo
+
+esp_adf:
+
+voice_assistant:
+  id: va
+  microphone: luxe_microphone
+  speaker: luxe_out
+  use_wake_word: true
+  on_listening:
+    - light.turn_on:
+        id: led
+        blue: 100%
+        red: 0%
+        green: 0%
+        brightness: 100%
+        effect: pulse
+  on_tts_start:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 0%
+        green: 100%
+        brightness: 100%
+        effect: pulse
+  on_end:
+    - delay: 100ms
+    - wait_until:
+        not:
+          speaker.is_playing:
+    - script.execute: reset_led
+  on_error:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 100%
+        green: 0%
+        brightness: 100%
+        effect: none
+    - delay: 1s
+    - script.execute: reset_led
+    - script.wait: reset_led
+    - lambda: |-
+        if (code == "wake-provider-missing") {
+          id(use_wake_word).turn_off();
+        }
+
+sensor:
+  - platform: adc
+    pin: GPIO33
+    name: Battery
+    icon: "mdi:battery-outline"
+    device_class: voltage
+    state_class: measurement
+    entity_category: diagnostic
+    unit_of_measurement: V
+    update_interval: 15s
+    accuracy_decimals: 3
+    attenuation: 11db
+    raw: true
+    filters:
+      - multiply: 0.00173913 # 2300 -> 4, for attenuation 11db, based on Olivier's code
+      - exponential_moving_average:
+          alpha: 0.2
+          send_every: 2
+      - delta: 0.002
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO19
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: Volume Up
+    disabled_by_default: true
+  - platform: gpio
+    pin:
+      number: GPIO32
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: Volume Down
+    disabled_by_default: true
+  - platform: gpio
+    pin:
+      number: GPIO12
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: Action
+    on_click:
+      - if:
+          condition:
+            switch.is_off: use_wake_word
+          then:
+            - if:
+                condition: voice_assistant.is_running
+                then:
+                  - voice_assistant.stop:
+                  - script.execute: reset_led
+                else:
+                  - voice_assistant.start:
+          else:
+            - voice_assistant.stop
+            - delay: 1s
+            - script.execute: reset_led
+            - script.wait: reset_led
+            - voice_assistant.start_continuous:
+
+light:
+  - platform: esp32_rmt_led_strip
+    rmt_channel: 0
+    name: None
+    id: led
+    disabled_by_default: true
+    pin: GPIO22
+    chipset: SK6812
+    num_leds: 1
+    rgb_order: grb
+    gamma_correct: 2.8
+    effects:
+      - pulse:
+          transition_length: 250ms
+          update_interval: 250ms
+
+script:
+  - id: reset_led
+    then:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - light.turn_on:
+                id: led
+                blue: 100%
+                red: 100%
+                green: 0%
+                brightness: 100%
+                effect: none
+          else:
+            - light.turn_off: led
+
+switch:
+  - platform: template
+    name: Use Wake Word
+    id: use_wake_word
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+      - lambda: id(va).set_use_wake_word(true);
+      - if:
+          condition:
+            not:
+              - voice_assistant.is_running
+          then:
+            - voice_assistant.start_continuous
+      - script.execute: reset_led
+    on_turn_off:
+      - voice_assistant.stop
+      - lambda: id(va).set_use_wake_word(false);
+      - script.execute: reset_led
