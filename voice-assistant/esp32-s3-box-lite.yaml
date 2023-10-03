@@ -1,0 +1,250 @@
+---
+esphome:
+  name: esp32-s3-box-lite
+  friendly_name: ESP32 S3 Box Lite
+  platformio_options:
+    board_build.flash_mode: dio
+  project:
+    name: esphome.voice-assistant
+    version: "1.0"
+  min_version: 2023.9.0
+  on_boot:
+    - priority: -100
+      then:
+        - wait_until: api.connected
+        - delay: 1s
+        - if:
+            condition:
+              switch.is_on: use_wake_word
+            then:
+              - voice_assistant.start_continuous:
+
+esp32:
+  board: esp32s3box
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+
+api:
+ota:
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+  logs:
+    sensor: INFO
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box-lite.yaml@main
+
+wifi:
+  ap:
+
+sensor:
+  - platform: adc
+    pin: GPIO1
+    id: front_buttons
+    update_interval: 16ms
+    attenuation: 11db
+    on_value:
+      - lambda: |-
+          // none: 3.121
+          // left: 2.392
+          // middle: 1.965
+          // left+middle: 1.600
+          // right: 0.794
+          // left+right: 0.726
+          // middle+right: 0.682
+          // all: 0.632
+          if (x > 3) {
+            id(left).publish_state(false);
+            id(middle).publish_state(false);
+            id(right).publish_state(false);
+          } else if (x > 2.3) {
+            id(left).publish_state(true);
+            id(middle).publish_state(false);
+            id(right).publish_state(false);
+          } else if (x > 1.9) {
+            id(left).publish_state(false);
+            id(middle).publish_state(true);
+            id(right).publish_state(false);
+          } else if (x > 1) {
+            id(left).publish_state(true);
+            id(middle).publish_state(true);
+            id(right).publish_state(false);
+          } else if (x > 0.73) {
+            id(left).publish_state(false);
+            id(middle).publish_state(false);
+            id(right).publish_state(true);
+          } else if (x > 0.7) {
+            id(left).publish_state(true);
+            id(middle).publish_state(false);
+            id(right).publish_state(true);
+          } else if (x > 0.65) {
+            id(left).publish_state(false);
+            id(middle).publish_state(true);
+            id(right).publish_state(true);
+          } else {
+            id(left).publish_state(true);
+            id(middle).publish_state(true);
+            id(right).publish_state(true);
+          }
+binary_sensor:
+  - platform: template
+    id: left
+    name: "Left"
+  - platform: template
+    id: middle
+    name: "Middle"
+  - platform: template
+    id: right
+    name: "Right"
+
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: Left Top Button
+    on_click:
+      - if:
+          condition:
+            switch.is_off: use_wake_word
+          then:
+            - if:
+                condition: voice_assistant.is_running
+                then:
+                  - voice_assistant.stop:
+                  - script.execute: reset_led
+                else:
+                  - voice_assistant.start:
+          else:
+            - voice_assistant.stop
+            - delay: 1s
+            - script.execute: reset_led
+            - script.wait: reset_led
+            - voice_assistant.start_continuous:
+
+output:
+  - platform: ledc
+    pin: GPIO45
+    inverted: true
+    id: backlight_output
+
+light:
+  - platform: monochromatic
+    output: backlight_output
+    name: LCD Backlight
+    id: led
+    restore_mode: ALWAYS_OFF
+    disabled_by_default: true
+    default_transition_length: 0s
+    effects:
+      - pulse:
+          transition_length: 250ms
+          update_interval: 250ms
+
+esp_adf:
+  board: esp32s3boxlite
+
+microphone:
+  - platform: esp_adf
+    id: box_mic
+
+speaker:
+  - platform: esp_adf
+    id: box_speaker
+
+voice_assistant:
+  microphone: box_mic
+  speaker: box_speaker
+  use_wake_word: true
+  on_listening:
+    - light.turn_on:
+        id: led
+        blue: 100%
+        red: 0%
+        green: 0%
+        brightness: 100%
+        effect: pulse
+  on_tts_start:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 0%
+        green: 100%
+        brightness: 100%
+        effect: pulse
+  on_end:
+    - delay: 100ms
+    - wait_until:
+        not:
+          speaker.is_playing:
+    - script.execute: reset_led
+  on_error:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 100%
+        green: 0%
+        brightness: 100%
+        effect: none
+    - delay: 1s
+    - script.execute: reset_led
+    - script.wait: reset_led
+    - lambda: |-
+        if (code == "wake-provider-missing") {
+          id(use_wake_word).turn_off();
+        }
+
+script:
+  - id: reset_led
+    then:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - light.turn_on:
+                id: led
+                blue: 100%
+                red: 100%
+                green: 0%
+                brightness: 100%
+                effect: none
+          else:
+            - light.turn_off: led
+
+switch:
+  - platform: template
+    name: Use Wake Word
+    id: use_wake_word
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+      - lambda: id(va).set_use_wake_word(true);
+      - if:
+          condition:
+            not:
+              - voice_assistant.is_running
+          then:
+            - voice_assistant.start_continuous
+      - script.execute: reset_led
+    on_turn_off:
+      - voice_assistant.stop
+      - lambda: id(va).set_use_wake_word(false);
+      - script.execute: reset_led
+
+external_components:
+  - source: github://pr#5230
+    components: esp_adf
+    refresh: 0s
+  - source: github://pr#5229
+    components:
+      - voice_assistant
+      - api
+    refresh: 0s
+
+psram:
+  mode: octal
+  speed: 80MHz

@@ -41,6 +41,8 @@ jobs:
           - firmware: voice-assistant
             device: esp32-s3-box
           - firmware: voice-assistant
+            device: esp32-s3-box-lite
+          - firmware: voice-assistant
             device: raspiaudio-muse-luxe
           - firmware: voice-assistant
             device: raspiaudio-muse-proto
