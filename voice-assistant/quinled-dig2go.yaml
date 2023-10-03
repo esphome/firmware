@@ -1,0 +1,183 @@
+---
+esphome:
+  name: dig2go
+  friendly_name: dig2go
+  name_add_mac_suffix: true
+  project:
+    name: quinled.dig2go-voice-assistant
+    version: "1.0"
+  min_version: 2023.9.0
+  on_boot:
+    - priority: -100
+      then:
+        - wait_until: api.connected
+        - delay: 1s
+        - if:
+            condition:
+              switch.is_on: use_wake_word
+            then:
+              - voice_assistant.start_continuous:
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+api:
+ota:
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/voice-assistant/quinled-dig2go.yaml@main
+
+wifi:
+  ap:
+
+captive_portal:
+
+improv_serial:
+
+external_components:
+  - source: github://pr#5230
+    components:
+      - esp_adf
+  - source: github://pr#5229
+    components:
+      - voice_assistant
+      - api
+    refresh: 0s
+
+i2s_audio:
+  i2s_lrclk_pin: GPIO4
+  i2s_bclk_pin: GPIO18
+
+microphone:
+  - platform: i2s_audio
+    id: dig2go_mic
+    adc_type: external
+    i2s_din_pin: GPIO19
+    pdm: false
+    channel: right
+
+esp_adf:
+
+voice_assistant:
+  id: va
+  microphone: dig2go_mic
+  use_wake_word: true
+  on_listening:
+    - light.turn_on:
+        id: led
+        blue: 100%
+        red: 0%
+        green: 0%
+        brightness: 100%
+        effect: pulse
+  on_tts_start:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 0%
+        green: 100%
+        brightness: 100%
+        effect: pulse
+  on_end:
+    - script.execute: reset_led
+  on_error:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 100%
+        green: 0%
+        brightness: 100%
+        effect: none
+    - delay: 1s
+    - script.execute: reset_led
+    - script.wait: reset_led
+    - lambda: |-
+        if (code == "wake-provider-missing") {
+          id(use_wake_word).turn_off();
+        }
+
+power_supply:
+  - id: led_power
+    pin: GPIO12
+
+remote_receiver:
+  - pin: GPIO5
+    dump: all
+
+light:
+  - platform: esp32_rmt_led_strip
+    name: None
+    id: led
+    power_supply: led_power
+    is_rgbw: true
+    pin: GPIO16
+    rgb_order: grb
+    chipset: sk6812
+    num_leds: 300
+    rmt_channel: 2
+
+binary_sensor:
+  - platform: gpio
+    name: Button
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+      - if:
+          condition:
+            switch.is_off: use_wake_word
+          then:
+            - if:
+                condition: voice_assistant.is_running
+                then:
+                  - voice_assistant.stop:
+                  - script.execute: reset_led
+                else:
+                  - voice_assistant.start:
+          else:
+            - voice_assistant.stop
+            - delay: 1s
+            - script.execute: reset_led
+            - script.wait: reset_led
+            - voice_assistant.start_continuous:
+
+script:
+  - id: reset_led
+    then:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - light.turn_on:
+                id: led
+                blue: 100%
+                red: 100%
+                green: 0%
+                brightness: 100%
+                effect: none
+          else:
+            - light.turn_off: led
+
+switch:
+  - platform: template
+    name: Use Wake Word
+    id: use_wake_word
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+      - lambda: id(va).set_use_wake_word(true);
+      - if:
+          condition:
+            not:
+              - voice_assistant.is_running
+          then:
+            - voice_assistant.start_continuous
+      - script.execute: reset_led
+    on_turn_off:
+      - voice_assistant.stop
+      - lambda: id(va).set_use_wake_word(false);
+      - script.execute: reset_led

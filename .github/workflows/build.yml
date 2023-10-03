@@ -44,6 +44,8 @@ jobs:
             device: raspiaudio-muse-luxe
           - firmware: voice-assistant
             device: raspiaudio-muse-proto
+          - firmware: voice-assistant
+            device: quinled-dig2go
 
     steps:
       - uses: actions/checkout@v4
