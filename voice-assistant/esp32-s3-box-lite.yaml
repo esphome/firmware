@@ -157,6 +157,7 @@ speaker:
     id: box_speaker
 
 voice_assistant:
+  id: va
   microphone: box_mic
   speaker: box_speaker
   use_wake_word: true
