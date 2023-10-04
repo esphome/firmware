@@ -22,32 +22,30 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-        firmware:
-          - esp-web-tools
-          - esphome-web
-        device:
-          - esp8266
-          - esp32
-          - esp32c3
-          - esp32s2
-          - esp32s3
-        version:
-          - latest
         include:
           - firmware: esphome-web
-            device: pico-w
+            device:
+              - esp32
+              - esp32c3
+              - esp32s2
+              - esp32s3
+              - esp8266
+              - pico-w
+          - firmware: esp-web-tools
+            device:
+              - esp32
+              - esp32c3
+              - esp32s2
+              - esp32s3
+              - esp8266
           - firmware: voice-assistant
-            device: m5stack-atom-echo
-          - firmware: voice-assistant
-            device: esp32-s3-box
-          - firmware: voice-assistant
-            device: esp32-s3-box-lite
-          - firmware: voice-assistant
-            device: raspiaudio-muse-luxe
-          - firmware: voice-assistant
-            device: raspiaudio-muse-proto
-          - firmware: voice-assistant
-            device: quinled-dig2go
+            device:
+              - m5stack-atom-echo
+              - esp32-s3-box
+              - esp32-s3-box-lite
+              - raspiaudio-muse-luxe
+              - raspiaudio-muse-proto
+              - quinled-dig2go
 
     steps:
       - uses: actions/checkout@v4
