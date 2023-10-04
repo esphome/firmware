@@ -28,9 +28,8 @@ jobs:
       - name: Prepare matrix
         id: prepare-matrix
         run: |-
-          firmwares="esp-web-tools esphome-web voice-assistant"
           matrix=""
-          for firmware in $firmwares; do
+          for firmware in $FIRMWARES; do
             for device in $firmware/*.yaml; do
               device=${device##*/}
               device=${device%.yaml}
