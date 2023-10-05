@@ -73,6 +73,10 @@ voice_assistant:
   microphone: board_microphone
   speaker: board_speaker
   use_wake_word: true
+  noise_suppression_level: 2
+  auto_gain: 31dBFS
+  volume_multiplier: 2.0
+  vad_threshold: 3
   on_listening:
     - light.turn_on:
         id: led
