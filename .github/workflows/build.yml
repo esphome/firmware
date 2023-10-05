@@ -41,7 +41,7 @@ jobs:
           echo matrix=$matrix >> $GITHUB_OUTPUT
 
   build:
-    name: ${{ matrix.firmware }}-${{ matrix.device }}
+    name: ${{ matrix.firmware }} / ${{ matrix.device }}
     runs-on: ubuntu-latest
     needs: prepare
     strategy:
