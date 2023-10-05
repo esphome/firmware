@@ -14,41 +14,40 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  FIRMWARES: esp-web-tools esphome-web voice-assistant
+
 jobs:
+  prepare:
+    name: Prepare matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.prepare-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare matrix
+        id: prepare-matrix
+        run: |-
+          matrix=""
+          for firmware in $FIRMWARES; do
+            for device in $firmware/*.yaml; do
+              device=${device##*/}
+              device=${device%.yaml}
+              matrix="$matrix{\"firmware\":\"$firmware\",\"device\":\"$device\"},"
+            done
+          done
+          matrix=${matrix%?}
+          matrix="{\"include\":[$matrix]}"
+          echo matrix=$matrix >> $GITHUB_OUTPUT
+
   build:
     name: ${{ matrix.firmware }}-${{ matrix.device }}
     runs-on: ubuntu-latest
+    needs: prepare
     strategy:
       max-parallel: 5
       fail-fast: false
-      matrix:
-        firmware:
-          - esp-web-tools
-          - esphome-web
-        device:
-          - esp8266
-          - esp32
-          - esp32c3
-          - esp32s2
-          - esp32s3
-        version:
-          - latest
-        include:
-          - firmware: esphome-web
-            device: pico-w
-          - firmware: voice-assistant
-            device: m5stack-atom-echo
-          - firmware: voice-assistant
-            device: esp32-s3-box
-          - firmware: voice-assistant
-            device: esp32-s3-box-lite
-          - firmware: voice-assistant
-            device: raspiaudio-muse-luxe
-          - firmware: voice-assistant
-            device: raspiaudio-muse-proto
-          - firmware: voice-assistant
-            device: quinled-dig2go
-
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: esphome/build-action@v1.8.0
