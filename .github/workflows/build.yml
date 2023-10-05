@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FIRMWARES: esp-web-tools esphome-web voice-assistant
+  FIRMWARES: esp-web-tools esphome-web voice-assistant bluetooth-proxy
 
 jobs:
   prepare:
@@ -105,6 +105,8 @@ jobs:
         include:
           - project: voice-assistant
             name: Voice Assistant
+          - project: bluetooth-proxy
+            name: Bluetooth Proxy
     steps:
       - uses: actions/download-artifact@v3
         with:
