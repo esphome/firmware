@@ -89,6 +89,10 @@ light:
       - pulse:
           transition_length: 250ms
           update_interval: 250ms
+      - pulse:
+          name: Fast Pulse
+          transition_length: 50ms
+          update_interval: 50ms
 
 esp_adf:
 
@@ -112,18 +116,12 @@ voice_assistant:
   on_listening:
     - light.turn_on:
         id: led
-        blue: 100%
-        red: 0%
-        green: 0%
         brightness: 100%
         effect: pulse
   on_tts_start:
     - light.turn_on:
         id: led
-        blue: 0%
-        red: 0%
-        green: 100%
-        brightness: 100%
+        brightness: 75%
         effect: pulse
   on_end:
     - delay: 100ms
@@ -134,11 +132,8 @@ voice_assistant:
   on_error:
     - light.turn_on:
         id: led
-        blue: 0%
-        red: 100%
-        green: 0%
-        brightness: 100%
-        effect: none
+        brightness: 50%
+        effect: fast_pulse
     - delay: 1s
     - script.execute: reset_led
     - script.wait: reset_led
@@ -156,10 +151,7 @@ script:
           then:
             - light.turn_on:
                 id: led
-                blue: 100%
-                red: 100%
-                green: 0%
-                brightness: 100%
+                brightness: 25%
                 effect: none
           else:
             - light.turn_off: led
