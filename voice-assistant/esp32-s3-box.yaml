@@ -166,7 +166,7 @@ script:
 
 switch:
   - platform: template
-    name: Use Wake Word
+    name: Use wake word
     id: use_wake_word
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
