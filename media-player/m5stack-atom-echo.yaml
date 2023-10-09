@@ -93,6 +93,11 @@ binary_sensor:
       - timing:
           - ON FOR AT LEAST 350ms
         then:
+          - if:
+              condition:
+                media_player.is_playing: media_out
+              then:
+                - media_player.stop: media_out
           - voice_assistant.start:
       - timing:
           - ON FOR AT LEAST 350ms
