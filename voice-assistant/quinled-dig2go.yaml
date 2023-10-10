@@ -41,6 +41,7 @@ external_components:
   - source: github://pr#5230
     components:
       - esp_adf
+    refresh: 0s
   - source: github://pr#5229
     components:
       - voice_assistant
