@@ -127,6 +127,7 @@ light:
 binary_sensor:
   - platform: gpio
     name: Button
+    disabled_by_default: true
     pin:
       number: GPIO0
       mode: INPUT_PULLUP
@@ -173,6 +174,7 @@ switch:
     id: use_wake_word
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
     on_turn_on:
       - lambda: id(va).set_use_wake_word(true);
       - if:

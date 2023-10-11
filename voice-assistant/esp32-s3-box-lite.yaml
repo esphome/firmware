@@ -107,6 +107,7 @@ binary_sensor:
       mode: INPUT_PULLUP
       inverted: true
     name: Left Top Button
+    disabled_by_default: true
     on_click:
       - if:
           condition:
@@ -226,6 +227,7 @@ switch:
     id: use_wake_word
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
     on_turn_on:
       - lambda: id(va).set_use_wake_word(true);
       - if:

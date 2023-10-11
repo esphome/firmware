@@ -171,6 +171,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Action
+    disabled_by_default: true
     on_click:
       - if:
           condition:
@@ -229,6 +230,7 @@ switch:
     id: use_wake_word
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
     on_turn_on:
       - lambda: id(va).set_use_wake_word(true);
       - if:
