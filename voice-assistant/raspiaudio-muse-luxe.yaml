@@ -6,7 +6,7 @@ esphome:
   project:
     name: raspiaudio.muse-luxe-voice-assistant
     version: "1.0"
-  min_version: 2023.9.0
+  min_version: 2023.10.0b1
   on_boot:
     - priority: -100
       then:
@@ -48,11 +48,6 @@ external_components:
   - source: github://pr#5230
     components:
       - esp_adf
-    refresh: 0s
-  - source: github://pr#5229
-    components:
-      - voice_assistant
-      - api
     refresh: 0s
 
 es8388:
