@@ -16,6 +16,7 @@ concurrency:
 
 env:
   FIRMWARES: esp-web-tools esphome-web voice-assistant bluetooth-proxy media-player
+  VOICE_ASSISTANT_VERSION: 2023.10.0b1
 
 jobs:
   prepare:
@@ -33,7 +34,11 @@ jobs:
             for device in $firmware/*.yaml; do
               device=${device##*/}
               device=${device%.yaml}
-              matrix="$matrix{\"firmware\":\"$firmware\",\"device\":\"$device\"},"
+              version="latest"
+              if [[ $firmware == "voice-assistant" ]]; then
+                version=$VOICE_ASSISTANT_VERSION
+              fi
+              matrix="$matrix{\"firmware\":\"$firmware\",\"device\":\"$device\", \"version\":\"$version\"},"
             done
           done
           matrix=${matrix%?}
