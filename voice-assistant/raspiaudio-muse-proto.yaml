@@ -62,6 +62,13 @@ speaker:
     i2s_dout_pin: GPIO26
     mode: mono
 
+output:
+  - platform: gpio
+    pin:
+      number: GPIO21
+      inverted: true
+    id: mute_pin
+    
 esp_adf:
 
 voice_assistant:
@@ -74,6 +81,7 @@ voice_assistant:
   volume_multiplier: 2.0
   vad_threshold: 3
   on_listening:
+    - output.turn_on: mute_pin
     - light.turn_on:
         id: led
         blue: 100%
@@ -82,6 +90,7 @@ voice_assistant:
         brightness: 100%
         effect: pulse
   on_tts_start:
+    - output.turn_off: mute_pin
     - light.turn_on:
         id: led
         blue: 0%
@@ -94,6 +103,7 @@ voice_assistant:
     - wait_until:
         not:
           speaker.is_playing:
+    - output.turn_on: mute_pin
     - script.execute: reset_led
   on_error:
     - light.turn_on:
