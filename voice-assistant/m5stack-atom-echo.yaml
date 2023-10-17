@@ -149,7 +149,8 @@ script:
     then:
       - if:
           condition:
-            switch.is_on: use_wake_word
+            - switch.is_on: use_wake_word
+            - switch.is_on: use_listen_light
           then:
             - light.turn_on:
                 id: led
@@ -180,6 +181,15 @@ switch:
     on_turn_off:
       - voice_assistant.stop
       - lambda: id(va).set_use_wake_word(false);
+      - script.execute: reset_led
+  - platform: template
+    name: Use Listen Light
+    id: use_listen_light
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+      - script.execute: reset_led
+    on_turn_off:
       - script.execute: reset_led
 
 external_components:
