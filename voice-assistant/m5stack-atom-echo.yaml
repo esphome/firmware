@@ -126,6 +126,22 @@ binary_sensor:
             - script.execute: reset_led
             - script.wait: reset_led
             - voice_assistant.start_continuous:
+  - platform: status
+    id: api_connection
+    filters:
+      - delayed_on: 1s
+    on_press:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - voice_assistant.start_continuous:
+    on_release:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - voice_assistant.stop:
 
 light:
   - platform: esp32_rmt_led_strip
