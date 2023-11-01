@@ -6,17 +6,7 @@ esphome:
   project:
     name: raspiaudio.muse-luxe-voice-assistant
     version: "1.0"
-  min_version: 2023.10.0
-  on_boot:
-    - priority: -100
-      then:
-        - wait_until: api.connected
-        - delay: 1s
-        - if:
-            condition:
-              switch.is_on: use_wake_word
-            then:
-              - voice_assistant.start_continuous:
+  min_version: 2023.10.5
 
 esp32:
   board: esp-wrover-kit
@@ -118,6 +108,18 @@ voice_assistant:
         if (code == "wake-provider-missing" || code == "wake-engine-missing") {
           id(use_wake_word).turn_off();
         }
+  on_client_connected:
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.start_continuous:
+  on_client_disconnected:
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.stop:
 
 sensor:
   - platform: adc
