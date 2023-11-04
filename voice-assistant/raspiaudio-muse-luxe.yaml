@@ -114,12 +114,14 @@ voice_assistant:
           switch.is_on: use_wake_word
         then:
           - voice_assistant.start_continuous:
+          - script.execute: reset_led
   on_client_disconnected:
     - if:
         condition:
           switch.is_on: use_wake_word
         then:
           - voice_assistant.stop:
+          - light.turn_off: led  
 
 sensor:
   - platform: adc
