@@ -16,7 +16,7 @@ concurrency:
 
 env:
   FIRMWARES: esp-web-tools esphome-web voice-assistant bluetooth-proxy media-player
-  VOICE_ASSISTANT_VERSION: latest
+  VOICE_ASSISTANT_VERSION: beta
 
 jobs:
   prepare:
