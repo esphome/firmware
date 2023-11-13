@@ -147,10 +147,10 @@ light:
 script:
   - id: reset_led
     then:
-      - if:
-          condition:
+      condition:
             - switch.is_on: use_wake_word
             - switch.is_on: use_listen_light
+            - switch.is_off: night_mode
           then:
             - light.turn_on:
                 id: led
@@ -160,7 +160,21 @@ script:
                 brightness: 100%
                 effect: none
           else:
-            - light.turn_off: led
+            - if:
+                condition:
+                  - switch.is_on: use_wake_word
+                  - switch.is_on: use_listen_light
+                  - switch.is_on: night_mode
+                then:
+                  - light.turn_on:
+                      id: led
+                      blue: 100%
+                      red: 100%
+                      green: 0%
+                      brightness: 20%
+                      effect: none
+                else:
+                  - light.turn_off: led
 
 switch:
   - platform: template
@@ -185,6 +199,16 @@ switch:
   - platform: template
     name: Use Listen Light
     id: use_listen_light
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
+    on_turn_on:
+      - script.execute: reset_led
+    on_turn_off:
+      - script.execute: reset_led
+  - platform: template
+    name: Night Mode
+    id: night_mode
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
     entity_category: config
