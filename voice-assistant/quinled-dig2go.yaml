@@ -6,17 +6,7 @@ esphome:
   project:
     name: quinled.dig2go-voice-assistant
     version: "1.0"
-  min_version: 2023.10.0
-  on_boot:
-    - priority: -100
-      then:
-        - wait_until: api.connected
-        - delay: 1s
-        - if:
-            condition:
-              switch.is_on: use_wake_word
-            then:
-              - voice_assistant.start_continuous:
+  min_version: 2023.10.5
 
 esp32:
   board: esp32dev
@@ -98,6 +88,20 @@ voice_assistant:
         if (code == "wake-provider-missing" || code == "wake-engine-missing") {
           id(use_wake_word).turn_off();
         }
+  on_client_connected:
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.start_continuous:
+          - script.execute: reset_led
+  on_client_disconnected:
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.stop:
+          - light.turn_off: led  
 
 power_supply:
   - id: led_power
@@ -145,6 +149,22 @@ binary_sensor:
             - script.execute: reset_led
             - script.wait: reset_led
             - voice_assistant.start_continuous:
+  - platform: status
+    id: api_connection
+    filters:
+      - delayed_on: 1s
+    on_press:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - voice_assistant.start_continuous:
+    on_release:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - voice_assistant.stop:
 
 script:
   - id: reset_led

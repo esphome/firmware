@@ -6,6 +6,8 @@ esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
   name_add_mac_suffix: true
+  platformio_options:
+    board_build.flash_mode: dio
   project:
     name: esphome.esp_web_tools_example
     version: "1.0"
