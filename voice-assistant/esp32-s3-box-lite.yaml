@@ -28,6 +28,8 @@ logger:
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box-lite.yaml@main
 
+improv_serial:
+
 wifi:
   ap:
 
@@ -80,6 +82,7 @@ sensor:
             id(middle).publish_state(true);
             id(right).publish_state(true);
           }
+
 binary_sensor:
   - platform: template
     id: left
