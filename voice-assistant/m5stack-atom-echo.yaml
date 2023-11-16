@@ -147,7 +147,8 @@ light:
 script:
   - id: reset_led
     then:
-      condition:
+      - if:
+          condition:
             - switch.is_on: use_wake_word
             - switch.is_on: use_listen_light
             - switch.is_off: night_mode
