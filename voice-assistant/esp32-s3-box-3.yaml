@@ -1,0 +1,195 @@
+---
+esphome:
+  name: esp32-s3-box-3
+  friendly_name: ESP32 S3 Box 3
+  name_add_mac_suffix: true
+  platformio_options:
+    board_build.flash_mode: dio
+  project:
+    name: esphome.voice-assistant
+    version: "1.0"
+  min_version: 2023.11.0
+
+esp32:
+  board: esp32s3box
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_AUDIO_BOARD_CUSTOM: "y"
+      CONFIG_ESP32_S3_BOX_3_BOARD: "y"
+    components:
+      - name: esp32_s3_box_3_board
+        source: github://jesserockz/esp32-s3-box-3-board@main
+        refresh: 0s
+
+api:
+ota:
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box.yaml@main
+
+improv_serial:
+
+wifi:
+  ap:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO1
+      inverted: true
+    name: "Mute"
+
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: Top Left Button
+    disabled_by_default: true
+    on_click:
+      - if:
+          condition:
+            switch.is_off: use_wake_word
+          then:
+            - if:
+                condition: voice_assistant.is_running
+                then:
+                  - voice_assistant.stop:
+                  - script.execute: reset_led
+                else:
+                  - voice_assistant.start:
+          else:
+            - voice_assistant.stop
+            - delay: 1s
+            - script.execute: reset_led
+            - script.wait: reset_led
+            - voice_assistant.start_continuous:
+
+output:
+  - platform: ledc
+    pin: GPIO47
+    id: backlight_output
+
+light:
+  - platform: monochromatic
+    output: backlight_output
+    name: LCD Backlight
+    id: led
+    restore_mode: ALWAYS_OFF
+    disabled_by_default: true
+    default_transition_length: 0s
+    effects:
+      - pulse:
+          transition_length: 250ms
+          update_interval: 250ms
+      - pulse:
+          name: Fast Pulse
+          transition_length: 50ms
+          update_interval: 50ms
+
+esp_adf:
+  board: esp32s3box3
+
+microphone:
+  - platform: esp_adf
+    id: box_mic
+
+speaker:
+  - platform: esp_adf
+    id: box_speaker
+
+voice_assistant:
+  id: va
+  microphone: box_mic
+  speaker: box_speaker
+  use_wake_word: true
+  noise_suppression_level: 2
+  auto_gain: 31dBFS
+  volume_multiplier: 2.0
+  vad_threshold: 3
+  on_listening:
+    - light.turn_on:
+        id: led
+        brightness: 100%
+        effect: pulse
+  on_tts_start:
+    - light.turn_on:
+        id: led
+        brightness: 75%
+        effect: pulse
+  on_end:
+    - delay: 100ms
+    - wait_until:
+        not:
+          speaker.is_playing:
+    - script.execute: reset_led
+  on_error:
+    - light.turn_on:
+        id: led
+        brightness: 50%
+        effect: fast_pulse
+    - delay: 1s
+  on_client_connected:
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.start_continuous:
+          - script.execute: reset_led
+  on_client_disconnected:
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.stop:
+          - light.turn_off: led
+
+script:
+  - id: reset_led
+    then:
+      - if:
+          condition:
+            switch.is_on: use_wake_word
+          then:
+            - light.turn_on:
+                id: led
+                brightness: 25%
+                effect: none
+          else:
+            - light.turn_off: led
+
+switch:
+  - platform: template
+    name: Use wake word
+    id: use_wake_word
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
+    on_turn_on:
+      - lambda: id(va).set_use_wake_word(true);
+      - if:
+          condition:
+            not:
+              - voice_assistant.is_running
+          then:
+            - voice_assistant.start_continuous
+      - script.execute: reset_led
+    on_turn_off:
+      - voice_assistant.stop
+      - lambda: id(va).set_use_wake_word(false);
+      - script.execute: reset_led
+
+external_components:
+  - source: github://pr#5230
+    components: esp_adf
+    refresh: 0s
+
+psram:
+  mode: octal
+  speed: 80MHz
