@@ -1,13 +1,14 @@
 ---
 esphome:
-  name: esp32-s3-box
-  friendly_name: ESP32 S3 Box
+  name: esp32-s3-box-3
+  friendly_name: ESP32 S3 Box 3
+  name_add_mac_suffix: true
   platformio_options:
     board_build.flash_mode: dio
   project:
     name: esphome.voice-assistant
     version: "1.0"
-  min_version: 2023.11.0b5
+  min_version: 2023.11.0
 
 esp32:
   board: esp32s3box
@@ -17,6 +18,12 @@ esp32:
       CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
       CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
       CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_AUDIO_BOARD_CUSTOM: "y"
+      CONFIG_ESP32_S3_BOX_3_BOARD: "y"
+    components:
+      - name: esp32_s3_box_3_board
+        source: github://jesserockz/esp32-s3-box-3-board@main
+        refresh: 0s
 
 api:
 ota:
@@ -66,7 +73,7 @@ binary_sensor:
 
 output:
   - platform: ledc
-    pin: GPIO45
+    pin: GPIO47
     id: backlight_output
 
 light:
@@ -87,6 +94,7 @@ light:
           update_interval: 50ms
 
 esp_adf:
+  board: esp32s3box3
 
 microphone:
   - platform: esp_adf
