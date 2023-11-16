@@ -8,7 +8,7 @@ esphome:
   project:
     name: esphome.voice-assistant
     version: "1.0"
-  min_version: 2023.11.0
+  min_version: 2023.11.1
 
 esp32:
   board: esp32s3box

@@ -8,10 +8,11 @@ esphome:
   project:
     name: esphome.voice-assistant
     version: "1.0"
-  min_version: 2023.11.0
+  min_version: 2023.11.1
 
 esp32:
   board: esp32s3box
+  flash_size: 16MB
   framework:
     type: esp-idf
     sdkconfig_options:
@@ -24,6 +25,15 @@ esp32:
       - name: esp32_s3_box_3_board
         source: github://jesserockz/esp32-s3-box-3-board@main
         refresh: 0s
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+external_components:
+  - source: github://pr#5230
+    components: esp_adf
+    refresh: 0s
 
 api:
 ota:
@@ -61,14 +71,14 @@ binary_sensor:
                 condition: voice_assistant.is_running
                 then:
                   - voice_assistant.stop:
-                  - script.execute: reset_led
+                  - script.execute: reset_display
                 else:
                   - voice_assistant.start:
           else:
             - voice_assistant.stop
             - delay: 1s
-            - script.execute: reset_led
-            - script.wait: reset_led
+            - script.execute: reset_display
+            - script.wait: reset_display
             - voice_assistant.start_continuous:
 
 output:
@@ -78,12 +88,11 @@ output:
 
 light:
   - platform: monochromatic
-    output: backlight_output
-    name: LCD Backlight
     id: led
-    restore_mode: ALWAYS_OFF
-    disabled_by_default: true
-    default_transition_length: 0s
+    name: LCD Backlight
+    output: backlight_output
+    restore_mode: RESTORE_DEFAULT_ON
+    default_transition_length: 250ms
     effects:
       - pulse:
           transition_length: 250ms
@@ -114,55 +123,53 @@ voice_assistant:
   volume_multiplier: 2.0
   vad_threshold: 3
   on_listening:
-    - light.turn_on:
-        id: led
-        brightness: 100%
-        effect: pulse
+    - display.page.show: listening_page
+    - component.update: s3_box_lcd
   on_tts_start:
-    - light.turn_on:
-        id: led
-        brightness: 75%
-        effect: pulse
+    - display.page.show: talking_page
+    - component.update: s3_box_lcd
   on_end:
     - delay: 100ms
     - wait_until:
         not:
           speaker.is_playing:
-    - script.execute: reset_led
+    - script.execute: reset_display
+  on_stt_vad_end:
+    - display.page.show: thinking_page
+    - component.update: s3_box_lcd
   on_error:
-    - light.turn_on:
-        id: led
-        brightness: 50%
-        effect: fast_pulse
+    - display.page.show: error_page
+    - component.update: s3_box_lcd
     - delay: 1s
+    - script.execute: reset_display
   on_client_connected:
     - if:
         condition:
           switch.is_on: use_wake_word
         then:
           - voice_assistant.start_continuous:
-          - script.execute: reset_led
+          - script.execute: reset_display
   on_client_disconnected:
     - if:
         condition:
           switch.is_on: use_wake_word
         then:
           - voice_assistant.stop:
-          - light.turn_off: led
+          - display.page.show: sleeping_page
+          - component.update: s3_box_lcd
 
 script:
-  - id: reset_led
+  - id: reset_display
     then:
       - if:
           condition:
             switch.is_on: use_wake_word
           then:
-            - light.turn_on:
-                id: led
-                brightness: 25%
-                effect: none
+            - display.page.show: idle_page
+            - component.update: s3_box_lcd
           else:
-            - light.turn_off: led
+            - display.page.show: vad_off_page
+            - component.update: s3_box_lcd
 
 switch:
   - platform: template
@@ -179,17 +186,89 @@ switch:
               - voice_assistant.is_running
           then:
             - voice_assistant.start_continuous
-      - script.execute: reset_led
+      - script.execute: reset_display
     on_turn_off:
       - voice_assistant.stop
       - lambda: id(va).set_use_wake_word(false);
-      - script.execute: reset_led
+      - script.execute: reset_display
 
-external_components:
-  - source: github://pr#5230
-    components: esp_adf
-    refresh: 0s
+image:
+  - file: casita/Upset@2x.png
+    id: casita_error
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+  - file: casita/Sleeping@2x.png
+    id: casita_idle
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+  - file: casita/Happy@2x.png
+    id: casita_listening
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+  - file: casita/Sleeping@2x.png
+    id: casita_sleeping
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+  - file: casita/Grinning@2x.png
+    id: casita_talking
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+  - file: casita/Focusing@2x.png
+    id: casita_thinking
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+  - file: casita/Sleeping@2x.png
+    id: casita_vad_off
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
 
-psram:
-  mode: octal
-  speed: 80MHz
+spi:
+  clk_pin: 7
+  mosi_pin: 6
+
+display:
+  - platform: ili9xxx
+    id: s3_box_lcd
+    model: S3BOX
+    cs_pin: 5
+    dc_pin: 4
+    reset_pin:
+      number: 48
+      inverted: true
+    update_interval: never
+    pages:
+      - id: error_page
+        lambda: |-
+          it.fill(Color::WHITE);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+      - id: idle_page
+        lambda: |-
+          it.fill(Color::WHITE);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_idle));
+      - id: listening_page
+        lambda: |-
+          it.fill(Color::WHITE);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_listening));
+      - id: sleeping_page
+        lambda: |-
+          it.fill(Color::WHITE);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_sleeping));
+      - id: talking_page
+        lambda: |-
+          it.fill(Color::WHITE);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_talking));
+      - id: thinking_page
+        lambda: |-
+          it.fill(Color::WHITE);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 105, id(casita_thinking));
+      - id: vad_off_page
+        lambda: |-
+          it.fill(Color::BLACK);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_vad_off));
