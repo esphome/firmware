@@ -80,6 +80,7 @@ jobs:
           path: output
 
   combined-manifests:
+    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
     name: Combine ${{ matrix.project }} manifests
     runs-on: ubuntu-latest
     needs: build
@@ -106,6 +107,7 @@ jobs:
           path: manifest.json
 
   full-manifests:
+    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
     name: Create ${{ matrix.project }} manifest
     runs-on: ubuntu-latest
     needs: build
@@ -140,6 +142,7 @@ jobs:
           path: output
 
   consolidate:
+    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
     name: Consolidate firmwares
     runs-on: ubuntu-latest
     needs:
