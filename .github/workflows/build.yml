@@ -16,7 +16,6 @@ concurrency:
 
 env:
   FIRMWARES: esp-web-tools esphome-web voice-assistant bluetooth-proxy media-player
-  VOICE_ASSISTANT_VERSION: beta
 
 jobs:
   prepare:
@@ -26,18 +25,24 @@ jobs:
       matrix: ${{ steps.prepare-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+      - name: Get changed files
+        id: changes
+        uses: masesgroup/retrieve-changed-files@v3
+        if: github.event_name == 'pull_request'
       - name: Prepare matrix
         id: prepare-matrix
         run: |-
           matrix=""
+          full_run=$(! [[ "${{ github.event_name }}" != "pull_request" || "${{ steps.changes.outputs.modified }}" == *".github/workflows/build.yml"* ]]; echo $?)
           for firmware in $FIRMWARES; do
             for device in $firmware/*.yaml; do
+              # If pull_request event type and changed files do not contain the device, skip it
+              if [[ $full_run -eq 0 && "${{ steps.changes.outputs.added_modified }}" != *"${device}"* ]]; then
+                continue
+              fi
               device=${device##*/}
               device=${device%.yaml}
               version="latest"
-              if [[ $firmware == "voice-assistant" ]]; then
-                version=$VOICE_ASSISTANT_VERSION
-              fi
               matrix="$matrix{\"firmware\":\"$firmware\",\"device\":\"$device\", \"version\":\"$version\"},"
             done
           done
