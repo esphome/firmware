@@ -11,7 +11,7 @@ esphome:
     version: "1.0"
 
 esp32:
-  board: esp32doit-devkit-v1
+  board: wt32-eth01
   framework:
     type: esp-idf
 

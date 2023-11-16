@@ -6,7 +6,7 @@ esphome:
   project:
     name: m5stack.atom-echo-voice-assistant
     version: "1.0"
-  min_version: 2023.11.0b5
+  min_version: 2023.11.1
 
 esp32:
   board: m5stack-atom
@@ -57,16 +57,22 @@ voice_assistant:
         blue: 100%
         red: 0%
         green: 0%
-        brightness: 100%
-        effect: pulse
+        effect: "Slow Pulse"
+  on_stt_vad_end:
+    - light.turn_on:
+        id: led
+        blue: 100%
+        red: 0%
+        green: 0%
+        effect: "Fast Pulse"
   on_tts_start:
     - light.turn_on:
         id: led
-        blue: 0%
+        blue: 100%
         red: 0%
-        green: 100%
+        green: 0%
         brightness: 100%
-        effect: pulse
+        effect: none
   on_end:
     - delay: 100ms
     - wait_until:
@@ -76,14 +82,13 @@ voice_assistant:
   on_error:
     - light.turn_on:
         id: led
-        blue: 0%
         red: 100%
         green: 0%
+        blue: 0%
         brightness: 100%
         effect: none
     - delay: 1s
     - script.execute: reset_led
-
   on_client_connected:
     - if:
         condition:
@@ -141,8 +146,17 @@ light:
     rmt_channel: 0
     effects:
       - pulse:
+          name: "Slow Pulse"
           transition_length: 250ms
           update_interval: 250ms
+          min_brightness: 50%
+          max_brightness: 100%
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 100ms
+          update_interval: 100ms
+          min_brightness: 50%
+          max_brightness: 100%
 
 script:
   - id: reset_led
@@ -155,10 +169,10 @@ script:
           then:
             - light.turn_on:
                 id: led
-                blue: 100%
                 red: 100%
-                green: 0%
-                brightness: 100%
+                green: 89%
+                blue: 71%
+                brightness: 60%
                 effect: none
           else:
             - if:
