@@ -36,7 +36,7 @@ jobs:
           full_run=$(! [[ "${{ github.event_name }}" != "pull_request" || "${{ steps.changes.outputs.modified }}" == *".github/workflows/build.yml"* ]]; echo $?)
           for firmware in $FIRMWARES; do
             for device in $firmware/*.yaml; do
-              // If pull_request event type and changed files do not contain the device, skip it
+              # If pull_request event type and changed files do not contain the device, skip it
               if [[ $full_run -eq 0 && "${{ steps.changes.outputs.added_modified }}" != *"${device}"* ]]; then
                 continue
               fi
