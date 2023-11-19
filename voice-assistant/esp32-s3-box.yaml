@@ -44,16 +44,26 @@ logger:
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box.yaml@main
 
-improv_serial:
-
 wifi:
   ap:
   on_connect:
     then:
       - script.execute: reset_display
+      - delay: 5s # Gives time for improv results to be transmitted
+      - ble.disable:
   on_disconnect:
     then:
       - script.execute: reset_display
+      - ble.enable:
+
+improv_serial:
+
+esp32_improv:
+  authorizer: none
+
+button:
+  - platform: factory_reset
+    name: Factory reset
 
 binary_sensor:
   - platform: gpio
