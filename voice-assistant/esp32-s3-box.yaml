@@ -30,6 +30,13 @@ external_components:
     refresh: 0s
 
 api:
+  on_client_connected:
+    then:
+      - script.execute: reset_display
+  on_client_disconnected:
+    then:
+      - script.execute: reset_display
+
 ota:
 logger:
   hardware_uart: USB_SERIAL_JTAG
@@ -41,6 +48,12 @@ improv_serial:
 
 wifi:
   ap:
+  on_connect:
+    then:
+      - script.execute: reset_display
+  on_disconnect:
+    then:
+      - script.execute: reset_display
 
 binary_sensor:
   - platform: gpio
@@ -87,14 +100,6 @@ light:
     output: backlight_output
     restore_mode: RESTORE_DEFAULT_ON
     default_transition_length: 250ms
-    effects:
-      - pulse:
-          transition_length: 250ms
-          update_interval: 250ms
-      - pulse:
-          name: Fast Pulse
-          transition_length: 50ms
-          update_interval: 50ms
 
 esp_adf:
 
@@ -156,12 +161,26 @@ script:
     then:
       - if:
           condition:
-            switch.is_on: use_wake_word
+            wifi.connected:
           then:
-            - display.page.show: idle_page
-            - component.update: s3_box_lcd
+            - if:
+                condition:
+                  api.connected:
+                then:
+                  - if:
+                      condition:
+                        switch.is_on: use_wake_word
+                      then:
+                        - display.page.show: idle_page
+                        - component.update: s3_box_lcd
+                      else:
+                        - display.page.show: vad_off_page
+                        - component.update: s3_box_lcd
+                else:
+                  - display.page.show: no_api_page
+                  - component.update: s3_box_lcd
           else:
-            - display.page.show: vad_off_page
+            - display.page.show: no_wifi_page
             - component.update: s3_box_lcd
 
 switch:
@@ -198,6 +217,16 @@ image:
     use_transparency: true
   - file: casita/Happy@2x.png
     id: casita_listening
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+  - file: casita/Initializing@2x.png
+    id: casita_no_api
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+  - file: casita/NoInternet@2x.png
+    id: casita_no_wifi
     resize: 200x200
     type: RGB24
     use_transparency: true
@@ -248,6 +277,14 @@ display:
         lambda: |-
           it.fill(Color::WHITE);
           it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_listening));
+      - id: no_api_page
+        lambda: |-
+          it.fill(Color::BLACK);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_no_api));
+      - id: no_wifi_page
+        lambda: |-
+          it.fill(Color::BLACK);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_no_wifi));
       - id: sleeping_page
         lambda: |-
           it.fill(Color::WHITE);
