@@ -46,16 +46,27 @@ logger:
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box-lite.yaml@main
 
-improv_serial:
-
 wifi:
   ap:
   on_connect:
     then:
       - script.execute: reset_display
+      - delay: 5s # Gives time for improv results to be transmitted
+      - ble.disable:
   on_disconnect:
     then:
       - script.execute: reset_display
+      - ble.enable:
+
+improv_serial:
+
+esp32_improv:
+  authorizer: none
+
+button:
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset
 
 sensor:
   - platform: adc
@@ -125,24 +136,32 @@ binary_sensor:
       inverted: true
     name: Left Top Button
     disabled_by_default: true
-    on_click:
-      - if:
-          condition:
-            switch.is_off: use_wake_word
-          then:
-            - if:
-                condition: voice_assistant.is_running
-                then:
-                  - voice_assistant.stop:
-                  - script.execute: reset_display
-                else:
-                  - voice_assistant.start:
-          else:
-            - voice_assistant.stop
-            - delay: 1s
-            - script.execute: reset_display
-            - script.wait: reset_display
-            - voice_assistant.start_continuous:
+    on_multi_click:
+      - timing:
+          - ON for at least 250ms
+          - OFF for at least 50ms
+        then:
+          - if:
+              condition:
+                switch.is_off: use_wake_word
+              then:
+                - if:
+                    condition: voice_assistant.is_running
+                    then:
+                      - voice_assistant.stop:
+                      - script.execute: reset_display
+                    else:
+                      - voice_assistant.start:
+              else:
+                - voice_assistant.stop
+                - delay: 1s
+                - script.execute: reset_display
+                - script.wait: reset_display
+                - voice_assistant.start_continuous:
+      - timing:
+          - ON for at least 10s
+        then:
+          - button.press: factory_reset_btn
 
 output:
   - platform: ledc
