@@ -48,7 +48,7 @@ logger:
   hardware_uart: USB_SERIAL_JTAG
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box.yaml@main
+  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box-3.yaml@main
 
 wifi:
   ap:
