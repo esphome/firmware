@@ -8,7 +8,7 @@ esphome:
   project:
     name: esphome.voice-assistant
     version: "1.0"
-  min_version: 2023.11.1
+  min_version: 2023.11.4
 
 esp32:
   board: esp32s3box
@@ -282,47 +282,47 @@ switch:
       - script.execute: reset_display
 
 image:
-  - file: casita/Upset@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Upset@2x.png
     id: casita_error
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: casita/Sleeping@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Sleeping@2x.png
     id: casita_idle
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: casita/Happy@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Happy@2x.png
     id: casita_listening
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: casita/Initializing@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Initializing@2x.png
     id: casita_no_api
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: casita/NoInternet@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/NoInternet@2x.png
     id: casita_no_wifi
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: casita/Sleeping@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Sleeping@2x.png
     id: casita_sleeping
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: casita/Grinning@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Grinning@2x.png
     id: casita_talking
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: casita/Focusing@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Focusing@2x.png
     id: casita_thinking
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: casita/Sleeping@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Sleeping@2x.png
     id: casita_vad_off
     resize: 200x200
     type: RGB24
