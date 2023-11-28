@@ -230,6 +230,8 @@ voice_assistant:
         condition:
           switch.is_on: use_wake_word
         then:
+          - wait_until:
+              not: ble.enabled
           - voice_assistant.start_continuous:
           - lambda: id(init_in_progress) = false;
     - script.execute: reset_display
