@@ -8,7 +8,19 @@ esphome:
   project:
     name: esphome.voice-assistant
     version: "1.0"
-  min_version: 2023.11.4
+  min_version: 2023.11.5
+  on_boot:
+      priority: 600
+      then: 
+        - display.page.show: initializing_page
+        - component.update: s3_box_lcd
+        - delay: 30s
+        - if:
+            condition:
+              lambda: return id(init_in_progress);
+            then:
+              - lambda: id(init_in_progress) = false;
+              - script.execute: reset_display
 
 esp32:
   board: esp32s3box
@@ -31,11 +43,9 @@ external_components:
 
 api:
   on_client_connected:
-    then:
-      - script.execute: reset_display
+    - script.execute: reset_display
   on_client_disconnected:
-    then:
-      - script.execute: reset_display
+    - script.execute: reset_display
 
 ota:
 logger:
@@ -49,14 +59,12 @@ dashboard_import:
 wifi:
   ap:
   on_connect:
-    then:
-      - script.execute: reset_display
-      - delay: 5s # Gives time for improv results to be transmitted
-      - ble.disable:
+    - delay: 5s # Gives time for improv results to be transmitted 
+    - ble.disable:
+    - script.execute: reset_display        
   on_disconnect:
-    then:
-      - script.execute: reset_display
-      - ble.enable:
+    - ble.enable:
+    - script.execute: reset_display
 
 improv_serial:
 
@@ -153,7 +161,7 @@ binary_sensor:
                     else:
                       - voice_assistant.start:
               else:
-                - voice_assistant.stop
+                - voice_assistant.stop:
                 - delay: 1s
                 - script.execute: reset_display
                 - script.wait: reset_display
@@ -200,65 +208,74 @@ voice_assistant:
   on_listening:
     - display.page.show: listening_page
     - component.update: s3_box_lcd
-  on_tts_start:
-    - display.page.show: talking_page
-    - component.update: s3_box_lcd
-  on_end:
-    - delay: 100ms
-    - wait_until:
-        not:
-          speaker.is_playing:
-    - script.execute: reset_display
   on_stt_vad_end:
     - display.page.show: thinking_page
     - component.update: s3_box_lcd
-  on_error:
-    - display.page.show: error_page
+  on_tts_stream_start:
+    - display.page.show: replying_page
     - component.update: s3_box_lcd
-    - delay: 1s
+  on_tts_stream_end:
     - script.execute: reset_display
+  on_error:
+    - if:
+        condition:
+          lambda: return !id(init_in_progress);
+        then:  
+          - display.page.show: error_page
+          - component.update: s3_box_lcd
+          - delay: 1s
+          - script.execute: reset_display
   on_client_connected:
     - if:
         condition:
           switch.is_on: use_wake_word
         then:
+          - wait_until:
+              not: ble.enabled
           - voice_assistant.start_continuous:
-          - script.execute: reset_display
+          - lambda: id(init_in_progress) = false;
+    - script.execute: reset_display
   on_client_disconnected:
-    - if:
-        condition:
-          switch.is_on: use_wake_word
-        then:
-          - voice_assistant.stop:
-          - display.page.show: sleeping_page
-          - component.update: s3_box_lcd
+    - script.execute: reset_display
+
 
 script:
   - id: reset_display
     then:
       - if:
           condition:
-            wifi.connected:
+            lambda: return !id(init_in_progress);
           then:
             - if:
                 condition:
-                  api.connected:
+                  wifi.connected:
                 then:
                   - if:
                       condition:
-                        switch.is_on: use_wake_word
+                        api.connected:
                       then:
-                        - display.page.show: idle_page
-                        - component.update: s3_box_lcd
+                        - if:
+                            condition:
+                              voice_assistant.connected:
+                            then:
+                              - if:
+                                  condition:
+                                    switch.is_on: use_wake_word
+                                  then:
+                                    - display.page.show: idle_page
+                                    - component.update: s3_box_lcd
+                                  else:
+                                    - display.page.show: muted_page
+                                    - component.update: s3_box_lcd
+                            else:
+                              - display.page.show: no_pipeline_page
+                              - component.update: s3_box_lcd
                       else:
-                        - display.page.show: vad_off_page
+                        - display.page.show: no_api_page
                         - component.update: s3_box_lcd
                 else:
-                  - display.page.show: no_api_page
+                  - display.page.show: no_wifi_page
                   - component.update: s3_box_lcd
-          else:
-            - display.page.show: no_wifi_page
-            - component.update: s3_box_lcd
 
 switch:
   - platform: template
@@ -281,39 +298,21 @@ switch:
       - lambda: id(va).set_use_wake_word(false);
       - script.execute: reset_display
 
+globals:
+  - id: init_in_progress
+    type: bool
+    restore_value: no
+    initial_value: 'true'
+
 image:
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Upset@2x.png
-    id: casita_error
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Sleeping@2x.png
+  # Standard path IDLE > LISTENING > THINKING > REPLYING
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Idle@2x.png
     id: casita_idle
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Happy@2x.png
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Normal@2x.png
     id: casita_listening
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Initializing@2x.png
-    id: casita_no_api
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/NoInternet@2x.png
-    id: casita_no_wifi
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Sleeping@2x.png
-    id: casita_sleeping
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Grinning@2x.png
-    id: casita_talking
     resize: 200x200
     type: RGB24
     use_transparency: true
@@ -322,8 +321,22 @@ image:
     resize: 200x200
     type: RGB24
     use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Sleeping@2x.png
-    id: casita_vad_off
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Happy@2x.png
+    id: casita_replying
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+
+  # Error cases (More specific flies to come soon)
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Error@2x.png
+    id: casita_error
+    resize: 200x200
+    type: RGB24
+    use_transparency: true
+
+  # Initialization illustration
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Initializing@2x.png
+    id: casita_initializing
     resize: 200x200
     type: RGB24
     use_transparency: true
@@ -342,39 +355,42 @@ display:
     reset_pin: 48
     update_interval: never
     pages:
-      - id: error_page
-        lambda: |-
-          it.fill(Color::WHITE);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
       - id: idle_page
         lambda: |-
-          it.fill(Color::WHITE);
+          it.fill(Color::BLACK);
           it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_idle));
       - id: listening_page
         lambda: |-
           it.fill(Color::WHITE);
           it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_listening));
-      - id: no_api_page
-        lambda: |-
-          it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_no_api));
-      - id: no_wifi_page
-        lambda: |-
-          it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_no_wifi));
-      - id: sleeping_page
-        lambda: |-
-          it.fill(Color::WHITE);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_sleeping));
-      - id: talking_page
-        lambda: |-
-          it.fill(Color::WHITE);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_talking));
       - id: thinking_page
         lambda: |-
           it.fill(Color::WHITE);
           it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 105, id(casita_thinking));
-      - id: vad_off_page
+      - id: replying_page
+        lambda: |-
+          it.fill(Color::WHITE);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_replying));
+      - id: error_page
         lambda: |-
           it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_vad_off));
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+      - id: no_api_page
+        lambda: |-
+          it.fill(Color::BLACK);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+      - id: no_wifi_page
+        lambda: |-
+          it.fill(Color::BLACK);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+      - id: no_pipeline_page
+        lambda: |-
+          it.fill(Color::BLACK);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+      - id: initializing_page
+        lambda: |-
+          it.fill(Color::BLACK);
+          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_initializing));
+      - id: muted_page
+        lambda: |-
+          it.fill(Color::BLACK);
