@@ -70,7 +70,6 @@ wifi:
     then:
       - ble.enable:
       - script.execute: reset_display
-      - ble.enable:
 
 improv_serial:
 
