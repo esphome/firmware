@@ -43,11 +43,8 @@ psram:
   speed: 80MHz
 
 external_components:
-  - source: github://pr#5827
-    components: [voice_assistant, speaker]
-    refresh: 0s
-  - source: github://esphome/esphome@jesserockz-2023-284-2
-    components: [esp_adf]
+  - source: github://pr#5230
+	  components: esp_adf
     refresh: 0s
 
 api:
