@@ -255,10 +255,10 @@ script:
                       condition:
                         api.connected:
                       then:
-#                        - if:
-#                            condition:
-#                              voice_assistant.connected:
-#                            then:
+                        - if:
+                            condition:
+                              voice_assistant.connected:
+                            then:
                               - if:
                                   condition:
                                     switch.is_on: use_wake_word
@@ -268,9 +268,9 @@ script:
                                   else:
                                     - display.page.show: muted_page
                                     - component.update: s3_box_lcd
-#                            else:
-#                              - display.page.show: no_pipeline_page
-#                              - component.update: s3_box_lcd
+                            else:
+                              - display.page.show: no_pipeline_page
+                              - component.update: s3_box_lcd
                       else:
                         - display.page.show: no_api_page
                         - component.update: s3_box_lcd
