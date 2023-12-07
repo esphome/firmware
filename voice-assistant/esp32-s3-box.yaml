@@ -110,7 +110,7 @@ binary_sensor:
           - ON for at least 10s
         then:
           - button.press: factory_reset_btn
-
+          
 output:
   - platform: ledc
     pin: GPIO45
