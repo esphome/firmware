@@ -113,27 +113,6 @@ binary_sensor:
     disabled_by_default: true
     on_multi_click:
       - timing:
-          - ON for at least 250ms
-          - OFF for at least 50ms
-        then:
-          - if:
-              condition:
-                switch.is_off: use_wake_word
-              then:
-                - if:
-                    condition: voice_assistant.is_running
-                    then:
-                      - voice_assistant.stop:
-                      - script.execute: reset_display
-                    else:
-                      - voice_assistant.start:
-              else:
-                - voice_assistant.stop:
-                - delay: 1s
-                - script.execute: reset_display
-                - script.wait: reset_display
-                - voice_assistant.start_continuous:
-      - timing:
           - ON for at least 10s
         then:
           - button.press: factory_reset_btn
