@@ -166,12 +166,12 @@ voice_assistant:
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};  
           - script.execute: draw_display
   on_client_connected:
+    - lambda: id(init_in_progress) = false;  
     - if:
         condition:
           switch.is_on: use_wake_word
         then:
           - voice_assistant.start_continuous:
-          - lambda: id(init_in_progress) = false;  
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
         else:
           - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
