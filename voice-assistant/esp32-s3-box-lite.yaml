@@ -404,31 +404,41 @@ display:
     pages:
       - id: idle_page
         lambda: |-
+          it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
       - id: listening_page
         lambda: |-
+          it.fill(id(listening_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
       - id: thinking_page
         lambda: |-
+          it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
       - id: replying_page
         lambda: |-
+          it.fill(id(replying_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
       - id: error_page
         lambda: |-
+          it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_api_page
         lambda: |-
+          it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_wifi_page
         lambda: |-
+          it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_pipeline_page
         lambda: |-
+          it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: initializing_page
         lambda: |-
+          it.fill(id(loading_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
       - id: muted_page
         lambda: |-
           it.fill(Color::BLACK);
+
