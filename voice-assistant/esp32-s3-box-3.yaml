@@ -9,6 +9,13 @@ substitutions:
   replying_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/replying_320_240.png
   error_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/error_320_240.png
 
+  loading_illustration_background_color: '000000'
+  idle_illustration_background_color: '000000'
+  listening_illustration_background_color: 'FFFFFF'
+  thinking_illustration_background_color: 'FFFFFF'
+  replying_illustration_background_color: 'FFFFFF'
+  error_illustration_background_color: '000000'
+
   voice_assist_idle_phase_id: '1'
   voice_assist_listening_phase_id: '2'
   voice_assist_thinking_phase_id: '3'
@@ -314,6 +321,20 @@ image:
     resize: 320x240
     type: RGB24
     use_transparency: true
+
+color:
+  - id: idle_color
+    hex: ${idle_illustration_background_color}
+  - id: listening_color
+    hex: ${listening_illustration_background_color}
+  - id: thinking_color
+    hex: ${thinking_illustration_background_color}
+  - id: replying_color
+    hex: ${replying_illustration_background_color}
+  - id: loading_color
+    hex: ${loading_illustration_background_color}
+  - id: error_color
+    hex: ${error_illustration_background_color}
 
 spi:
   clk_pin: 7

@@ -9,6 +9,13 @@ substitutions:
   replying_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/replying_320_240.png
   error_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/error_320_240.png
 
+  loading_illustration_background_color: '000000'
+  idle_illustration_background_color: '000000'
+  listening_illustration_background_color: 'FFFFFF'
+  thinking_illustration_background_color: 'FFFFFF'
+  replying_illustration_background_color: 'FFFFFF'
+  error_illustration_background_color: '000000'
+
   voice_assist_idle_phase_id: '1'
   voice_assist_listening_phase_id: '2'
   voice_assist_thinking_phase_id: '3'
@@ -308,6 +315,20 @@ image:
     type: RGB24
     use_transparency: true
 
+color:
+  - id: idle_color
+    hex: ${idle_illustration_background_color}
+  - id: listening_color
+    hex: ${listening_illustration_background_color}
+  - id: thinking_color
+    hex: ${thinking_illustration_background_color}
+  - id: replying_color
+    hex: ${replying_illustration_background_color}
+  - id: loading_color
+    hex: ${loading_illustration_background_color}
+  - id: error_color
+    hex: ${error_illustration_background_color}
+
 spi:
   clk_pin: 7
   mosi_pin: 6
@@ -324,30 +345,39 @@ display:
     pages:
       - id: idle_page
         lambda: |-
+          it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
       - id: listening_page
         lambda: |-
+          it.fill(id(listening_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
       - id: thinking_page
         lambda: |-
+          it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
       - id: replying_page
         lambda: |-
+          it.fill(id(replying_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
       - id: error_page
         lambda: |-
+          it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_api_page
         lambda: |-
+          it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_wifi_page
         lambda: |-
+          it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_pipeline_page
         lambda: |-
+          it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: initializing_page
         lambda: |-
+          it.fill(id(loading_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
       - id: muted_page
         lambda: |-
