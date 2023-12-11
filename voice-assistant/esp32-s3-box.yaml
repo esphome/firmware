@@ -1,7 +1,32 @@
 ---
-esphome:
+substitutions:
   name: esp32-s3-box
   friendly_name: ESP32 S3 Box
+  loading_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/loading_320_240.png
+  idle_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/idle_320_240.png
+  listening_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/listening_320_240.png
+  thinking_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/thinking_320_240.png
+  replying_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/replying_320_240.png
+  error_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/error_320_240.png
+
+  loading_illustration_background_color: '000000'
+  idle_illustration_background_color: '000000'
+  listening_illustration_background_color: 'FFFFFF'
+  thinking_illustration_background_color: 'FFFFFF'
+  replying_illustration_background_color: 'FFFFFF'
+  error_illustration_background_color: '000000'
+
+  voice_assist_idle_phase_id: '1'
+  voice_assist_listening_phase_id: '2'
+  voice_assist_thinking_phase_id: '3'
+  voice_assist_replying_phase_id: '4'
+  voice_assist_not_ready_phase_id: '10'
+  voice_assist_error_phase_id: '11'  
+  voice_assist_muted_phase_id: '12'
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
   name_add_mac_suffix: true
   platformio_options:
     board_build.flash_mode: dio
@@ -12,15 +37,15 @@ esphome:
   on_boot:
       priority: 600
       then: 
-        - display.page.show: initializing_page
-        - component.update: s3_box_lcd
+        - script.execute: draw_display
         - delay: 30s
         - if:
             condition:
               lambda: return id(init_in_progress);
             then:
               - lambda: id(init_in_progress) = false;
-              - script.execute: reset_display
+              - script.execute: draw_display
+
 esp32:
   board: esp32s3box
   flash_size: 16MB
@@ -42,9 +67,9 @@ external_components:
 
 api:
   on_client_connected:
-    - script.execute: reset_display
+    - script.execute: draw_display
   on_client_disconnected:
-    - script.execute: reset_display
+    - script.execute: draw_display
 
 ota:
 logger:
@@ -56,12 +81,12 @@ dashboard_import:
 wifi:
   ap:
   on_connect:
+    - script.execute: draw_display
     - delay: 5s # Gives time for improv results to be transmitted 
-    - ble.disable:
-    - script.execute: reset_display        
+    - ble.disable:  
   on_disconnect:
+    - script.execute: draw_display
     - ble.enable:
-    - script.execute: reset_display
 
 improv_serial:
 
@@ -89,31 +114,10 @@ binary_sensor:
     disabled_by_default: true
     on_multi_click:
       - timing:
-          - ON for at least 250ms
-          - OFF for at least 50ms
-        then:
-          - if:
-              condition:
-                switch.is_off: use_wake_word
-              then:
-                - if:
-                    condition: voice_assistant.is_running
-                    then:
-                      - voice_assistant.stop:
-                      - script.execute: reset_display
-                    else:
-                      - voice_assistant.start:
-              else:
-                - voice_assistant.stop:
-                - delay: 1s
-                - script.execute: reset_display
-                - script.wait: reset_display
-                - voice_assistant.start_continuous:
-      - timing:
           - ON for at least 10s
         then:
           - button.press: factory_reset_btn
-
+          
 output:
   - platform: ledc
     pin: GPIO45
@@ -147,40 +151,50 @@ voice_assistant:
   volume_multiplier: 2.0
   vad_threshold: 3
   on_listening:
-    - display.page.show: listening_page
-    - component.update: s3_box_lcd
+    - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
+    - script.execute: draw_display
   on_stt_vad_end:
-    - display.page.show: thinking_page
-    - component.update: s3_box_lcd
+    - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
+    - script.execute: draw_display
   on_tts_stream_start:
-    - display.page.show: replying_page
-    - component.update: s3_box_lcd
+    - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
+    - script.execute: draw_display
   on_tts_stream_end:
-    - script.execute: reset_display
+    - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+    - script.execute: draw_display
   on_error:
     - if:
         condition:
           lambda: return !id(init_in_progress);
-        then:  
-          - display.page.show: error_page
-          - component.update: s3_box_lcd
+        then:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};  
+          - script.execute: draw_display
           - delay: 1s
-          - script.execute: reset_display
+          - if:
+              condition:
+                switch.is_on: use_wake_word
+              then:
+                - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+              else:
+                - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+          - script.execute: draw_display
   on_client_connected:
+    - lambda: id(init_in_progress) = false;  
     - if:
         condition:
           switch.is_on: use_wake_word
         then:
-          - wait_until:
-              not: ble.enabled
           - voice_assistant.start_continuous:
-          - lambda: id(init_in_progress) = false;
-    - script.execute: reset_display
+          - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+        else:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+    - script.execute: draw_display
   on_client_disconnected:
-    - script.execute: reset_display
+    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};  
+    - script.execute: draw_display
 
 script:
-  - id: reset_display
+  - id: draw_display
     then:
       - if:
           condition:
@@ -194,28 +208,45 @@ script:
                       condition:
                         api.connected:
                       then:
-                        - if:
-                            condition:
-                              voice_assistant.connected:
-                            then:
-                              - if:
-                                  condition:
-                                    switch.is_on: use_wake_word
-                                  then:
-                                    - display.page.show: idle_page
-                                    - component.update: s3_box_lcd
-                                  else:
-                                    - display.page.show: muted_page
-                                    - component.update: s3_box_lcd
-                            else:
-                              - display.page.show: no_pipeline_page
-                              - component.update: s3_box_lcd
+                        - lambda: |
+                            switch(id(voice_assistant_phase)) {
+                              case ${voice_assist_listening_phase_id}:
+                                id(s3_box_lcd).show_page(listening_page);
+                                id(s3_box_lcd).update();
+                                break;
+                              case ${voice_assist_thinking_phase_id}:
+                                id(s3_box_lcd).show_page(thinking_page);
+                                id(s3_box_lcd).update();
+                                break;
+                              case ${voice_assist_replying_phase_id}:
+                                id(s3_box_lcd).show_page(replying_page);
+                                id(s3_box_lcd).update();
+                                break;
+                              case ${voice_assist_error_phase_id}:
+                                id(s3_box_lcd).show_page(error_page);
+                                id(s3_box_lcd).update();
+                                break;
+                              case ${voice_assist_muted_phase_id}:
+                                id(s3_box_lcd).show_page(muted_page);
+                                id(s3_box_lcd).update();
+                                break;
+                              case ${voice_assist_not_ready_phase_id}:
+                                id(s3_box_lcd).show_page(no_pipeline_page);
+                                id(s3_box_lcd).update();
+                                break;
+                              default:
+                                id(s3_box_lcd).show_page(idle_page);
+                                id(s3_box_lcd).update();
+                            }
                       else:
                         - display.page.show: no_api_page
                         - component.update: s3_box_lcd
                 else:
                   - display.page.show: no_wifi_page
                   - component.update: s3_box_lcd
+          else:
+            - display.page.show: initializing_page
+            - component.update: s3_box_lcd
 
 switch:
   - platform: template
@@ -225,61 +256,84 @@ switch:
     restore_mode: RESTORE_DEFAULT_ON
     entity_category: config
     on_turn_on:
-      - lambda: id(va).set_use_wake_word(true);
       - if:
           condition:
-            not:
-              - voice_assistant.is_running
-          then:
-            - voice_assistant.start_continuous
-      - script.execute: reset_display
+            lambda: return !id(init_in_progress);
+          then:      
+            - lambda: id(va).set_use_wake_word(true);
+            - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+            - if:
+                condition:
+                  not:
+                    - voice_assistant.is_running
+                then:
+                  - voice_assistant.start_continuous
+            - script.execute: draw_display
     on_turn_off:
-      - voice_assistant.stop
-      - lambda: id(va).set_use_wake_word(false);
-      - script.execute: reset_display
+      - if:
+          condition:
+            lambda: return !id(init_in_progress);
+          then:      
+            - voice_assistant.stop
+            - lambda: id(va).set_use_wake_word(false);
+            - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+            - script.execute: draw_display
 
 globals:
   - id: init_in_progress
     type: bool
     restore_value: no
     initial_value: 'true'
+  - id: voice_assistant_phase
+    type: int
+    restore_value: no
+    initial_value: ${voice_assist_not_ready_phase_id}
 
 image:
-  # Standard path IDLE > LISTENING > THINKING > REPLYING
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Idle@2x.png
-    id: casita_idle
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Normal@2x.png
-    id: casita_listening
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Focusing@2x.png
-    id: casita_thinking
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Happy@2x.png
-    id: casita_replying
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
-
-  # Error cases (More specific flies to come soon)
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Error@2x.png
+  - file: ${error_illustration_file}
     id: casita_error
-    resize: 200x200
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${idle_illustration_file}
+    id: casita_idle
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${listening_illustration_file}
+    id: casita_listening
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${thinking_illustration_file}
+    id: casita_thinking
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${replying_illustration_file}
+    id: casita_replying
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${loading_illustration_file}
+    id: casita_initializing
+    resize: 320x240
     type: RGB24
     use_transparency: true
 
-  # Initialization illustration
-  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/Initializing@2x.png
-    id: casita_initializing
-    resize: 200x200
-    type: RGB24
-    use_transparency: true
+color:
+  - id: idle_color
+    hex: ${idle_illustration_background_color}
+  - id: listening_color
+    hex: ${listening_illustration_background_color}
+  - id: thinking_color
+    hex: ${thinking_illustration_background_color}
+  - id: replying_color
+    hex: ${replying_illustration_background_color}
+  - id: loading_color
+    hex: ${loading_illustration_background_color}
+  - id: error_color
+    hex: ${error_illustration_background_color}
 
 spi:
   clk_pin: 7
@@ -297,40 +351,40 @@ display:
     pages:
       - id: idle_page
         lambda: |-
-          it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_idle));
+          it.fill(id(idle_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
       - id: listening_page
         lambda: |-
-          it.fill(Color::WHITE);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_listening));
+          it.fill(id(listening_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
       - id: thinking_page
         lambda: |-
-          it.fill(Color::WHITE);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 105, id(casita_thinking));
+          it.fill(id(thinking_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
       - id: replying_page
         lambda: |-
-          it.fill(Color::WHITE);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_replying));
+          it.fill(id(replying_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
       - id: error_page
         lambda: |-
-          it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+          it.fill(id(error_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_api_page
         lambda: |-
-          it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+          it.fill(id(error_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_wifi_page
         lambda: |-
-          it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+          it.fill(id(error_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: no_pipeline_page
         lambda: |-
-          it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_error));
+          it.fill(id(error_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
       - id: initializing_page
         lambda: |-
-          it.fill(Color::BLACK);
-          it.image((it.get_width() / 2) - 100, (it.get_height() / 2) - 100, id(casita_initializing));
+          it.fill(id(loading_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
       - id: muted_page
         lambda: |-
           it.fill(Color::BLACK);
