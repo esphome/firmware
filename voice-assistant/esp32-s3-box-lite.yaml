@@ -184,6 +184,7 @@ light:
   - platform: monochromatic
     id: led
     name: LCD Backlight
+    entity_category: config
     output: backlight_output
     restore_mode: RESTORE_DEFAULT_ON
     default_transition_length: 250ms
