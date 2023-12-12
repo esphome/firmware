@@ -133,6 +133,7 @@ light:
   - platform: monochromatic
     id: led
     name: LCD Backlight
+    entity_category: config
     output: backlight_output
     restore_mode: RESTORE_DEFAULT_ON
     default_transition_length: 250ms
@@ -185,16 +186,18 @@ voice_assistant:
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
           - script.execute: draw_display
-  on_client_connected:
-    - lambda: id(init_in_progress) = false;  
+  on_client_connected: 
     - if:
         condition:
           switch.is_on: use_wake_word
         then:
+          - wait_until:
+              not: ble.enabled
           - voice_assistant.start_continuous:
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
         else:
           - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+    - lambda: id(init_in_progress) = false; 
     - script.execute: draw_display
   on_client_disconnected:
     - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};  
