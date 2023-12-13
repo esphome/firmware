@@ -176,7 +176,7 @@ voice_assistant:
           - delay: 1s
           - if:
               condition:
-                switch.is_on: mute
+                switch.is_off: mute
               then:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
               else:
@@ -185,7 +185,7 @@ voice_assistant:
   on_client_connected: 
     - if:
         condition:
-          switch.is_on: mute
+          switch.is_off: mute
         then:
           - wait_until:
               not: ble.enabled
@@ -259,9 +259,9 @@ switch:
     name: Mute
     id: mute
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
     entity_category: config
-    on_turn_on:
+    on_turn_off:
       - if:
           condition:
             lambda: return !id(init_in_progress);
@@ -275,7 +275,7 @@ switch:
                 then:
                   - voice_assistant.start_continuous
             - script.execute: draw_display
-    on_turn_off:
+    on_turn_on:
       - if:
           condition:
             lambda: return !id(init_in_progress);
