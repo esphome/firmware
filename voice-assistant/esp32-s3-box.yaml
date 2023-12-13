@@ -237,7 +237,7 @@ script:
                                 id(s3_box_lcd).update();
                                 break;
                               case ${voice_assist_not_ready_phase_id}:
-                                id(s3_box_lcd).show_page(no_pipeline_page);
+                                id(s3_box_lcd).show_page(no_ha_page);
                                 id(s3_box_lcd).update();
                                 break;
                               default:
@@ -245,7 +245,7 @@ script:
                                 id(s3_box_lcd).update();
                             }
                       else:
-                        - display.page.show: no_api_page
+                        - display.page.show: no_ha_page
                         - component.update: s3_box_lcd
                 else:
                   - display.page.show: no_wifi_page
@@ -326,6 +326,16 @@ image:
     resize: 320x240
     type: RGB24
     use_transparency: true
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/error_box_illustrations/error-no-wifi.png
+    id: error_no_wifi
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/error_box_illustrations/error-no-ha.png
+    id: error_no_ha
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
 
 color:
   - id: idle_color
@@ -375,18 +385,12 @@ display:
         lambda: |-
           it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
-      - id: no_api_page
+      - id: no_ha_page
         lambda: |-
-          it.fill(id(error_color));
-          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(error_no_ha), ImageAlign::CENTER);
       - id: no_wifi_page
         lambda: |-
-          it.fill(id(error_color));
-          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
-      - id: no_pipeline_page
-        lambda: |-
-          it.fill(id(error_color));
-          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(error_no_wifi), ImageAlign::CENTER);
       - id: initializing_page
         lambda: |-
           it.fill(id(loading_color));
