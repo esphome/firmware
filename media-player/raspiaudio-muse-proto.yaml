@@ -42,7 +42,9 @@ speaker:
   - platform: i2s_audio
     id: board_external_speakers
     dac_type: external
-    i2s_dout_pin: GPIO26
+    i2s_dout_pin:
+      number: GPIO26
+      allow_other_uses: true
     mode: mono
 
 media_player:
@@ -50,7 +52,9 @@ media_player:
     id: media_out
     name: None
     dac_type: external
-    i2s_dout_pin: GPIO26
+    i2s_dout_pin:
+      number: GPIO26
+      allow_other_uses: true
     mode: mono
     mute_pin:
       number: GPIO21
