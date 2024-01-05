@@ -1,0 +1,381 @@
+substitutions:
+  name: m5cores3
+  friendly_name: M5CoreS3
+  loading_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/loading_320_240.png
+  idle_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/idle_320_240.png
+  listening_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/listening_320_240.png
+  thinking_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/thinking_320_240.png
+  replying_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/replying_320_240.png
+  error_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/error_320_240.png
+
+  loading_illustration_background_color: '000000'
+  idle_illustration_background_color: '000000'
+  listening_illustration_background_color: 'FFFFFF'
+  thinking_illustration_background_color: 'FFFFFF'
+  replying_illustration_background_color: 'FFFFFF'
+  error_illustration_background_color: '000000'
+
+  voice_assist_idle_phase_id: '1'
+  voice_assist_listening_phase_id: '2'
+  voice_assist_thinking_phase_id: '3'
+  voice_assist_replying_phase_id: '4'
+  voice_assist_not_ready_phase_id: '10'
+  voice_assist_error_phase_id: '11'  
+  voice_assist_muted_phase_id: '12'
+
+
+esphome:
+  name: m5cores3
+  friendly_name: M5CoreS3
+  project:
+    name: m5stack.cores3-voice-assistant
+    version: "1.0"
+  platformio_options:
+    board_build.f_cpu : 240000000L
+  libraries:
+    - m5stack/M5GFX@^0.1.11
+    - m5stack/M5Unified@^0.1.11
+  on_boot:
+      priority: 600
+      then: 
+        - script.execute: draw_display
+        - delay: 30s
+        - if:
+            condition:
+              lambda: return id(init_in_progress);
+            then:
+              - lambda: id(init_in_progress) = false;
+              - script.execute: draw_display
+
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 16MB
+  framework:
+    type: arduino
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/m5stack/M5CoreS3-Esphome
+    components: [ board_m5cores3, m5cores3_audio, m5cores3_display ]
+    refresh: 0s
+
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  on_client_connected:
+    - script.execute: draw_display
+  on_client_disconnected:
+    - script.execute: draw_display
+
+ota:
+wifi:
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+  on_connect:
+    - script.execute: draw_display
+    - delay: 5s # Gives time for improv results to be transmitted 
+  on_disconnect:
+    - script.execute: draw_display
+
+captive_portal:
+    
+
+# 
+# Globals
+# 
+globals:
+  - id: init_in_progress
+    type: bool
+    restore_value: no
+    initial_value: 'true'
+  - id: voice_assistant_phase
+    type: int
+    restore_value: no
+    initial_value: ${voice_assist_not_ready_phase_id}
+    
+
+# 
+# Display
+# 
+script:
+  - id: draw_display
+    then:
+      - if:
+          condition:
+            lambda: return !id(init_in_progress);
+          then:
+            - if:
+                condition:
+                  wifi.connected:
+                then:
+                  - if:
+                      condition:
+                        api.connected:
+                      then:
+                        - lambda: |
+                            switch(id(voice_assistant_phase)) {
+                              case ${voice_assist_listening_phase_id}:
+                                id(m5cores3_lcd).show_page(listening_page);
+                                id(m5cores3_lcd).update();
+                                break;
+                              case ${voice_assist_thinking_phase_id}:
+                                id(m5cores3_lcd).show_page(thinking_page);
+                                id(m5cores3_lcd).update();
+                                break;
+                              case ${voice_assist_replying_phase_id}:
+                                id(m5cores3_lcd).show_page(replying_page);
+                                id(m5cores3_lcd).update();
+                                break;
+                              case ${voice_assist_error_phase_id}:
+                                id(m5cores3_lcd).show_page(error_page);
+                                id(m5cores3_lcd).update();
+                                break;
+                              case ${voice_assist_muted_phase_id}:
+                                id(m5cores3_lcd).show_page(muted_page);
+                                id(m5cores3_lcd).update();
+                                break;
+                              case ${voice_assist_not_ready_phase_id}:
+                                id(m5cores3_lcd).show_page(no_ha_page);
+                                id(m5cores3_lcd).update();
+                                break;
+                              default:
+                                id(m5cores3_lcd).show_page(idle_page);
+                                id(m5cores3_lcd).update();
+                            }
+                      else:
+                        - display.page.show: no_ha_page
+                        - component.update: m5cores3_lcd
+                else:
+                  - display.page.show: no_wifi_page
+                  - component.update: m5cores3_lcd
+          else:
+            - display.page.show: initializing_page
+            - component.update: m5cores3_lcd
+
+image:
+  - file: ${error_illustration_file}
+    id: casita_error
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${idle_illustration_file}
+    id: casita_idle
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${listening_illustration_file}
+    id: casita_listening
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${thinking_illustration_file}
+    id: casita_thinking
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${replying_illustration_file}
+    id: casita_replying
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: ${loading_illustration_file}
+    id: casita_initializing
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/error_box_illustrations/error-no-wifi.png
+    id: error_no_wifi
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+  - file: https://github.com/esphome/firmware/raw/main/voice-assistant/error_box_illustrations/error-no-ha.png
+    id: error_no_ha
+    resize: 320x240
+    type: RGB24
+    use_transparency: true
+
+color:
+  - id: idle_color
+    hex: ${idle_illustration_background_color}
+  - id: listening_color
+    hex: ${listening_illustration_background_color}
+  - id: thinking_color
+    hex: ${thinking_illustration_background_color}
+  - id: replying_color
+    hex: ${replying_illustration_background_color}
+  - id: loading_color
+    hex: ${loading_illustration_background_color}
+  - id: error_color
+    hex: ${error_illustration_background_color}
+
+display:
+  - platform: m5cores3_display
+    model: ILI9342
+    dc_pin: 35
+    update_interval: never
+    id: m5cores3_lcd
+    pages:
+      - id: idle_page
+        lambda: |-
+          it.fill(id(idle_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
+      - id: listening_page
+        lambda: |-
+          it.fill(id(listening_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
+      - id: thinking_page
+        lambda: |-
+          it.fill(id(thinking_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
+      - id: replying_page
+        lambda: |-
+          it.fill(id(replying_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
+      - id: error_page
+        lambda: |-
+          it.fill(id(error_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
+      - id: no_ha_page
+        lambda: |-
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(error_no_ha), ImageAlign::CENTER);
+      - id: no_wifi_page
+        lambda: |-
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(error_no_wifi), ImageAlign::CENTER);
+      - id: initializing_page
+        lambda: |-
+          it.fill(id(loading_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
+      - id: muted_page
+        lambda: |-
+          it.fill(Color::BLACK);
+
+
+# 
+# Audio
+# 
+board_m5cores3:
+m5cores3_audio:
+  id: m5cores3_audio_1
+
+microphone:
+  - platform: m5cores3_audio
+    m5cores3_audio_id: m5cores3_audio_1
+    id: m5cores3_mic
+    adc_type: external
+    i2s_din_pin: 14
+    pdm: false
+
+speaker:
+  - platform: m5cores3_audio
+    m5cores3_audio_id: m5cores3_audio_1
+    id: m5cores3_spk
+    dac_type: external
+    i2s_dout_pin: 13
+    mode: mono
+    
+
+# 
+# VA
+# 
+voice_assistant:
+  id: va
+  microphone: m5cores3_mic
+  speaker: m5cores3_spk
+  use_wake_word: true
+  noise_suppression_level: 2
+  auto_gain: 31dBFS
+  volume_multiplier: 2.0
+  # vad_threshold: 3
+  on_listening:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
+    - script.execute: draw_display
+  on_stt_vad_end:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
+    - script.execute: draw_display
+  on_tts_stream_start:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
+    - script.execute: draw_display
+  on_tts_stream_end:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+    - script.execute: draw_display
+  on_error:
+    - if:
+        condition:
+          lambda: return !id(init_in_progress);
+        then:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};  
+          - script.execute: draw_display
+          - delay: 1s
+          - if:
+              condition:
+                switch.is_off: mute
+              then:
+                - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+              else:
+                - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+          - script.execute: draw_display
+  on_client_connected: 
+    - if:
+        condition:
+          switch.is_off: mute
+        then:
+          - voice_assistant.start_continuous:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+        else:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+    - lambda: id(init_in_progress) = false; 
+    - script.execute: draw_display
+  on_client_disconnected:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};  
+    - script.execute: draw_display
+
+
+switch:
+- platform: template
+  name: "LCD Backlight"
+  id: switch_lcd_backlight
+  restore_mode: "RESTORE_DEFAULT_ON"
+  turn_on_action:
+    - lambda:
+        M5.Display.setBrightness(127);
+  turn_off_action:
+    - lambda: |-
+        M5.Display.setBrightness(0);
+- platform: template
+  name: Mute
+  id: mute
+  optimistic: true
+  restore_mode: RESTORE_DEFAULT_OFF
+  entity_category: config
+  on_turn_off:
+    - if:
+        condition:
+          lambda: return !id(init_in_progress);
+        then:      
+          - lambda: id(va).set_use_wake_word(true);
+          - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+          - if:
+              condition:
+                not:
+                  - voice_assistant.is_running
+              then:
+                - voice_assistant.start_continuous
+          - script.execute: draw_display
+  on_turn_on:
+    - if:
+        condition:
+          lambda: return !id(init_in_progress);
+        then:      
+          - voice_assistant.stop
+          - lambda: id(va).set_use_wake_word(false);
+          - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+          - script.execute: draw_display
+
