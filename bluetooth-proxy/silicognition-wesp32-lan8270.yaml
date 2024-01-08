@@ -1,0 +1,46 @@
+substitutions:
+  name: wesp32-bluetooth-proxy
+  friendly_name: Bluetooth Proxy
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: esphome.bluetooth-proxy
+    version: "1.0"
+
+esp32:
+  board: wesp32
+  framework:
+    type: esp-idf
+
+# Revisions 1-6 of the board use the SMSC LAN8720
+# https://wesp32.com/files/wESP32-Product-Brief.pdf
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO16
+  mdio_pin: GPIO17
+  clk_mode: GPIO0_IN
+  phy_addr: 0
+
+api:
+logger:
+ota:
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/bluetooth-proxy/silicognition-wesp32-lan8720.yaml@main
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+bluetooth_proxy:
+  active: true
+
+button:
+  - platform: safe_mode
+    name: Safe Mode Boot
+    entity_category: diagnostic
