@@ -1,0 +1,4 @@
+---
+ignore: |
+  venv/
+  .esphome/
