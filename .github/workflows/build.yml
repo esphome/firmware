@@ -89,7 +89,7 @@ jobs:
       matrix:
         include:
           - project: esp-web-tools
-            name: ESP Web Tools
+            name: ESP Web Tools Example
           - project: esphome-web
             name: ESPHome Web
     steps:
