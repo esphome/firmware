@@ -66,10 +66,6 @@ external_components:
   - source: github://pr#5230
     components: esp_adf
     refresh: 0s
-  # Could soon be removed once micro_wake_word is in stable.
-  - source: github://pr#6136
-    components: micro_wake_word
-    refresh: 0s
 
 api:
   on_client_connected:
