@@ -49,6 +49,8 @@ jobs:
           matrix=${matrix%?}
           matrix="{\"include\":[$matrix]}"
           echo matrix=$matrix >> $GITHUB_OUTPUT
+      - name: Print matrix
+        run: echo ${{ steps.prepare-matrix.outputs.matrix }} | jq
 
   build:
     name: ${{ matrix.firmware }} / ${{ matrix.device }}
