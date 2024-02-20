@@ -74,9 +74,9 @@ jobs:
         if: ${{ matrix.device != 'pico-w' }}
         run: |
           sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/${{ matrix.device }}/manifest.json
-      - uses: actions/upload-artifact@v3.1.3
+      - uses: actions/upload-artifact@v4.3.1
         with:
-          name: ${{ matrix.firmware }}
+          name: ${{ matrix.firmware }}-${{ matrix.device }}
           path: output
 
   combined-manifests:
@@ -93,17 +93,18 @@ jobs:
           - project: esphome-web
             name: ESPHome Web
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.2
         with:
-          name: ${{ matrix.project }}
+          pattern: ${{ matrix.project }}-*
           path: files
+          merge-multiple: true
       - name: Generate manifest.json
         run: |
           version=$(cat files/*/version | sort -V | tail -n 1)
           jq -s --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "builds":.}' files/*/manifest.json > manifest.json
-      - uses: actions/upload-artifact@v3.1.3
+      - uses: actions/upload-artifact@v4.3.1
         with:
-          name: ${{ matrix.project }}
+          name: ${{ matrix.project }}-manifest
           path: manifest.json
 
   full-manifests:
@@ -122,10 +123,11 @@ jobs:
           - project: media-player
             name: Media Player
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.2
         with:
-          name: ${{ matrix.project }}
+          pattern: ${{ matrix.project }}-*
           path: files
+          merge-multiple: true
       - name: Generate manifest.json files
         run: |
           cd files
@@ -136,9 +138,9 @@ jobs:
             jq --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":[.]}' manifest.json > ../../output/$device/manifest.json
             popd
           done
-      - uses: actions/upload-artifact@v3.1.3
+      - uses: actions/upload-artifact@v4.3.1
         with:
-          name: ${{ matrix.project }}
+          name: ${{ matrix.project }}-manifests
           path: output
 
   consolidate:
@@ -150,9 +152,11 @@ jobs:
       - full-manifests
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.2
         with:
           path: output
+          merge-multiple: true
+
       - run: cp -R static/* output/
       - uses: actions/upload-pages-artifact@v3.0.1
         with:
