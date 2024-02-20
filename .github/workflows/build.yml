@@ -44,9 +44,9 @@ jobs:
               device=${device##*/}
               device=${device%.yaml}
               version="latest"
-              $fw=${firmware//-/_}
-              $fw=${fw^^}
-              $fw_version=${fw}_VERSION
+              fw=${firmware//-/_}
+              fw=${fw^^}
+              fw_version=${fw}_VERSION
               if [[ -n "${!fw_version}" ]]; then
                 version=${!fw_version}
               fi
