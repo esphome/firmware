@@ -24,8 +24,6 @@ substitutions:
   voice_assist_error_phase_id: "11"
   voice_assist_muted_phase_id: "12"
 
-  micro_wake_word_model: okay_nabu
-
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
@@ -154,11 +152,6 @@ speaker:
   - platform: esp_adf
     id: box_speaker
 
-micro_wake_word:
-  model: ${micro_wake_word_model}
-  on_wake_word_detected: 
-    - voice_assistant.start
-
 voice_assistant:
   id: va
   microphone: box_mic
@@ -180,17 +173,6 @@ voice_assistant:
   on_tts_stream_end:
     - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
-  on_end:
-    - if:
-        condition:
-          and:
-            - switch.is_off: mute
-            - lambda: return id(wake_word_engine_location).state == "On device";
-        then:
-          - wait_until:
-              not:
-                voice_assistant.is_running:
-          - micro_wake_word.start:
   on_error:
     - if:
         condition:
@@ -214,35 +196,14 @@ voice_assistant:
         then:
           - wait_until:
               not: ble.enabled
-          - if:
-              condition: 
-                lambda: return id(wake_word_engine_location).state == "In Home Assistant";
-              then:
-                - lambda: id(va).set_use_wake_word(true);
-                - voice_assistant.start_continuous:
-          - if:
-              condition: 
-                lambda: return id(wake_word_engine_location).state == "On device";
-              then:
-                - micro_wake_word.start
+          - voice_assistant.start_continuous:
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
         else:
           - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
     - lambda: id(init_in_progress) = false;
     - script.execute: draw_display
   on_client_disconnected:
-    - if:
-        condition: 
-          lambda: return id(wake_word_engine_location).state == "In Home Assistant";
-        then:
-          - lambda: id(va).set_use_wake_word(false);
-          - voice_assistant.stop:
-    - if:
-        condition: 
-          lambda: return id(wake_word_engine_location).state == "On device";
-        then:
-          - micro_wake_word.stop
-    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};  
+    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};
     - script.execute: draw_display
 
 script:
@@ -311,70 +272,25 @@ switch:
       - if:
           condition:
             lambda: return !id(init_in_progress);
-          then:      
+          then:
+            - lambda: id(va).set_use_wake_word(true);
             - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
             - if:
                 condition:
                   not:
                     - voice_assistant.is_running
                 then:
-                  - if:
-                      condition: 
-                        lambda: return id(wake_word_engine_location).state == "In Home Assistant";
-                      then:
-                        - lambda: id(va).set_use_wake_word(true);
-                        - voice_assistant.start_continuous
-                  - if:
-                      condition: 
-                        lambda: return id(wake_word_engine_location).state == "On device";
-                      then:
-                        - micro_wake_word.start
+                  - voice_assistant.start_continuous
             - script.execute: draw_display
     on_turn_on:
       - if:
           condition:
             lambda: return !id(init_in_progress);
-          then:      
-            - lambda: id(va).set_use_wake_word(false);
+          then:
             - voice_assistant.stop
-            - micro_wake_word.stop
+            - lambda: id(va).set_use_wake_word(false);
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
             - script.execute: draw_display
-
-select:
-  - platform: template
-    entity_category: config
-    name: Wake word engine location
-    id: wake_word_engine_location
-    optimistic: True
-    restore_value: True
-    options:
-      - In Home Assistant
-      - On device
-    initial_option: On device
-    on_value:
-      - wait_until:
-          lambda: return id(voice_assistant_phase) == ${voice_assist_muted_phase_id} || id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
-      - if:
-          condition:
-            lambda: return x == "In Home Assistant";
-          then:
-            - micro_wake_word.stop
-            - delay: 500ms
-            - if:
-                condition:
-                  switch.is_off: mute
-                then:
-                  - lambda: id(va).set_use_wake_word(true);
-                  - voice_assistant.start_continuous:
-      - if:
-          condition:
-            lambda: return x == "On device";
-          then:
-            - lambda: id(va).set_use_wake_word(false);
-            - voice_assistant.stop
-            - delay: 500ms
-            - micro_wake_word.start
 
 globals:
   - id: init_in_progress
