@@ -79,7 +79,7 @@ logger:
     sensor: INFO
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box-lite.yaml@main
+  package_import_url: github://esphome/firmware/wake-word-voice-assistant/esp32-s3-box-lite.yaml@main
 
 wifi:
   ap:
@@ -203,7 +203,7 @@ speaker:
 
 micro_wake_word:
   model: ${micro_wake_word_model}
-  on_wake_word_detected: 
+  on_wake_word_detected:
     - voice_assistant.start
 
 voice_assistant:
@@ -262,13 +262,13 @@ voice_assistant:
           - wait_until:
               not: ble.enabled
           - if:
-              condition: 
+              condition:
                 lambda: return id(wake_word_engine_location).state == "In Home Assistant";
               then:
                 - lambda: id(va).set_use_wake_word(true);
                 - voice_assistant.start_continuous:
           - if:
-              condition: 
+              condition:
                 lambda: return id(wake_word_engine_location).state == "On device";
               then:
                 - micro_wake_word.start
@@ -279,17 +279,17 @@ voice_assistant:
     - script.execute: draw_display
   on_client_disconnected:
     - if:
-        condition: 
+        condition:
           lambda: return id(wake_word_engine_location).state == "In Home Assistant";
         then:
           - lambda: id(va).set_use_wake_word(false);
           - voice_assistant.stop:
     - if:
-        condition: 
+        condition:
           lambda: return id(wake_word_engine_location).state == "On device";
         then:
           - micro_wake_word.stop
-    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};  
+    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};
     - script.execute: draw_display
 
 script:
@@ -358,7 +358,7 @@ switch:
       - if:
           condition:
             lambda: return !id(init_in_progress);
-          then:      
+          then:
             - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
             - if:
                 condition:
@@ -366,13 +366,13 @@ switch:
                     - voice_assistant.is_running
                 then:
                   - if:
-                      condition: 
+                      condition:
                         lambda: return id(wake_word_engine_location).state == "In Home Assistant";
                       then:
                         - lambda: id(va).set_use_wake_word(true);
                         - voice_assistant.start_continuous
                   - if:
-                      condition: 
+                      condition:
                         lambda: return id(wake_word_engine_location).state == "On device";
                       then:
                         - micro_wake_word.start
@@ -381,7 +381,7 @@ switch:
       - if:
           condition:
             lambda: return !id(init_in_progress);
-          then:      
+          then:
             - lambda: id(va).set_use_wake_word(false);
             - voice_assistant.stop
             - micro_wake_word.stop
