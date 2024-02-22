@@ -1,0 +1,80 @@
+---
+sensor:
+  - platform: adc
+    pin: GPIO10
+    name: "Battery voltage"
+    id: battery_voltage
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: "voltage"
+    entity_category: "diagnostic"
+    disabled_by_default: true
+    update_interval: 60s
+    attenuation: auto
+    filters:
+        - multiply: 4.01
+
+  - platform: copy
+    source_id: battery_voltage
+    name: "Battery level"
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    device_class: "battery"
+    entity_category: "diagnostic"
+    filters:
+      - lambda: return (x - 3.1) / (4.14 - 3.1) * 100;
+      - clamp:
+          min_value: 0
+          max_value: 100
+          ignore_out_of_range: true
+
+
+switch:
+  - platform: template
+    name: "Mute when absent"
+    id: mute_when_absent
+    icon: mdi:account-right-arrow
+    optimistic: true
+    entity_category: config
+    restore_mode: RESTORE_DEFAULT_OFF
+
+number:
+  - platform: template
+    name: "Presence duration"
+    id: radar_delayed_off
+    icon: mdi:account-clock
+    optimistic: true
+    restore_value: true
+    initial_value: 60
+    min_value: 0
+    step: 5
+    max_value: 300
+    unit_of_measurement: s
+    entity_category: config
+    mode: box
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO21
+    name: "Presence detect"
+    disabled_by_default: false
+    device_class: "occupancy"
+    filters:
+      - delayed_off: !lambda return id(radar_delayed_off).state * 1000;
+    on_release:
+      then:
+        - if:
+            condition: 
+              switch.is_on: mute_when_absent
+            then:
+              - switch.turn_on: mute
+              - light.turn_off: led
+    on_press:
+      then:
+        - if:
+            condition: 
+              switch.is_on: mute_when_absent
+            then:
+              - switch.turn_off: mute
+              - light.turn_on: led
