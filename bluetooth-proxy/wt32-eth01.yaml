@@ -40,6 +40,6 @@ bluetooth_proxy:
   active: true
 
 button:
-- platform: safe_mode
-  name: Safe Mode Boot
-  entity_category: diagnostic
+  - platform: safe_mode
+    name: Safe Mode Boot
+    entity_category: diagnostic

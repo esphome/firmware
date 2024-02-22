@@ -1,0 +1,25 @@
+name: YAML lint
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.yaml"
+      - "**.yml"
+  pull_request:
+    paths:
+      - "**.yaml"
+      - "**.yml"
+
+jobs:
+  yamllint:
+    name: yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v4.1.1
+      - name: Run yamllint
+        uses: frenck/action-yamllint@v1.4.2
+        with:
+          strict: true

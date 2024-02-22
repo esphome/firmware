@@ -83,7 +83,7 @@ wifi:
   ap:
   on_connect:
     - script.execute: draw_display
-    - delay: 5s # Gives time for improv results to be transmitted
+    - delay: 5s  # Gives time for improv results to be transmitted
     - ble.disable:
   on_disconnect:
     - script.execute: draw_display
@@ -342,11 +342,11 @@ switch:
 globals:
   - id: init_in_progress
     type: bool
-    restore_value: no
+    restore_value: false
     initial_value: "true"
   - id: voice_assistant_phase
     type: int
-    restore_value: no
+    restore_value: false
     initial_value: ${voice_assist_not_ready_phase_id}
 
 image:

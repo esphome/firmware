@@ -26,7 +26,7 @@ dashboard_import:
 
 wifi:
   on_connect:
-    - delay: 5s # Gives time for improv results to be transmitted
+    - delay: 5s  # Gives time for improv results to be transmitted
     - ble.disable:
   on_disconnect:
     - ble.enable:
@@ -43,7 +43,7 @@ button:
     name: Factory reset
 
 external_components:
-  - source: github://pr#3552 # DAC support https://github.com/esphome/esphome/pull/3552
+  - source: github://pr#3552  # DAC support https://github.com/esphome/esphome/pull/3552
     components: [es8388]
     refresh: 0s
   - source: github://pr#5230
@@ -149,7 +149,7 @@ sensor:
     attenuation: 11db
     raw: true
     filters:
-      - multiply: 0.00173913 # 2300 -> 4, for attenuation 11db, based on Olivier's code
+      - multiply: 0.00173913  # 2300 -> 4, for attenuation 11db, based on Olivier's code
       - exponential_moving_average:
           alpha: 0.2
           send_every: 2
