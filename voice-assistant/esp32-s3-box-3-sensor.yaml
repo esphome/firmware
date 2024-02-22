@@ -1,4 +1,8 @@
 ---
+substitutions:
+  name: esp32-s3-box-3-sensor
+  friendly_name: ESP32 S3 Box 3 Sensor
+
 sensor:
   - platform: adc
     pin: GPIO10
