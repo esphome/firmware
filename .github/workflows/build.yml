@@ -125,6 +125,8 @@ jobs:
         include:
           - project: voice-assistant
             name: Voice Assistant
+          - project: wake-word-voice-assistant
+            name: Voice Assistant
           - project: bluetooth-proxy
             name: Bluetooth Proxy
           - project: media-player
