@@ -339,8 +339,8 @@ select:
     entity_category: config
     name: Wake word engine location
     id: wake_word_engine_location
-    optimistic: True
-    restore_value: True
+    optimistic: true
+    restore_value: true
     options:
       - In Home Assistant
       - On device
