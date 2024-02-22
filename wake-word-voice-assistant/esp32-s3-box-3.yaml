@@ -1,6 +1,7 @@
+---
 substitutions:
-  name: esp32-s3-box-lite
-  friendly_name: ESP32 S3 Box Lite
+  name: esp32-s3-box-3
+  friendly_name: ESP32 S3 Box 3
   loading_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/loading_320_240.png
   idle_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/idle_320_240.png
   listening_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/listening_320_240.png
@@ -22,6 +23,8 @@ substitutions:
   voice_assist_not_ready_phase_id: "10"
   voice_assist_error_phase_id: "11"
   voice_assist_muted_phase_id: "12"
+
+  micro_wake_word_model: okay_nabu
 
 esphome:
   name: ${name}
@@ -54,6 +57,12 @@ esp32:
       CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
       CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
       CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_AUDIO_BOARD_CUSTOM: "y"
+      CONFIG_ESP32_S3_BOX_3_BOARD: "y"
+    components:
+      - name: esp32_s3_box_3_board
+        source: github://jesserockz/esp32-s3-box-3-board@main
+        refresh: 0s
 
 psram:
   mode: octal
@@ -73,17 +82,15 @@ api:
 ota:
 logger:
   hardware_uart: USB_SERIAL_JTAG
-  logs:
-    sensor: INFO
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/voice-assistant/esp32-s3-box-lite.yaml@main
+  package_import_url: github://esphome/firmware/wake-word-voice-assistant/esp32-s3-box-3.yaml@main
 
 wifi:
   ap:
   on_connect:
     - script.execute: draw_display
-    - delay: 5s  # Gives time for improv results to be transmitted
+    - delay: 5s # Gives time for improv results to be transmitted
     - ble.disable:
   on_disconnect:
     - script.execute: draw_display
@@ -99,74 +106,23 @@ button:
     id: factory_reset_btn
     name: Factory reset
 
-sensor:
-  - platform: adc
-    pin: GPIO1
-    id: front_buttons
-    update_interval: 16ms
-    attenuation: 11db
-    on_value:
-      - lambda: |-
-          // none: 3.121
-          // left: 2.392
-          // middle: 1.965
-          // left+middle: 1.600
-          // right: 0.794
-          // left+right: 0.726
-          // middle+right: 0.682
-          // all: 0.632
-          if (x > 3) {
-            id(left).publish_state(false);
-            id(middle).publish_state(false);
-            id(right).publish_state(false);
-          } else if (x > 2.3) {
-            id(left).publish_state(true);
-            id(middle).publish_state(false);
-            id(right).publish_state(false);
-          } else if (x > 1.9) {
-            id(left).publish_state(false);
-            id(middle).publish_state(true);
-            id(right).publish_state(false);
-          } else if (x > 1) {
-            id(left).publish_state(true);
-            id(middle).publish_state(true);
-            id(right).publish_state(false);
-          } else if (x > 0.73) {
-            id(left).publish_state(false);
-            id(middle).publish_state(false);
-            id(right).publish_state(true);
-          } else if (x > 0.7) {
-            id(left).publish_state(true);
-            id(middle).publish_state(false);
-            id(right).publish_state(true);
-          } else if (x > 0.65) {
-            id(left).publish_state(false);
-            id(middle).publish_state(true);
-            id(right).publish_state(true);
-          } else {
-            id(left).publish_state(true);
-            id(middle).publish_state(true);
-            id(right).publish_state(true);
-          }
-
 binary_sensor:
-  - platform: template
-    id: left
-    name: "Left"
-  - platform: template
-    id: middle
-    name: "Middle"
-  - platform: template
-    id: right
-    name: "Right"
+  - platform: gpio
+    pin:
+      number: GPIO1
+      inverted: true
+    name: "Mute"
+    disabled_by_default: true
+    entity_category: diagnostic
 
   - platform: gpio
     pin:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: true
-    name: Left Top Button
+    name: Top Left Button
     disabled_by_default: true
+    entity_category: diagnostic
     on_multi_click:
       - timing:
           - ON for at least 10s
@@ -175,8 +131,7 @@ binary_sensor:
 
 output:
   - platform: ledc
-    pin: GPIO45
-    inverted: true
+    pin: GPIO47
     id: backlight_output
 
 light:
@@ -189,7 +144,7 @@ light:
     default_transition_length: 250ms
 
 esp_adf:
-  board: esp32s3boxlite
+  board: esp32s3box3
 
 microphone:
   - platform: esp_adf
@@ -198,6 +153,11 @@ microphone:
 speaker:
   - platform: esp_adf
     id: box_speaker
+
+micro_wake_word:
+  model: ${micro_wake_word_model}
+  on_wake_word_detected:
+    - voice_assistant.start
 
 voice_assistant:
   id: va
@@ -220,6 +180,17 @@ voice_assistant:
   on_tts_stream_end:
     - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
+  on_end:
+    - if:
+        condition:
+          and:
+            - switch.is_off: mute
+            - lambda: return id(wake_word_engine_location).state == "On device";
+        then:
+          - wait_until:
+              not:
+                voice_assistant.is_running:
+          - micro_wake_word.start:
   on_error:
     - if:
         condition:
@@ -243,13 +214,34 @@ voice_assistant:
         then:
           - wait_until:
               not: ble.enabled
-          - voice_assistant.start_continuous:
+          - if:
+              condition:
+                lambda: return id(wake_word_engine_location).state == "In Home Assistant";
+              then:
+                - lambda: id(va).set_use_wake_word(true);
+                - voice_assistant.start_continuous:
+          - if:
+              condition:
+                lambda: return id(wake_word_engine_location).state == "On device";
+              then:
+                - micro_wake_word.start
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
         else:
           - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
     - lambda: id(init_in_progress) = false;
     - script.execute: draw_display
   on_client_disconnected:
+    - if:
+        condition:
+          lambda: return id(wake_word_engine_location).state == "In Home Assistant";
+        then:
+          - lambda: id(va).set_use_wake_word(false);
+          - voice_assistant.stop:
+    - if:
+        condition:
+          lambda: return id(wake_word_engine_location).state == "On device";
+        then:
+          - micro_wake_word.stop
     - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};
     - script.execute: draw_display
 
@@ -320,33 +312,78 @@ switch:
           condition:
             lambda: return !id(init_in_progress);
           then:
-            - lambda: id(va).set_use_wake_word(true);
             - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
             - if:
                 condition:
                   not:
                     - voice_assistant.is_running
                 then:
-                  - voice_assistant.start_continuous
+                  - if:
+                      condition:
+                        lambda: return id(wake_word_engine_location).state == "In Home Assistant";
+                      then:
+                        - lambda: id(va).set_use_wake_word(true);
+                        - voice_assistant.start_continuous
+                  - if:
+                      condition:
+                        lambda: return id(wake_word_engine_location).state == "On device";
+                      then:
+                        - micro_wake_word.start
             - script.execute: draw_display
     on_turn_on:
       - if:
           condition:
             lambda: return !id(init_in_progress);
           then:
-            - voice_assistant.stop
             - lambda: id(va).set_use_wake_word(false);
+            - voice_assistant.stop
+            - micro_wake_word.stop
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
             - script.execute: draw_display
+
+select:
+  - platform: template
+    entity_category: config
+    name: Wake word engine location
+    id: wake_word_engine_location
+    optimistic: True
+    restore_value: True
+    options:
+      - In Home Assistant
+      - On device
+    initial_option: On device
+    on_value:
+      - wait_until:
+          lambda: return id(voice_assistant_phase) == ${voice_assist_muted_phase_id} || id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
+      - if:
+          condition:
+            lambda: return x == "In Home Assistant";
+          then:
+            - micro_wake_word.stop
+            - delay: 500ms
+            - if:
+                condition:
+                  switch.is_off: mute
+                then:
+                  - lambda: id(va).set_use_wake_word(true);
+                  - voice_assistant.start_continuous:
+      - if:
+          condition:
+            lambda: return x == "On device";
+          then:
+            - lambda: id(va).set_use_wake_word(false);
+            - voice_assistant.stop
+            - delay: 500ms
+            - micro_wake_word.start
 
 globals:
   - id: init_in_progress
     type: bool
-    restore_value: false
+    restore_value: no
     initial_value: "true"
   - id: voice_assistant_phase
     type: int
-    restore_value: false
+    restore_value: no
     initial_value: ${voice_assist_not_ready_phase_id}
 
 image:
@@ -412,11 +449,13 @@ spi:
 display:
   - platform: ili9xxx
     id: s3_box_lcd
-    model: S3BOX_LITE
+    model: S3BOX
     data_rate: 40MHz
     cs_pin: 5
     dc_pin: 4
-    reset_pin: 48
+    reset_pin:
+      number: 48
+      inverted: true
     update_interval: never
     pages:
       - id: idle_page

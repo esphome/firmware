@@ -218,7 +218,7 @@ switch:
       - lambda: id(va).set_use_wake_word(false);
       - script.execute: reset_led
   - platform: template
-    name: Use Listen Light
+    name: Use listen light
     id: use_listen_light
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON

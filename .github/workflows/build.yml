@@ -16,7 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FIRMWARES: esp-web-tools esphome-web voice-assistant bluetooth-proxy media-player
+  FIRMWARES: esp-web-tools esphome-web voice-assistant wake-word-voice-assistant bluetooth-proxy media-player
+  # VOICE_ASSISTANT_VERSION: beta
 
 jobs:
   prepare:
@@ -44,6 +45,12 @@ jobs:
               device=${device##*/}
               device=${device%.yaml}
               version="latest"
+              fw=${firmware//-/_}
+              fw=${fw^^}
+              fw_version=${fw}_VERSION
+              if [[ -n "${!fw_version}" ]]; then
+                version=${!fw_version}
+              fi
               matrix="$matrix{\"firmware\":\"$firmware\",\"device\":\"$device\", \"version\":\"$version\"},"
             done
           done
@@ -61,7 +68,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: esphome/build-action@v1.8.0
+      - uses: esphome/build-action@v1.9.0
         id: esphome-build
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.device }}.yaml
@@ -90,7 +97,7 @@ jobs:
       matrix:
         include:
           - project: esp-web-tools
-            name: ESP Web Tools
+            name: ESP Web Tools Example
           - project: esphome-web
             name: ESPHome Web
     steps:
@@ -155,7 +162,7 @@ jobs:
         with:
           path: output
       - run: cp -R static/* output/
-      - uses: actions/upload-pages-artifact@v2.0.0
+      - uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: output
 
@@ -175,4 +182,4 @@ jobs:
         uses: actions/configure-pages@v4
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v3.0.1
+        uses: actions/deploy-pages@v4.0.4
