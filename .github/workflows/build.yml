@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FIRMWARES: esp-web-tools esphome-web voice-assistant bluetooth-proxy media-player
+  FIRMWARES: esp-web-tools esphome-web voice-assistant wake-word-voice-assistant bluetooth-proxy media-player
   # VOICE_ASSISTANT_VERSION: beta
 
 jobs:

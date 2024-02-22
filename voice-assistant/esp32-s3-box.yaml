@@ -9,22 +9,20 @@ substitutions:
   replying_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/replying_320_240.png
   error_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/error_320_240.png
 
-  loading_illustration_background_color: '000000'
-  idle_illustration_background_color: '000000'
-  listening_illustration_background_color: 'FFFFFF'
-  thinking_illustration_background_color: 'FFFFFF'
-  replying_illustration_background_color: 'FFFFFF'
-  error_illustration_background_color: '000000'
+  loading_illustration_background_color: "000000"
+  idle_illustration_background_color: "000000"
+  listening_illustration_background_color: "FFFFFF"
+  thinking_illustration_background_color: "FFFFFF"
+  replying_illustration_background_color: "FFFFFF"
+  error_illustration_background_color: "000000"
 
-  voice_assist_idle_phase_id: '1'
-  voice_assist_listening_phase_id: '2'
-  voice_assist_thinking_phase_id: '3'
-  voice_assist_replying_phase_id: '4'
-  voice_assist_not_ready_phase_id: '10'
-  voice_assist_error_phase_id: '11'  
-  voice_assist_muted_phase_id: '12'
-
-  micro_wake_word_model: okay_nabu
+  voice_assist_idle_phase_id: "1"
+  voice_assist_listening_phase_id: "2"
+  voice_assist_thinking_phase_id: "3"
+  voice_assist_replying_phase_id: "4"
+  voice_assist_not_ready_phase_id: "10"
+  voice_assist_error_phase_id: "11"
+  voice_assist_muted_phase_id: "12"
 
 esphome:
   name: ${name}
@@ -37,16 +35,16 @@ esphome:
     version: "1.0"
   min_version: 2023.11.5
   on_boot:
-      priority: 600
-      then: 
-        - script.execute: draw_display
-        - delay: 30s
-        - if:
-            condition:
-              lambda: return id(init_in_progress);
-            then:
-              - lambda: id(init_in_progress) = false;
-              - script.execute: draw_display
+    priority: 600
+    then:
+      - script.execute: draw_display
+      - delay: 30s
+      - if:
+          condition:
+            lambda: return id(init_in_progress);
+          then:
+            - lambda: id(init_in_progress) = false;
+            - script.execute: draw_display
 
 esp32:
   board: esp32s3box
@@ -84,8 +82,8 @@ wifi:
   ap:
   on_connect:
     - script.execute: draw_display
-    - delay: 5s # Gives time for improv results to be transmitted 
-    - ble.disable:  
+    - delay: 5s # Gives time for improv results to be transmitted
+    - ble.disable:
   on_disconnect:
     - script.execute: draw_display
     - ble.enable:
@@ -122,7 +120,7 @@ binary_sensor:
           - ON for at least 10s
         then:
           - button.press: factory_reset_btn
-          
+
 output:
   - platform: ledc
     pin: GPIO45
@@ -147,11 +145,6 @@ speaker:
   - platform: esp_adf
     id: box_speaker
 
-micro_wake_word:
-  model: ${micro_wake_word_model}
-  on_wake_word_detected: 
-    - voice_assistant.start
-
 voice_assistant:
   id: va
   microphone: box_mic
@@ -173,23 +166,12 @@ voice_assistant:
   on_tts_stream_end:
     - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
-  on_end:
-    - if:
-        condition:
-          and:
-            - switch.is_off: mute
-            - lambda: return id(wake_word_engine_location).state == "On device";
-        then:
-          - wait_until:
-              not:
-                voice_assistant.is_running:
-          - micro_wake_word.start:
   on_error:
     - if:
         condition:
           lambda: return !id(init_in_progress);
         then:
-          - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};  
+          - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};
           - script.execute: draw_display
           - delay: 1s
           - if:
@@ -200,42 +182,21 @@ voice_assistant:
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
           - script.execute: draw_display
-  on_client_connected: 
+  on_client_connected:
     - if:
         condition:
           switch.is_off: mute
         then:
           - wait_until:
               not: ble.enabled
-          - if:
-              condition: 
-                lambda: return id(wake_word_engine_location).state == "In Home Assistant";
-              then:
-                - lambda: id(va).set_use_wake_word(true);
-                - voice_assistant.start_continuous:
-          - if:
-              condition: 
-                lambda: return id(wake_word_engine_location).state == "On device";
-              then:
-                - micro_wake_word.start
+          - voice_assistant.start_continuous:
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
         else:
           - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
     - lambda: id(init_in_progress) = false;
     - script.execute: draw_display
   on_client_disconnected:
-    - if:
-        condition: 
-          lambda: return id(wake_word_engine_location).state == "In Home Assistant";
-        then:
-          - lambda: id(va).set_use_wake_word(false);
-          - voice_assistant.stop:
-    - if:
-        condition: 
-          lambda: return id(wake_word_engine_location).state == "On device";
-        then:
-          - micro_wake_word.stop
-    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};  
+    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};
     - script.execute: draw_display
 
 script:
@@ -304,76 +265,31 @@ switch:
       - if:
           condition:
             lambda: return !id(init_in_progress);
-          then:      
+          then:
+            - lambda: id(va).set_use_wake_word(true);
             - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
             - if:
                 condition:
                   not:
                     - voice_assistant.is_running
                 then:
-                  - if:
-                      condition: 
-                        lambda: return id(wake_word_engine_location).state == "In Home Assistant";
-                      then:
-                        - lambda: id(va).set_use_wake_word(true);
-                        - voice_assistant.start_continuous
-                  - if:
-                      condition: 
-                        lambda: return id(wake_word_engine_location).state == "On device";
-                      then:
-                        - micro_wake_word.start
+                  - voice_assistant.start_continuous
             - script.execute: draw_display
     on_turn_on:
       - if:
           condition:
             lambda: return !id(init_in_progress);
-          then:      
-            - lambda: id(va).set_use_wake_word(false);
+          then:
             - voice_assistant.stop
-            - micro_wake_word.stop
+            - lambda: id(va).set_use_wake_word(false);
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
             - script.execute: draw_display
-
-select:
-  - platform: template
-    entity_category: config
-    name: Wake word engine location
-    id: wake_word_engine_location
-    optimistic: True
-    restore_value: True
-    options:
-      - In Home Assistant
-      - On device
-    initial_option: On device
-    on_value:
-      - wait_until:
-          lambda: return id(voice_assistant_phase) == ${voice_assist_muted_phase_id} || id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
-      - if:
-          condition:
-            lambda: return x == "In Home Assistant";
-          then:
-            - micro_wake_word.stop
-            - delay: 500ms
-            - if:
-                condition:
-                  switch.is_off: mute
-                then:
-                  - lambda: id(va).set_use_wake_word(true);
-                  - voice_assistant.start_continuous:
-      - if:
-          condition:
-            lambda: return x == "On device";
-          then:
-            - lambda: id(va).set_use_wake_word(false);
-            - voice_assistant.stop
-            - delay: 500ms
-            - micro_wake_word.start
 
 globals:
   - id: init_in_progress
     type: bool
     restore_value: no
-    initial_value: 'true'
+    initial_value: "true"
   - id: voice_assistant_phase
     type: int
     restore_value: no
