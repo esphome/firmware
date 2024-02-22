@@ -1,5 +1,6 @@
 name: YAML lint
 
+# yamllint disable-line rule:truthy
 on:
   push:
     branches: [main]
@@ -20,3 +21,5 @@ jobs:
         uses: actions/checkout@v4.1.1
       - name: Run yamllint
         uses: frenck/action-yamllint@v1.4.2
+        with:
+          strict: true

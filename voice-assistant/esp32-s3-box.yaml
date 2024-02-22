@@ -9,20 +9,20 @@ substitutions:
   replying_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/replying_320_240.png
   error_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/error_320_240.png
 
-  loading_illustration_background_color: '000000'
-  idle_illustration_background_color: '000000'
-  listening_illustration_background_color: 'FFFFFF'
-  thinking_illustration_background_color: 'FFFFFF'
-  replying_illustration_background_color: 'FFFFFF'
-  error_illustration_background_color: '000000'
+  loading_illustration_background_color: "000000"
+  idle_illustration_background_color: "000000"
+  listening_illustration_background_color: "FFFFFF"
+  thinking_illustration_background_color: "FFFFFF"
+  replying_illustration_background_color: "FFFFFF"
+  error_illustration_background_color: "000000"
 
-  voice_assist_idle_phase_id: '1'
-  voice_assist_listening_phase_id: '2'
-  voice_assist_thinking_phase_id: '3'
-  voice_assist_replying_phase_id: '4'
-  voice_assist_not_ready_phase_id: '10'
-  voice_assist_error_phase_id: '11'  
-  voice_assist_muted_phase_id: '12'
+  voice_assist_idle_phase_id: "1"
+  voice_assist_listening_phase_id: "2"
+  voice_assist_thinking_phase_id: "3"
+  voice_assist_replying_phase_id: "4"
+  voice_assist_not_ready_phase_id: "10"
+  voice_assist_error_phase_id: "11"
+  voice_assist_muted_phase_id: "12"
 
 esphome:
   name: ${name}
@@ -35,16 +35,16 @@ esphome:
     version: "1.0"
   min_version: 2023.11.5
   on_boot:
-      priority: 600
-      then: 
-        - script.execute: draw_display
-        - delay: 30s
-        - if:
-            condition:
-              lambda: return id(init_in_progress);
-            then:
-              - lambda: id(init_in_progress) = false;
-              - script.execute: draw_display
+    priority: 600
+    then:
+      - script.execute: draw_display
+      - delay: 30s
+      - if:
+          condition:
+            lambda: return id(init_in_progress);
+          then:
+            - lambda: id(init_in_progress) = false;
+            - script.execute: draw_display
 
 esp32:
   board: esp32s3box
@@ -82,8 +82,8 @@ wifi:
   ap:
   on_connect:
     - script.execute: draw_display
-    - delay: 5s # Gives time for improv results to be transmitted 
-    - ble.disable:  
+    - delay: 5s  # Gives time for improv results to be transmitted
+    - ble.disable:
   on_disconnect:
     - script.execute: draw_display
     - ble.enable:
@@ -120,7 +120,7 @@ binary_sensor:
           - ON for at least 10s
         then:
           - button.press: factory_reset_btn
-          
+
 output:
   - platform: ledc
     pin: GPIO45
@@ -171,7 +171,7 @@ voice_assistant:
         condition:
           lambda: return !id(init_in_progress);
         then:
-          - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};  
+          - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};
           - script.execute: draw_display
           - delay: 1s
           - if:
@@ -182,7 +182,7 @@ voice_assistant:
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
           - script.execute: draw_display
-  on_client_connected: 
+  on_client_connected:
     - if:
         condition:
           switch.is_off: mute
@@ -193,10 +193,10 @@ voice_assistant:
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
         else:
           - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
-    - lambda: id(init_in_progress) = false; 
+    - lambda: id(init_in_progress) = false;
     - script.execute: draw_display
   on_client_disconnected:
-    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};  
+    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};
     - script.execute: draw_display
 
 script:
@@ -265,7 +265,7 @@ switch:
       - if:
           condition:
             lambda: return !id(init_in_progress);
-          then:      
+          then:
             - lambda: id(va).set_use_wake_word(true);
             - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
             - if:
@@ -279,7 +279,7 @@ switch:
       - if:
           condition:
             lambda: return !id(init_in_progress);
-          then:      
+          then:
             - voice_assistant.stop
             - lambda: id(va).set_use_wake_word(false);
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
@@ -288,11 +288,11 @@ switch:
 globals:
   - id: init_in_progress
     type: bool
-    restore_value: no
-    initial_value: 'true'
+    restore_value: false
+    initial_value: "true"
   - id: voice_assistant_phase
     type: int
-    restore_value: no
+    restore_value: false
     initial_value: ${voice_assist_not_ready_phase_id}
 
 image:

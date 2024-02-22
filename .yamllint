@@ -5,6 +5,7 @@ extends: default
 ignore-from-file: .gitignore
 
 rules:
+  document-start: disable
   empty-lines:
     level: error
     max: 1

@@ -102,7 +102,7 @@ media_player:
     mode: mono
     mute_pin:
       number: GPIO21
-      inverted: True
+      inverted: true
 
 microphone:
   - platform: i2s_audio
@@ -164,11 +164,11 @@ voice_assistant:
 
 esp32_touch:
   setup_mode: false
-  sleep_duration: 2ms 
+  sleep_duration: 2ms
   measurement_duration: 800us
   low_voltage_reference: 0.8V
   high_voltage_reference: 2.4V
-  
+
   filter_mode: IIR_16
   debounce_count: 2
   noise_threshold: 0
@@ -182,8 +182,8 @@ binary_sensor:
   - platform: esp32_touch
     id: volume_down
     pin: GPIO4
-    threshold: 539000 # will automatically be tuned at runtime
-    on_press: 
+    threshold: 539000  # will automatically be tuned at runtime
+    on_press:
       then:
         - light.turn_on: left_led
         - script.execute:
@@ -198,15 +198,15 @@ binary_sensor:
                   id: set_volume
                   volume: -0.05
               - delay: 150ms
-    on_release: 
+    on_release:
       then:
         - light.turn_off: left_led
-        
+
   - platform: esp32_touch
     id: volume_up
     pin: GPIO2
-    threshold: 580000 # will automatically be tuned at runtime
-    on_press: 
+    threshold: 580000  # will automatically be tuned at runtime
+    on_press:
       then:
         - light.turn_on: right_led
         - script.execute:
@@ -221,14 +221,14 @@ binary_sensor:
                   id: set_volume
                   volume: 0.05
               - delay: 150ms
-    on_release: 
+    on_release:
       then:
         - light.turn_off: right_led
-        
+
   - platform: esp32_touch
     id: action
     pin: GPIO3
-    threshold: 751000 # will automatically be tuned at runtime
+    threshold: 751000  # will automatically be tuned at runtime
     on_click:
       - if:
           condition:
@@ -249,7 +249,7 @@ binary_sensor:
             - script.execute: reset_led
             - script.wait: reset_led
             - voice_assistant.start_continuous:
-            
+
   - platform: gpio
     id: mute_switch
     pin:
@@ -294,7 +294,7 @@ light:
           name: slow_pulse
           transition_length: 1s
           update_interval: 2s
-      - addressable_lambda: 
+      - addressable_lambda:
           name: show_volume
           update_interval: 50ms
           lambda: |-
@@ -422,7 +422,7 @@ script:
 
           //ESP_LOGD("touch_calibration", "[%d] qsize %d, sum %d, thresh_index %d, consecutive_anomalies %d", button, qsizes[button], sums[button], thresh_indices[button], consecutive_anomalies_per_button[button]);
           //ESP_LOGD("touch_calibration", "[%d] New value is %d", button, newval);
-          
+
           if(qsizes[button] == 5) {
             float avg = float(sums[button])/float(qsizes[button]);
             if((fabs(float(newval)-avg)/avg) > id(thresh_percent)) {
@@ -430,13 +430,12 @@ script:
               //ESP_LOGD("touch_calibration", "[%d] %d anomalies detected.", button, consecutive_anomalies_per_button[button]);
               if(consecutive_anomalies_per_button[button] < 10)
                 return;
-            } 
+            }
           }
 
           //ESP_LOGD("touch_calibration", "[%d] Resetting consecutive anomalies counter.", button);
           consecutive_anomalies_per_button[button] = 0;
 
-          
           if(qsizes[button] == 5) {
             //ESP_LOGD("touch_calibration", "[%d] Queue full, removing %d.", button, id(touch_calibration_values)[thresh_indices[button]]);
             sums[button] -= (uint32_t) *(calibration_values+thresh_indices[button]);// id(touch_calibration_values)[thresh_indices[button]];
@@ -450,7 +449,7 @@ script:
           //ESP_LOGD("touch_calibration", "[%d] Average value is %d", button, sums[button]/qsizes[button]);
           uint32_t newthresh = uint32_t((sums[button]/qsizes[button]) * (1.0 + id(thresh_percent)));
           //ESP_LOGD("touch_calibration", "[%d] Setting threshold %d", button, newthresh);
-          
+
           switch(button) {
             case 0:
               id(volume_down).set_threshold(newthresh);
