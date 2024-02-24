@@ -1,6 +1,6 @@
-# This firmware is soley for the Espressif ESP32-S3-Box-3 with the Sensor dock
-# It sets up sensors and configuration entities in Home Assistant for this specific hardware
-# It is designed to be added as a second package to be inserted after the esp32-s3-box-3.yaml package
+# This firmware is soley for the Espressif ESP32-S3-Box-3 with the Sensor dock.
+# It sets up sensors and configuration entities in Home Assistant for the radar and battery in the sensor dock.
+# It is designed to be added as a second package to be inserted after the esp32-s3-box-3.yaml package.
 #
 # Enables the box:
 # - to be carried around as a portable VA and have an idea when the battery is about to go out.
