@@ -157,7 +157,13 @@ speaker:
 micro_wake_word:
   model: ${micro_wake_word_model}
   on_wake_word_detected:
-    - voice_assistant.start
+    - if:
+        condition:
+          switch.is_off: continuous_conversation
+        then:
+          - voice_assistant.start
+        else:
+          - voice_assistant.start_continuous
 
 voice_assistant:
   id: va
@@ -340,6 +346,12 @@ switch:
             - micro_wake_word.stop
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
             - script.execute: draw_display
+  - platform: template
+    name: Continuous conversation
+    id: continuous_conversation
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
 
 select:
   - platform: template
