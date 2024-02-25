@@ -25,7 +25,7 @@
 # To use, add the following to your device's yaml:
 # ------------------------------------------------
 # packages:
-#   esphome.voice-assistant-sensor: github://esphome/firmware/esp32-s3-box-docks/box3-sensor-for-voice-assistant.yaml
+#   esphome.voice-assistant-sensor: github://esphome/firmware/esp32-box-docks/box3-sensor-for-voice-assistant.yaml
 # ------------------------------------------------
 
 substitutions:
