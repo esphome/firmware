@@ -68,7 +68,7 @@ sensor:
     update_interval: 60s
     attenuation: auto
     filters:
-        - multiply: 4.01
+      - multiply: 4.01
 
   - platform: copy
     source_id: battery_voltage
