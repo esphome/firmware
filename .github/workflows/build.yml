@@ -68,7 +68,8 @@ jobs:
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: esphome/build-action@jesserockz-2024-035
+      - name: Build Firmware
+        uses: esphome/build-action@jesserockz-2024-035
         id: esphome-build
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.device }}.yaml
