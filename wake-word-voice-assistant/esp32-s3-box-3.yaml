@@ -219,6 +219,21 @@ voice_assistant:
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
           - script.execute: draw_display
+    - if:
+      condition:
+        and:
+          - lambda: return code = 651;  # silence detected
+          - voice_assistant.is_running:
+          - switch.is_on: continuous_conversation
+        then:
+          - if:
+              condition:
+                lambda: return id(wake_word_engine_location).state == "On device";
+              then:
+                - voice_assistant.stop:
+                - micro_wake_word.start:
+                - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+                - script.execute: draw_display
   on_client_connected:
     - if:
         condition:
