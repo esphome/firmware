@@ -51,7 +51,7 @@ sensor:
     source_id: battery_voltage
     name: "Battery level"
     unit_of_measurement: "%"
-    accuracy_decimals: 1
+    accuracy_decimals: 0
     device_class: "battery"
     entity_category: "diagnostic"
     filters:
