@@ -184,7 +184,9 @@ voice_assistant:
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
   on_tts_stream_end:
-    - logger.log: "on tts_stream_end started"
+    - logger.log:
+        format: "on_tts_stream_end started"
+        level: INFO
     - if:
         condition:
           - switch.is_on: continuous_conversation
