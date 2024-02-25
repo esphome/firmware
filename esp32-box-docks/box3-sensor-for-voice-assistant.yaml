@@ -45,7 +45,7 @@ sensor:
     update_interval: 60s
     attenuation: auto
     filters:
-        - multiply: 4.01
+      - multiply: 4.01
 
   - platform: copy
     source_id: battery_voltage
@@ -60,7 +60,6 @@ sensor:
           min_value: 0
           max_value: 100
           ignore_out_of_range: true
-
 
 switch:
   - platform: template
@@ -98,7 +97,7 @@ binary_sensor:
     on_release:
       then:
         - if:
-            condition: 
+            condition:
               switch.is_on: mute_when_absent
             then:
               - switch.turn_on: mute
@@ -106,7 +105,7 @@ binary_sensor:
     on_press:
       then:
         - if:
-            condition: 
+            condition:
               switch.is_on: mute_when_absent
             then:
               - switch.turn_off: mute
