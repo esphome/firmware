@@ -184,7 +184,13 @@ voice_assistant:
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
   on_tts_stream_end:
-    - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+    - if:
+        condition:
+          - switch.is_on: continuous_conversation
+        then:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
+        else:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
   on_end:
     - if:
