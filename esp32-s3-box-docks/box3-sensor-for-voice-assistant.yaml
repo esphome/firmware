@@ -11,7 +11,7 @@
 #
 # Sensor:
 # battery voltage (hidden)
-# battery level %
+# battery level (%)
 #
 # Binary Sensor:
 # Presence detect (occupancy)
@@ -20,7 +20,13 @@
 # Presence duration (timeout to keep Presence detect true, default 60 seconds)
 #
 # Switch:
-# Mute when absent (microphone and backlight off for low power, default OFF)
+# Mute when absent (turns microphone and backlight off for low power, default OFF)
+#
+# To use, add the following to your device's yaml:
+# ------------------------------------------------
+# packages:
+#   esphome.voice-assistant-sensor: github://esphome/firmware/esp32-s3-box-docks/box3-sensor-for-voice-assistant.yaml
+# ------------------------------------------------
 
 substitutions:
   name: esp32-s3-box-3-sensor
