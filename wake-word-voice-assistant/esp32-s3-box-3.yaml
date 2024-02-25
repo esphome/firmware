@@ -40,7 +40,9 @@ esphome:
     priority: 600
     then:
       - script.execute: draw_display
+      - logger.log: "Hello World 3"
       - delay: 30s
+      - logger.log: "Hello World 4"
       - if:
           condition:
             lambda: return id(init_in_progress);
