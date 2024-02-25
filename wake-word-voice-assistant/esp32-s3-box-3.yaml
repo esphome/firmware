@@ -215,16 +215,16 @@ voice_assistant:
               condition:
                 switch.is_off: mute
               then:
-                - if:
-                  condition:
-                    and:
-                      - switch.is_on: continuous_conversation
-                      - voice_assistant.is_running:
-                      - lambda: return id(wake_word_engine_location).state == "On device";
-                      #- lambda: return code == 651;  # silence detected
-                    then:
-                      - voice_assistant.stop:
-                      - micro_wake_word.start:
+              #   - if:
+              #     condition:
+              #       and:
+              #         - switch.is_on: continuous_conversation
+              #         - voice_assistant.is_running:
+              #         - lambda: return id(wake_word_engine_location).state == "On device";
+              #         #- lambda: return code == 651;  # silence detected
+              #       then:
+                - voice_assistant.stop:
+                - micro_wake_word.start:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
