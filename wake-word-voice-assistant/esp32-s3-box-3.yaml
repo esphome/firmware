@@ -184,6 +184,7 @@ voice_assistant:
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
   on_tts_stream_end:
+    - logger.log: "on tts_stream_end started"
     - if:
         condition:
           - switch.is_on: continuous_conversation
@@ -193,6 +194,7 @@ voice_assistant:
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
   on_end:
+    - logger.log: "on_end started"
     - if:
         condition:
           and:
@@ -204,6 +206,7 @@ voice_assistant:
                 voice_assistant.is_running:
           - micro_wake_word.start:
   on_error:
+    - logger.log: "on_error started"
     - if:
         condition:
           lambda: return !id(init_in_progress);
