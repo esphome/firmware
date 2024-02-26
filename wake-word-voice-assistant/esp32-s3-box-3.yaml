@@ -40,9 +40,7 @@ esphome:
     priority: 600
     then:
       - script.execute: draw_display
-      - logger.log: "Hello World 3"
       - delay: 30s
-      - logger.log: "Hello World 4"
       - if:
           condition:
             lambda: return id(init_in_progress);
@@ -83,7 +81,7 @@ api:
 
 ota:
 logger:
-  # hardware_uart: USB_SERIAL_JTAG
+  hardware_uart: USB_SERIAL_JTAG
 
 dashboard_import:
   package_import_url: github://esphome/firmware/wake-word-voice-assistant/esp32-s3-box-3.yaml@main
@@ -186,13 +184,12 @@ voice_assistant:
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
   on_tts_stream_end:
-    - logger.log:
-        format: "on_tts_stream_end started"
-        level: INFO
+    - logger.log: "on_tts_stream_end started"
     - if:
         condition:
           - switch.is_on: continuous_conversation
         then:
+          - logger.log: "Switching back to LISTENING phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
         else:
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
@@ -208,6 +205,7 @@ voice_assistant:
           - wait_until:
               not:
                 voice_assistant.is_running:
+          - logger.log: "Starting micro_wake_word"
           - micro_wake_word.start:
   on_error:
     - logger.log: "on_error started"
@@ -215,6 +213,7 @@ voice_assistant:
         condition:
           lambda: return !id(init_in_progress);
         then:
+          - logger.log: "Switching to ERROR phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};
           - script.execute: draw_display
           - delay: 1s
@@ -230,8 +229,12 @@ voice_assistant:
               #         - lambda: return id(wake_word_engine_location).state == "On device";
               #         #- lambda: return code == 651;  # silence detected
               #       then:
+                - logger.log: "Stopping voice_assistant"
                 - voice_assistant.stop:
+                - delay: 1s
+                - logger.log: "Starting micro_wake_word"
                 - micro_wake_word.start:
+                - logger.log: "Switching to IDLE phase"
                 - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
