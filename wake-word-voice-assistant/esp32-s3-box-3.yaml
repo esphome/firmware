@@ -192,6 +192,7 @@ voice_assistant:
           - logger.log: "Switching back to LISTENING phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
         else:
+          - logger.log: "Switching to IDLE phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
   on_end:
