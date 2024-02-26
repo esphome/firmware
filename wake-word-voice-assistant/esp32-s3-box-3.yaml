@@ -239,6 +239,9 @@ voice_assistant:
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
           - script.execute: draw_display
+        else:
+          - logger.log: "init_in_progress was true"
+      - logger.log: "if statement in error trap completed"
   on_client_connected:
     - if:
         condition:
