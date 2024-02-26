@@ -83,7 +83,7 @@ api:
 
 ota:
 logger:
-  hardware_uart: USB_SERIAL_JTAG
+  # hardware_uart: USB_SERIAL_JTAG
 
 dashboard_import:
   package_import_url: github://esphome/firmware/wake-word-voice-assistant/esp32-s3-box-3.yaml@main
