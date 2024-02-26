@@ -12,13 +12,13 @@ esphome:
   platformio_options:
     board_build.flash_mode: dio
   project:
-    name: esphome.esp_web_tools_example
+    name: esphome.esp32-s3-box-3-sensor_example
     version: "1.0"
 
 esp32:
-  board: esp32-s3-devkitc-1
+  board: esp32s3box3
   framework:
-    type: arduino
+    type: esp-idf
 
 # Enable logging
 logger:
@@ -35,14 +35,13 @@ improv_serial:
 wifi:
   # Set up a wifi access point
   ap:
-    ssid: "ESP Web Tools"
 
 # In combination with the `ap` this allows the user
 # to provision wifi credentials to the device via WiFi AP.
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/esp-web-tools/esp32s3.yaml@v2
+  package_import_url: github://esphome/firmware/esp32-box-docks/box3-sensor-generic.yaml@main
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
