@@ -120,6 +120,7 @@ binary_sensor:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: true
+      ignore_strapping_warning: true
     name: Top Left Button
     disabled_by_default: true
     entity_category: diagnostic
@@ -175,75 +176,95 @@ voice_assistant:
   volume_multiplier: 2.0
   vad_threshold: 3
   on_listening:
+    - logger.log: "(on_listening) started"
     - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
     - script.execute: draw_display
+    - if:
+        condition:
+          - switch.is_on: continuous_conversation
+        then:
+          - script.execute: stt_timeout_to_idle
   on_stt_vad_end:
+    - logger.log: "(on_stt_vad_end) started"
     - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
     - script.execute: draw_display
+    - if:
+        condition:
+          - switch.is_on: continuous_conversation
+        then:
+          - script.execute: stt_timeout_to_idle
+  on_stt_end:
+    - logger.log:
+        format: "(on_stt_end) User: %s"
+        args: [ 'x.c_str()' ]
+        level: INFO
+  on_tts_start:
+    - logger.log:
+        format: "(on_tts_start) Jarvis: %s"
+        args: [ 'x.c_str()' ]
+        level: INFO
   on_tts_stream_start:
+    - logger.log: "(on_tts_stream_start) started"
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
+    - if:
+        condition:
+          - switch.is_on: continuous_conversation
+        then:
+          - script.execute: stt_timeout_to_idle
   on_tts_stream_end:
-    - logger.log: "on_tts_stream_end started"
+    - logger.log: "(on_tts_stream_end) started"
     - if:
         condition:
           - switch.is_on: continuous_conversation
         then:
           - logger.log: "Switching back to LISTENING phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
+          - script.execute: stt_timeout_to_idle
         else:
           - logger.log: "Switching to IDLE phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
   on_end:
-    - logger.log: "on_end started"
+    - logger.log: "(on-end) started"
     - if:
         condition:
           and:
             - switch.is_off: mute
             - lambda: return id(wake_word_engine_location).state == "On device";
-        then:
+            - lambda: return !(id(voice_assistant_phase) == ${voice_assist_error_phase_id});
+        then: 
+          - script.stop: stt_timeout_to_idle
+          - logger.log: "(on-end) Waiting for voice_assistant to stop"
           - wait_until:
               not:
                 voice_assistant.is_running:
-          - logger.log: "Starting micro_wake_word"
+          - logger.log: "(on-end) Starting micro_wake_word"
           - micro_wake_word.start:
+    - logger.log: "(on-end) exiting"
   on_error:
-    - logger.log: "on_error started"
+    - logger.log: "(on_error) started"
     - if:
         condition:
           lambda: return !id(init_in_progress);
         then:
-          - logger.log: "Switching to ERROR phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};
+          - logger.log: "(on_error) Switched to ERROR phase"
           - script.execute: draw_display
           - delay: 1s
+          - script.stop: stt_timeout_to_idle
           - if:
               condition:
                 switch.is_off: mute
               then:
-              #   - if:
-              #     condition:
-              #       and:
-              #         - switch.is_on: continuous_conversation
-              #         - voice_assistant.is_running:
-              #         - lambda: return id(wake_word_engine_location).state == "On device";
-              #         #- lambda: return code == 651;  # silence detected
-              #       then:
-                - logger.log: "Stopping voice_assistant"
-                - voice_assistant.stop:
-                - delay: 1s
-                - logger.log: "Starting micro_wake_word"
-                - micro_wake_word.start:
-                - logger.log: "Switching to IDLE phase"
+                - logger.log: "(on_error) Switching to IDLE phase"
                 - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
           - script.execute: draw_display
-        else:
-          - logger.log: "init_in_progress was true"
-      - logger.log: "if statement in error trap completed"
+    - logger.log: "(on_error) exiting"
   on_client_connected:
+    - logger.log: "(on_client_connected) started"
     - if:
         condition:
           switch.is_off: mute
@@ -260,6 +281,7 @@ voice_assistant:
               condition:
                 lambda: return id(wake_word_engine_location).state == "On device";
               then:
+                - logger.log: "(on_client_connected) Starting micro_wake_word"
                 - micro_wake_word.start
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
         else:
@@ -282,6 +304,23 @@ voice_assistant:
     - script.execute: draw_display
 
 script:
+  - id: stt_timeout_to_idle
+    mode: restart     # restart the timer if called before timeout
+    then:
+      - logger.log: "(stt_timeout_to_idle) resetting"
+      - delay: 8s # change this to a configurable number
+      - logger.log: "(stt_timeout_to_idle) Stopping voice_assistant"
+      - voice_assistant.stop:
+      - logger.log: "(stt_timeout_to_idle) Waiting for voice_assistant to stop"
+      - wait_until:
+          not:
+            voice_assistant.is_running:
+      - logger.log: "(stt_timeout_to_idle) Starting micro_wake_word"
+      - micro_wake_word.start:
+      - logger.log: "(stt_timeout_to_idle) Switching to IDLE phase"
+      - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+      - script.execute: draw_display
+
   - id: draw_display
     then:
       - if:
@@ -351,20 +390,26 @@ switch:
             - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
             - if:
                 condition:
-                  not:
-                    - voice_assistant.is_running
+                  and:
+                    - lambda: return id(wake_word_engine_location).state == "In Home Assistant";
+                    - not:
+                        voice_assistant.is_running
+                then:
+                  - logger.log: "(switch.mute:OFF) Starting voice_assistant continuous"
+                  - lambda: id(va).set_use_wake_word(true);
+                  - voice_assistant.start_continuous
+            - if:
+                condition:
+                  lambda: return id(wake_word_engine_location).state == "On device";
                 then:
                   - if:
                       condition:
-                        lambda: return id(wake_word_engine_location).state == "In Home Assistant";
+                        voice_assistant.is_running
                       then:
-                        - lambda: id(va).set_use_wake_word(true);
-                        - voice_assistant.start_continuous
-                  - if:
-                      condition:
-                        lambda: return id(wake_word_engine_location).state == "On device";
-                      then:
-                        - micro_wake_word.start
+                        - logger.log: "(switch.mute:OFF) Stopping voice_assistant"
+                        - voice_assistant.stop
+                  - logger.log: "(switch.mute:OFF) Starting micro_wake_word"
+                  - micro_wake_word.start
             - script.execute: draw_display
     on_turn_on:
       - if:
@@ -372,10 +417,17 @@ switch:
             lambda: return !id(init_in_progress);
           then:
             - lambda: id(va).set_use_wake_word(false);
-            - voice_assistant.stop
+            - if:
+                condition:
+                  - voice_assistant.is_running
+                then:
+                  - logger.log: "(switch.mute:ON) Stopping voice_assistant"
+                  - voice_assistant.stop
+            - logger.log: "(switch.mute:ON) Stopping micro_wake_word"
             - micro_wake_word.stop
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
             - script.execute: draw_display
+
   - platform: template
     name: Continuous conversation
     id: continuous_conversation
