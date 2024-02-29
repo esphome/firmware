@@ -68,11 +68,13 @@ jobs:
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: esphome/build-action@v1.9.0
+      - name: Build Firmware
+        uses: esphome/build-action@v2.0.0
         id: esphome-build
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.device }}.yaml
           version: ${{ matrix.version || 'latest' }}
+          cache: true
       - name: Move generated files to output
         run: |
           mkdir -p output/${{ matrix.device }}
