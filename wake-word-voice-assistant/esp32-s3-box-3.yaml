@@ -232,8 +232,9 @@ voice_assistant:
           and:
             - switch.is_off: mute
             - lambda: return id(wake_word_engine_location).state == "On device";
-            - lambda: return !(id(voice_assistant_phase) == ${voice_assist_error_phase_id});
-        then: 
+            - lambda: return id(voice_assistant_phase) == ${voice_assist_listening_phase_id};
+        then:
+          - logger.log: "(on_end) Stopping stt_timeout_to_idle"
           - script.stop: stt_timeout_to_idle
           - logger.log: "(on-end) Waiting for voice_assistant to stop"
           - wait_until:
@@ -246,17 +247,28 @@ voice_assistant:
     - logger.log: "(on_error) started"
     - if:
         condition:
-          lambda: return !id(init_in_progress);
+          and:
+            - lambda: return !id(init_in_progress);
+            - lambda: return !(code == "stt-no-text-recognized");
         then:
           - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};
           - logger.log: "(on_error) Switched to ERROR phase"
           - script.execute: draw_display
           - delay: 1s
+          - logger.log: "(on_error) Stopping stt_timeout_to_idle"
           - script.stop: stt_timeout_to_idle
           - if:
               condition:
                 switch.is_off: mute
               then:
+                - logger.log: "(on_error) Stopping voice_assistant"
+                - voice_assistant.stop:
+                - logger.log: "(on_error) Waiting for voice_assistant to stop"
+                - wait_until:
+                    not:
+                      voice_assistant.is_running:
+                - logger.log: "(on_error) Starting micro_wake_word"
+                - micro_wake_word.start:
                 - logger.log: "(on_error) Switching to IDLE phase"
                 - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
               else:
@@ -307,8 +319,10 @@ script:
   - id: stt_timeout_to_idle
     mode: restart     # restart the timer if called before timeout
     then:
-      - logger.log: "(stt_timeout_to_idle) resetting"
-      - delay: 8s # change this to a configurable number
+      - logger.log: 
+          format: "(stt_timeout_to_idle) resetting to %.0f seconds"
+          args: [ id(continuous_timeout).state ]
+      - delay: !lambda "return id(continuous_timeout).state * 1000;"
       - logger.log: "(stt_timeout_to_idle) Stopping voice_assistant"
       - voice_assistant.stop:
       - logger.log: "(stt_timeout_to_idle) Waiting for voice_assistant to stop"
@@ -427,13 +441,27 @@ switch:
             - micro_wake_word.stop
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
             - script.execute: draw_display
-
   - platform: template
     name: Continuous conversation
     id: continuous_conversation
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
     entity_category: config
+
+number:
+  - platform: template
+    entity_category: config
+    name: Continuous timeout
+    id: continuous_timeout
+    icon: mdi:clock
+    optimistic: true
+    restore_value: true
+    initial_value: 8
+    min_value: 1
+    step: 1
+    max_value: 10
+    unit_of_measurement: s
+    mode: slider
 
 select:
   - platform: template
@@ -522,6 +550,14 @@ image:
     type: RGB24
     use_transparency: true
 
+font:
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 300
+    id: font_roboto_16
+    size: 16
+
 color:
   - id: idle_color
     hex: ${idle_illustration_background_color}
@@ -540,6 +576,15 @@ spi:
   clk_pin: 7
   mosi_pin: 6
 
+time:
+  - platform: sntp
+    id: the_time
+    on_time:
+      - cron: 0 * * * * *
+        then:
+          - logger.log: "(on_time) Updating time display"
+          - script.execute: draw_display
+
 display:
   - platform: ili9xxx
     id: s3_box_lcd
@@ -556,14 +601,18 @@ display:
         lambda: |-
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
+          it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Say \"Hey Jarvis\"" );
+          it.strftime( it.get_width() / 2, it.get_height() - 10, id(font_roboto_16), Color::WHITE, TextAlign::BOTTOM_CENTER, "%a %d %b, %Y - %I:%M %p", id(the_time).now() );
       - id: listening_page
         lambda: |-
           it.fill(id(listening_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
+          it.print( 10, 10, id(font_roboto_16), Color::BLACK, "How can I help?" );
       - id: thinking_page
         lambda: |-
           it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
+          it.print( 10, 10, id(font_roboto_16), Color::BLACK, "I heard you." );
       - id: replying_page
         lambda: |-
           it.fill(id(replying_color));
@@ -582,6 +631,7 @@ display:
         lambda: |-
           it.fill(id(loading_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
+          it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Starting up..." );
       - id: muted_page
         lambda: |-
           it.fill(Color::BLACK);
