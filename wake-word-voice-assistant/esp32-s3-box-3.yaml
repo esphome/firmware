@@ -25,6 +25,8 @@ substitutions:
   voice_assist_muted_phase_id: "12"
 
   micro_wake_word_model: okay_nabu
+  micro_wake_word_text: "Okay Nabu"
+  
 
 esphome:
   name: ${name}
@@ -160,7 +162,7 @@ micro_wake_word:
   on_wake_word_detected:
     - if:
         condition:
-          switch.is_off: continuous_conversation
+          switch.is_off: continued_conversation
         then:
           - voice_assistant.start
         else:
@@ -177,71 +179,83 @@ voice_assistant:
   vad_threshold: 3
   on_listening:
     - logger.log: "(on_listening) started"
+    - logger.log: "(on_listening) Switching to LISTENING phase"
     - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
     - script.execute: draw_display
     - if:
         condition:
-          - switch.is_on: continuous_conversation
+          - switch.is_on: continued_conversation
         then:
           - script.execute: stt_timeout_to_idle
+          - lambda: id(va).set_use_wake_word(false);
   on_stt_vad_end:
     - logger.log: "(on_stt_vad_end) started"
-    - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
-    - script.execute: draw_display
-    - if:
-        condition:
-          - switch.is_on: continuous_conversation
-        then:
-          - script.execute: stt_timeout_to_idle
   on_stt_end:
     - logger.log:
         format: "(on_stt_end) User: %s"
         args: [ 'x.c_str()' ]
         level: INFO
+    - lambda: id(assist_query).publish_state( x.c_str() );
+    - logger.log: "(on_stt_end) Switching to THINKING phase"
+    - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
+    - script.execute: draw_display
+    - if:
+        condition:
+          - switch.is_on: continued_conversation
+        then:
+          - script.execute: stt_timeout_to_idle
+    - lambda: id(assist_query).publish_state( x.c_str() );
   on_tts_start:
     - logger.log:
         format: "(on_tts_start) Jarvis: %s"
         args: [ 'x.c_str()' ]
         level: INFO
+    - lambda: id(assist_reply).publish_state( x.c_str() );
+    - if:
+        condition:
+          and:
+            - lambda: return (x == "Ok, bye for now.");
+            - switch.is_on: continued_conversation
+            # - lambda: return id(wake_word_engine_location).state == "On device";
+        then:
+          - logger.log: "(stt_timeout_to_idle) Returning to idle by script"
+          - script.execute: return_to_idle
   on_tts_stream_start:
     - logger.log: "(on_tts_stream_start) started"
+    - logger.log: "(on_tts_stream_start) Switching to REPLYING phase"
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
     - if:
         condition:
-          - switch.is_on: continuous_conversation
+          - switch.is_on: continued_conversation
         then:
           - script.execute: stt_timeout_to_idle
   on_tts_stream_end:
     - logger.log: "(on_tts_stream_end) started"
     - if:
         condition:
-          - switch.is_on: continuous_conversation
+          - switch.is_on: continued_conversation
         then:
-          - logger.log: "Switching back to LISTENING phase"
+          - logger.log: "(on_tts_stream_end) Switching back to LISTENING phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
           - script.execute: stt_timeout_to_idle
         else:
-          - logger.log: "Switching to IDLE phase"
+          - logger.log: "(on_tts_stream_end) Switching to IDLE phase"
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
   on_end:
-    - logger.log: "(on-end) started"
+    - logger.log:
+        format: "(on-end) started with phase: %i"
+        args: [ 'id(voice_assistant_phase)' ]
     - if:
         condition:
           and:
             - switch.is_off: mute
             - lambda: return id(wake_word_engine_location).state == "On device";
-            - lambda: return id(voice_assistant_phase) == ${voice_assist_listening_phase_id};
+            - switch.is_off: continued_conversation
         then:
-          - logger.log: "(on_end) Stopping stt_timeout_to_idle"
-          - script.stop: stt_timeout_to_idle
-          - logger.log: "(on-end) Waiting for voice_assistant to stop"
-          - wait_until:
-              not:
-                voice_assistant.is_running:
-          - logger.log: "(on-end) Starting micro_wake_word"
-          - micro_wake_word.start:
+          - logger.log: "(on_client_connected) Returning to idle by script"
+          - script.execute: return_to_idle
     - logger.log: "(on-end) exiting"
   on_error:
     - logger.log: "(on_error) started"
@@ -261,16 +275,8 @@ voice_assistant:
               condition:
                 switch.is_off: mute
               then:
-                - logger.log: "(on_error) Stopping voice_assistant"
-                - voice_assistant.stop:
-                - logger.log: "(on_error) Waiting for voice_assistant to stop"
-                - wait_until:
-                    not:
-                      voice_assistant.is_running:
-                - logger.log: "(on_error) Starting micro_wake_word"
-                - micro_wake_word.start:
-                - logger.log: "(on_error) Switching to IDLE phase"
-                - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+                - logger.log: "(on_client_connected) Returning to idle by script"
+                - script.execute: return_to_idle
               else:
                 - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
           - script.execute: draw_display
@@ -283,19 +289,8 @@ voice_assistant:
         then:
           - wait_until:
               not: ble.enabled
-          - if:
-              condition:
-                lambda: return id(wake_word_engine_location).state == "In Home Assistant";
-              then:
-                - lambda: id(va).set_use_wake_word(true);
-                - voice_assistant.start_continuous:
-          - if:
-              condition:
-                lambda: return id(wake_word_engine_location).state == "On device";
-              then:
-                - logger.log: "(on_client_connected) Starting micro_wake_word"
-                - micro_wake_word.start
-          - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+          - logger.log: "(on_client_connected) Returning to idle by script"
+          - script.execute: return_to_idle
         else:
           - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
     - lambda: id(init_in_progress) = false;
@@ -319,19 +314,71 @@ script:
   - id: stt_timeout_to_idle
     mode: restart     # restart the timer if called before timeout
     then:
-      - logger.log: 
-          format: "(stt_timeout_to_idle) resetting to %.0f seconds"
-          args: [ id(continuous_timeout).state ]
-      - delay: !lambda "return id(continuous_timeout).state * 1000;"
-      - logger.log: "(stt_timeout_to_idle) Stopping voice_assistant"
-      - voice_assistant.stop:
-      - logger.log: "(stt_timeout_to_idle) Waiting for voice_assistant to stop"
-      - wait_until:
-          not:
-            voice_assistant.is_running:
-      - logger.log: "(stt_timeout_to_idle) Starting micro_wake_word"
-      - micro_wake_word.start:
-      - logger.log: "(stt_timeout_to_idle) Switching to IDLE phase"
+      if:
+        condition:
+          switch.is_on: continued_conversation
+        then:
+          - logger.log: 
+              format: "(stt_timeout_to_idle) resetting to %.0f seconds"
+              args: [ id(continued_timeout).state ]
+          - delay: !lambda "return id(continued_timeout).state * 1000;"
+          - if:
+              condition:
+                lambda: return (id(voice_assistant_phase) == ${voice_assist_replying_phase_id});
+              then:
+                - wait_until:
+                    lambda: return !(id(voice_assistant_phase) == ${voice_assist_replying_phase_id});
+                - delay: 1s  # Give time for the stream to end and the phase to be switched back to listening and this timeout to be reset
+          - logger.log: "(stt_timeout_to_idle) Returning to idle by script"
+          - script.execute: return_to_idle
+
+  - id: return_to_idle
+    then:
+      - if:
+          condition:
+            lambda: return id(wake_word_engine_location).state == "On device";
+          then:
+            - logger.log: "(on_end) Stopping stt_timeout_to_idle"
+            - script.stop: stt_timeout_to_idle
+            - if:
+                condition:
+                  voice_assistant.is_running
+                then:
+                  - logger.log: "(return_to_idle) Stopping voice_assistant"
+                  - lambda: id(va).set_use_wake_word(false);
+                  - voice_assistant.stop
+                  - logger.log: "(return_to_idle) Waiting for voice_assistant to stop"
+                  - wait_until:
+                      not:
+                        voice_assistant.is_running
+            - if:
+                condition:
+                  not:
+                    micro_wake_word.is_running
+                then:
+                  - logger.log: "(return_to_idle) Starting micro_wake_word"
+                  - micro_wake_word.start:
+      - if:
+          condition:
+            lambda: return id(wake_word_engine_location).state == "In Home Assistant";
+          then:
+            - if:
+                condition:
+                  micro_wake_word.is_running
+                then:
+                  micro_wake_word.stop:
+            - wait_until:
+                not:
+                  micro_wake_word.is_running
+            - logger.log: "(return_to_idle) Starting voice_assistant continuous with use_wake_word"
+            - lambda: id(va).set_use_wake_word(true);
+            - if:
+                condition:
+                  - not:
+                      voice_assistant.is_running
+                then:
+                  - voice_assistant.start_continuous:
+      - logger.log: "(return_to_idle) Switching to IDLE phase"
       - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
       - script.execute: draw_display
 
@@ -401,30 +448,8 @@ switch:
           condition:
             lambda: return !id(init_in_progress);
           then:
-            - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
-            - if:
-                condition:
-                  and:
-                    - lambda: return id(wake_word_engine_location).state == "In Home Assistant";
-                    - not:
-                        voice_assistant.is_running
-                then:
-                  - logger.log: "(switch.mute:OFF) Starting voice_assistant continuous"
-                  - lambda: id(va).set_use_wake_word(true);
-                  - voice_assistant.start_continuous
-            - if:
-                condition:
-                  lambda: return id(wake_word_engine_location).state == "On device";
-                then:
-                  - if:
-                      condition:
-                        voice_assistant.is_running
-                      then:
-                        - logger.log: "(switch.mute:OFF) Stopping voice_assistant"
-                        - voice_assistant.stop
-                  - logger.log: "(switch.mute:OFF) Starting micro_wake_word"
-                  - micro_wake_word.start
-            - script.execute: draw_display
+            - logger.log: "(switch.mute:OFF) Returning to idle by script"
+            - script.execute: return_to_idle
     on_turn_on:
       - if:
           condition:
@@ -437,22 +462,42 @@ switch:
                 then:
                   - logger.log: "(switch.mute:ON) Stopping voice_assistant"
                   - voice_assistant.stop
-            - logger.log: "(switch.mute:ON) Stopping micro_wake_word"
-            - micro_wake_word.stop
+            - if:
+                condition:
+                  - micro_wake_word.is_running
+                then:
+                  - logger.log: "(switch.mute:ON) Stopping micro_wake_word"
+                  - micro_wake_word.stop
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
             - script.execute: draw_display
   - platform: template
-    name: Continuous conversation
-    id: continuous_conversation
+    name: Continued conversation
+    id: continued_conversation
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
     entity_category: config
+    on_turn_off:
+      - logger.log: "(continued_conversation.turn_OFF) Returning to idle by script"
+      - script.execute: return_to_idle
+    on_turn_on:
+      - logger.log: "(continued_conversation.turn_ON) Returning to idle by script"
+      - script.execute: return_to_idle
+  - platform: template
+    name: Display text
+    id: display_text
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
+    on_turn_off:
+      - script.execute: draw_display
+    on_turn_on:
+      - script.execute: draw_display
 
 number:
   - platform: template
     entity_category: config
-    name: Continuous timeout
-    id: continuous_timeout
+    name: Continued timeout
+    id: continued_timeout
     icon: mdi:clock
     optimistic: true
     restore_value: true
@@ -477,26 +522,30 @@ select:
     on_value:
       - wait_until:
           lambda: return id(voice_assistant_phase) == ${voice_assist_muted_phase_id} || id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
-      - if:
-          condition:
-            lambda: return x == "In Home Assistant";
-          then:
-            - micro_wake_word.stop
-            - delay: 500ms
-            - if:
-                condition:
-                  switch.is_off: mute
-                then:
-                  - lambda: id(va).set_use_wake_word(true);
-                  - voice_assistant.start_continuous:
-      - if:
-          condition:
-            lambda: return x == "On device";
-          then:
-            - lambda: id(va).set_use_wake_word(false);
-            - voice_assistant.stop
-            - delay: 500ms
-            - micro_wake_word.start
+      - logger.log: "(select.wake_word_engine_location) Returning to idle by script"
+      - script.execute: return_to_idle
+  - platform: template
+    entity_category: config
+    name: Display clock
+    id: display_clock
+    optimistic: true
+    restore_value: true
+    options:
+      - None
+      - Date
+      - Time
+      - Date and time
+    initial_option: None
+    on_value:
+      - script.execute: draw_display
+
+text_sensor:
+  - platform: template
+    name: Assist query
+    id: assist_query
+  - platform: template
+    name: Assist reply
+    id: assist_reply
 
 globals:
   - id: init_in_progress
@@ -557,6 +606,8 @@ font:
       weight: 300
     id: font_roboto_16
     size: 16
+    glyphs:
+      '&@!"''%()+=,-_.:°/?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'
 
 color:
   - id: idle_color
@@ -582,8 +633,22 @@ time:
     on_time:
       - cron: 0 * * * * *
         then:
-          - logger.log: "(on_time) Updating time display"
-          - script.execute: draw_display
+          - if:
+              condition:
+                or:
+                  - lambda: return (id(display_clock).state == "Time");
+                  - lambda: return (id(display_clock).state == "Date and time");
+              then:
+                - logger.log: "(on_time) Updating time display"
+                - script.execute: draw_display
+      - cron: 0 0 0 * * *
+        then:
+          - if:
+              condition:
+                - lambda: return (id(display_clock).state == "Date");
+              then:
+                - logger.log: "(on_time) Updating date display"
+                - script.execute: draw_display
 
 display:
   - platform: ili9xxx
@@ -601,22 +666,55 @@ display:
         lambda: |-
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
-          it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Say \"Hey Jarvis\"" );
-          it.strftime( it.get_width() / 2, it.get_height() - 10, id(font_roboto_16), Color::WHITE, TextAlign::BOTTOM_CENTER, "%a %d %b, %Y - %I:%M %p", id(the_time).now() );
+          if ( id(display_text).state ) {
+            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Say \"Hey Jarvis\"" );
+          }
+          if ( id(display_clock).state == "Time" ) {
+            auto time_text = id(the_time).now().strftime("%I:%M %p");
+            // Remove leading zeros from hour
+            if (time_text.front() == '0') {
+              time_text = time_text.erase(0,1);
+            }
+            it.printf( it.get_width() / 2, it.get_height() - 10, id(font_roboto_16), Color::WHITE, TextAlign::BOTTOM_CENTER, "%s", time_text.c_str() );
+          } else if ( id(display_clock).state == "Date" ) {
+            auto date_text = id(the_time).now().strftime("%A, %d %b, %Y");
+            // Remove leading zeros from day
+            size_t pos = date_text.find(" 0");
+            if (pos != std::string::npos) {
+              date_text.erase(pos + 1, 1); // Remove the leading zero
+            }
+            it.printf( it.get_width() / 2, it.get_height() - 10, id(font_roboto_16), Color::WHITE, TextAlign::BOTTOM_CENTER, "%s", date_text.c_str() );
+          } else if ( id(display_clock).state == "Date and time" ) {
+            auto date_time_text = id(the_time).now().strftime("%a, %d %b, %Y - %I:%M %p");
+            // Remove leading zeros from day and hour
+            size_t pos = date_time_text.find(" 0");
+            while (pos != std::string::npos) {
+              date_time_text.erase(pos + 1, 1); // Remove the leading zero
+              pos = date_time_text.find(" 0", pos); // Find the next occurrence
+            }
+            it.printf( it.get_width() / 2, it.get_height() - 10, id(font_roboto_16), Color::WHITE, TextAlign::BOTTOM_CENTER, "%s", date_time_text.c_str() );
+          }
       - id: listening_page
         lambda: |-
           it.fill(id(listening_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
-          it.print( 10, 10, id(font_roboto_16), Color::BLACK, "How can I help?" );
+          if ( id(display_text).state ) {
+            it.print( 10, 10, id(font_roboto_16), Color::BLACK, "How can I help?" );
+          }
       - id: thinking_page
         lambda: |-
           it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
-          it.print( 10, 10, id(font_roboto_16), Color::BLACK, "I heard you." );
+          if ( id(display_text).state ) {
+            it.print( 10, 10, id(font_roboto_16), Color::BLACK, id(assist_query).state.c_str() );
+          }
       - id: replying_page
         lambda: |-
           it.fill(id(replying_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
+          if ( id(display_text).state ) {
+            it.print( 10, 10, id(font_roboto_16), Color::BLACK, id(assist_reply).state.c_str() );
+          }
       - id: error_page
         lambda: |-
           it.fill(id(error_color));
@@ -631,7 +729,9 @@ display:
         lambda: |-
           it.fill(id(loading_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
-          it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Starting up..." );
+          if ( id(display_text).state ) {
+            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Starting up..." );
+          }
       - id: muted_page
         lambda: |-
           it.fill(Color::BLACK);
