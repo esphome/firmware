@@ -25,8 +25,7 @@ substitutions:
   voice_assist_muted_phase_id: "12"
 
   micro_wake_word_model: okay_nabu
-  micro_wake_word_text: "Okay Nabu"
-  
+  wake_word_text: "Okay Nabu"
 
 esphome:
   name: ${name}
@@ -667,7 +666,7 @@ display:
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Say \"Hey Jarvis\"" );
+            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Say \"${wake_word_text}\"" );
           }
           if ( id(display_clock).state == "Time" ) {
             auto time_text = id(the_time).now().strftime("%I:%M %p");
