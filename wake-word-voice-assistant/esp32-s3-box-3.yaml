@@ -213,11 +213,12 @@ voice_assistant:
     - if:
         condition:
           and:
-            - lambda: return (x == "Ok, bye for now.");
+            # When using extended openai conversation, add the following to the prompt
+            # If you feel the user has finished and doesn't want to talk anymore, just respond with the exact phrase "Ok, bye."
+            - lambda: return (x == "Ok, bye.");
             - switch.is_on: continued_conversation
-            # - lambda: return id(wake_word_engine_location).state == "On device";
         then:
-          - logger.log: "(stt_timeout_to_idle) Returning to idle by script"
+          - logger.log: "(on_tts_start) Returning to idle by script"
           - script.execute: return_to_idle
   on_tts_stream_start:
     - logger.log: "(on_tts_stream_start) started"
