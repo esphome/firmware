@@ -218,7 +218,7 @@ voice_assistant:
             - lambda: return (x == "Ok, bye.");
             - switch.is_on: continued_conversation
         then:
-          - logger.log: "(on_tts_start) Returning to idle by script"
+          - logger.log: "(on_tts_start) I'm no longer wanted, so returning to idle by script"
           - script.execute: return_to_idle
   on_tts_stream_start:
     - logger.log: "(on_tts_stream_start) started"
