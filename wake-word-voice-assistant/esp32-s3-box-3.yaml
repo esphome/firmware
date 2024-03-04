@@ -338,7 +338,7 @@ script:
           condition:
             lambda: return id(wake_word_engine_location).state == "On device";
           then:
-            - logger.log: "(on_end) Stopping stt_timeout_to_idle"
+            - logger.log: "(return_to_idle) Stopping stt_timeout_to_idle"
             - script.stop: stt_timeout_to_idle
             - if:
                 condition:
@@ -349,8 +349,10 @@ script:
                   - voice_assistant.stop
                   - logger.log: "(return_to_idle) Waiting for voice_assistant to stop"
                   - wait_until:
-                      not:
-                        voice_assistant.is_running
+                      condition:
+                        not:
+                          voice_assistant.is_running
+                      timeout: 5s
             - if:
                 condition:
                   not:
@@ -368,8 +370,10 @@ script:
                 then:
                   micro_wake_word.stop:
             - wait_until:
-                not:
-                  micro_wake_word.is_running
+                condition:
+                  not:
+                    micro_wake_word.is_running
+                timeout: 5s
             - logger.log: "(return_to_idle) Starting voice_assistant continuous with use_wake_word"
             - lambda: id(va).set_use_wake_word(true);
             - if:
