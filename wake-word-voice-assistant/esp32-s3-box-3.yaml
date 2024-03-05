@@ -568,6 +568,9 @@ select:
             case 5:
               id(date_format_string) = "%a, %d %b, %Y";
               break;
+            case 6:
+              id(date_format_string) = "%A";
+              break;
           }
       - logger.log: 
           format: "(display_date) date_format_string set to: %s"
