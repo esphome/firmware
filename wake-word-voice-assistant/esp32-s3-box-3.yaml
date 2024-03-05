@@ -30,7 +30,7 @@ substitutions:
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
-  name_add_mac_suffix: true
+  name_add_mac_suffix: false
   platformio_options:
     board_build.flash_mode: dio
   project:
@@ -376,7 +376,7 @@ script:
             - wait_until:
                 condition:
                   not:
-                    micro_wake_word.is_running
+                    voice_assistant.is_running
                 timeout: 5s
             - logger.log: "(return_to_idle) Starting voice_assistant continuous with use_wake_word"
             - lambda: id(va).set_use_wake_word(true);
@@ -532,19 +532,75 @@ select:
           lambda: return id(voice_assistant_phase) == ${voice_assist_muted_phase_id} || id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
       - logger.log: "(select.wake_word_engine_location) Returning to idle by script"
       - script.execute: return_to_idle
+
   - platform: template
     entity_category: config
-    name: Display clock
-    id: display_clock
+    name: Display clock date
+    id: display_date
     optimistic: true
     restore_value: true
     options:
       - None
-      - Date
-      - Time
-      - Date and time
+      - Short (US)
+      - Short (UK)
+      - Short (EU)
+      - Long
+      - Long with weekday
     initial_option: None
     on_value:
+      - lambda: |-
+          switch (i) {
+            case 0:
+              id(date_format_string) = "";
+              break;
+            case 1:
+              id(date_format_string) = "%m/%d/%y";
+              break;
+            case 2:
+              id(date_format_string) = "%d/%m/%y";
+              break;
+            case 3:
+              id(date_format_string) = "%d.%m.%y";
+              break;
+            case 4:
+              id(date_format_string) = "%d %b, %Y";
+              break;
+            case 5:
+              id(date_format_string) = "%a, %d %b, %Y";
+              break;
+          }
+      - logger.log: 
+          format: "(display_date) date_format_string set to: %s"
+          args: [ id(date_format_string).c_str() ]
+      - script.execute: draw_display
+
+  - platform: template
+    entity_category: config
+    name: Display clock time
+    id: display_time
+    optimistic: true
+    restore_value: true
+    options:
+      - None
+      - 12 hour
+      - 24 hour
+    initial_option: None
+    on_value:
+      - lambda: |-
+          switch (i) {
+            case 0:
+              id(time_format_string) = "";
+              break;
+            case 1:
+              id(time_format_string) = "%I:%M %p";
+              break;
+            case 2:
+              id(time_format_string) = "%H:%M";
+              break;
+          }
+      - logger.log: 
+          format: "(display_time) time_format_string set to: %s"
+          args: [ id(time_format_string).c_str() ]
       - script.execute: draw_display
 
 text_sensor:
@@ -564,6 +620,14 @@ globals:
     type: int
     restore_value: false
     initial_value: ${voice_assist_not_ready_phase_id}
+  - id: date_format_string
+    type: std::string
+    restore_value: true
+    initial_value: ""
+  - id: time_format_string
+    type: std::string
+    restore_value: true
+    initial_value: ""
 
 image:
   - file: ${error_illustration_file}
@@ -643,17 +707,15 @@ time:
         then:
           - if:
               condition:
-                or:
-                  - lambda: return (id(display_clock).state == "Time");
-                  - lambda: return (id(display_clock).state == "Date and time");
+                  - lambda: return ( std::string(id(time_format_string).c_str()) != "" );
               then:
                 - logger.log: "(on_time) Updating time display"
                 - script.execute: draw_display
-      - cron: 0 0 0 * * *
+      - cron: 1 0 0 * * *
         then:
           - if:
               condition:
-                - lambda: return (id(display_clock).state == "Date");
+                  - lambda: return ( std::string(id(date_format_string).c_str()) != "" );
               then:
                 - logger.log: "(on_time) Updating date display"
                 - script.execute: draw_display
@@ -677,28 +739,29 @@ display:
           if ( id(display_text).state ) {
             it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Say \"${wake_word_text}\"" );
           }
-          if ( id(display_clock).state == "Time" ) {
-            auto time_text = id(the_time).now().strftime("%I:%M %p");
-            // Remove leading zeros from hour
-            if (time_text.front() == '0') {
-              time_text = time_text.erase(0,1);
+
+          if ( std::string(id(date_format_string).c_str()) != "" or std::string(id(time_format_string).c_str()) != "" ) {
+            // Get the format strings
+            std::string date_format = id(date_format_string).c_str();
+            std::string time_format = id(time_format_string).c_str();
+            // Construct the format string
+            std::string format_string;
+            if (!date_format.empty() && !time_format.empty()) {
+                format_string = date_format + " - " + time_format;
+            } else if (!date_format.empty()) {
+                format_string = date_format;
+            } else {
+                format_string = time_format;
             }
-            it.printf( it.get_width() / 2, it.get_height() - 10, id(font_roboto_16), Color::WHITE, TextAlign::BOTTOM_CENTER, "%s", time_text.c_str() );
-          } else if ( id(display_clock).state == "Date" ) {
-            auto date_text = id(the_time).now().strftime("%A, %d %b, %Y");
-            // Remove leading zeros from day
-            size_t pos = date_text.find(" 0");
-            if (pos != std::string::npos) {
-              date_text.erase(pos + 1, 1); // Remove the leading zero
-            }
-            it.printf( it.get_width() / 2, it.get_height() - 10, id(font_roboto_16), Color::WHITE, TextAlign::BOTTOM_CENTER, "%s", date_text.c_str() );
-          } else if ( id(display_clock).state == "Date and time" ) {
-            auto date_time_text = id(the_time).now().strftime("%a, %d %b, %Y - %I:%M %p");
-            // Remove leading zeros from day and hour
-            size_t pos = date_time_text.find(" 0");
-            while (pos != std::string::npos) {
-              date_time_text.erase(pos + 1, 1); // Remove the leading zero
-              pos = date_time_text.find(" 0", pos); // Find the next occurrence
+            // Get the current date and time text
+            auto date_time_text = id(the_time).now().strftime(format_string.c_str());
+            if (id(display_time).state == "12 hour") {
+              // Remove leading zeros from day and hour
+              size_t pos = date_time_text.find(" 0");
+              while (pos != std::string::npos) {
+                date_time_text.erase(pos + 1, 1); // Remove the leading zero
+                pos = date_time_text.find(" 0", pos); // Find the next occurrence
+              }
             }
             it.printf( it.get_width() / 2, it.get_height() - 10, id(font_roboto_16), Color::WHITE, TextAlign::BOTTOM_CENTER, "%s", date_time_text.c_str() );
           }
