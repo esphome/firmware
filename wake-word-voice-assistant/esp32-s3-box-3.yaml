@@ -611,7 +611,7 @@ font:
     id: font_roboto_16
     size: 16
     glyphs:
-      '&@!"''%()+=,-_.:°/?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'
+      '&@!"''%()+=,-_.:°/?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzščžŠČŽæøåÆØÅéÉçÇèÈêÊàÀôäüöÄÜÖß'
 
 color:
   - id: idle_color
