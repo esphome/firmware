@@ -163,8 +163,12 @@ micro_wake_word:
         condition:
           switch.is_off: continued_conversation
         then:
+          - logger.log: "(on_wake_word_detected) starting VA single"
+          - lambda: id(va).set_use_wake_word(false);
           - voice_assistant.start
         else:
+          - logger.log: "(on_wake_word_detected) starting VA continuous"
+          - lambda: id(va).set_use_wake_word(false);
           - voice_assistant.start_continuous
 
 voice_assistant:
