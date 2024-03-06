@@ -25,7 +25,11 @@ substitutions:
   voice_assist_muted_phase_id: "12"
 
   micro_wake_word_model: okay_nabu
-  wake_word_text: "Okay Nabu"
+
+  starting_up: 'Starting up...'
+  wake_word_reminder: 'Say "Okay Nabu"'
+  listening_prompt: 'How can I help?'
+  error_prompt: 'Sorry, error.'
 
 esphome:
   name: ${name}
@@ -546,6 +550,7 @@ select:
       - Short (EU)
       - Long
       - Long with weekday
+      - Weekday only
     initial_option: None
     on_value:
       - lambda: |-
@@ -740,7 +745,7 @@ display:
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Say \"${wake_word_text}\"" );
+            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "${wake_word_prompt}" );
           }
 
           if ( std::string(id(date_format_string).c_str()) != "" or std::string(id(time_format_string).c_str()) != "" ) {
@@ -773,7 +778,7 @@ display:
           it.fill(id(listening_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_roboto_16), Color::BLACK, "How can I help?" );
+            it.print( 10, 10, id(font_roboto_16), Color::BLACK, "${listening_prompt}" );
           }
       - id: thinking_page
         lambda: |-
@@ -793,6 +798,9 @@ display:
         lambda: |-
           it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
+          if ( id(display_text).state ) {
+            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "${error_prompt}" );
+          }
       - id: no_ha_page
         lambda: |-
           it.image((it.get_width() / 2), (it.get_height() / 2), id(error_no_ha), ImageAlign::CENTER);
@@ -804,7 +812,7 @@ display:
           it.fill(id(loading_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "Starting up..." );
+            it.print( 10, 10, id(font_roboto_16), Color::WHITE, "${starting_up}" );
           }
       - id: muted_page
         lambda: |-
