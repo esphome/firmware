@@ -581,7 +581,7 @@ select:
           }
       - logger.log:
           format: "(display_date) date_format_string set to: %s"
-          args: [ id(date_format_string).c_str() ]
+          args: [id(date_format_string).c_str()]
       - script.execute: draw_display
 
   - platform: template
