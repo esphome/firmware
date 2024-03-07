@@ -26,10 +26,10 @@ substitutions:
 
   micro_wake_word_model: okay_nabu
 
-  starting_up: 'Starting up...'
-  wake_word_reminder: 'Say "Okay Nabu"'
-  listening_prompt: 'How can I help?'
-  error_prompt: 'Sorry, error.'
+  starting_up: "Starting up..."
+  wake_word_prompt: "Say \\\"Okay Nabu\\\""
+  listening_prompt: "How can I help?"
+  error_prompt: "Sorry, error."
 
 esphome:
   name: ${name}
@@ -169,11 +169,13 @@ micro_wake_word:
         then:
           - logger.log: "(on_wake_word_detected) starting VA single"
           - lambda: id(va).set_use_wake_word(false);
-          - voice_assistant.start
+          - voice_assistant.start:
+              # wake_word: !lambda return wake_word;
         else:
           - logger.log: "(on_wake_word_detected) starting VA continuous"
           - lambda: id(va).set_use_wake_word(false);
-          - voice_assistant.start_continuous
+          - voice_assistant.start_continuous:
+              # wake_word: !lambda return wake_word;
 
 voice_assistant:
   id: va
