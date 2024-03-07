@@ -202,7 +202,7 @@ voice_assistant:
   on_stt_end:
     - logger.log:
         format: "(on_stt_end) User: %s"
-        args: [ 'x.c_str()' ]
+        args: ['x.c_str()']
         level: INFO
     - lambda: id(assist_query).publish_state( x.c_str() );
     - logger.log: "(on_stt_end) Switching to THINKING phase"
@@ -217,7 +217,7 @@ voice_assistant:
   on_tts_start:
     - logger.log:
         format: "(on_tts_start) Jarvis: %s"
-        args: [ 'x.c_str()' ]
+        args: ['x.c_str()']
         level: INFO
     - lambda: id(assist_reply).publish_state( x.c_str() );
     - if:
@@ -256,7 +256,7 @@ voice_assistant:
   on_end:
     - logger.log:
         format: "(on-end) started with phase: %i"
-        args: [ 'id(voice_assistant_phase)' ]
+        args: ['id(voice_assistant_phase)']
     - if:
         condition:
           and:
@@ -328,9 +328,9 @@ script:
         condition:
           switch.is_on: continued_conversation
         then:
-          - logger.log: 
+          - logger.log:
               format: "(stt_timeout_to_idle) resetting to %.0f seconds"
-              args: [ id(continued_timeout).state ]
+              args: [id(continued_timeout).state]
           - delay: !lambda "return id(continued_timeout).state * 1000;"
           - if:
               condition:
@@ -579,7 +579,7 @@ select:
               id(date_format_string) = "%A";
               break;
           }
-      - logger.log: 
+      - logger.log:
           format: "(display_date) date_format_string set to: %s"
           args: [ id(date_format_string).c_str() ]
       - script.execute: draw_display
@@ -608,9 +608,9 @@ select:
               id(time_format_string) = "%H:%M";
               break;
           }
-      - logger.log: 
+      - logger.log:
           format: "(display_time) time_format_string set to: %s"
-          args: [ id(time_format_string).c_str() ]
+          args: [id(time_format_string).c_str()]
       - script.execute: draw_display
 
 text_sensor:
@@ -717,7 +717,7 @@ time:
         then:
           - if:
               condition:
-                  - lambda: return ( std::string(id(time_format_string).c_str()) != "" );
+                - lambda: return ( std::string(id(time_format_string).c_str()) != "" );
               then:
                 - logger.log: "(on_time) Updating time display"
                 - script.execute: draw_display
@@ -725,7 +725,7 @@ time:
         then:
           - if:
               condition:
-                  - lambda: return ( std::string(id(date_format_string).c_str()) != "" );
+                - lambda: return ( std::string(id(date_format_string).c_str()) != "" );
               then:
                 - logger.log: "(on_time) Updating date display"
                 - script.execute: draw_display
