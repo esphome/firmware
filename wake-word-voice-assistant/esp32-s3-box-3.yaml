@@ -170,12 +170,12 @@ micro_wake_word:
           - logger.log: "(on_wake_word_detected) starting VA single"
           - lambda: id(va).set_use_wake_word(false);
           - voice_assistant.start:
-              # wake_word: !lambda return wake_word;
+          #     wake_word: !lambda return wake_word;
         else:
           - logger.log: "(on_wake_word_detected) starting VA continuous"
           - lambda: id(va).set_use_wake_word(false);
           - voice_assistant.start_continuous:
-              # wake_word: !lambda return wake_word;
+          #     wake_word: !lambda return wake_word;
 
 voice_assistant:
   id: va
