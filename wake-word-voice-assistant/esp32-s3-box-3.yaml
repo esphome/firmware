@@ -337,7 +337,11 @@ script:
                 lambda: return (id(voice_assistant_phase) == ${voice_assist_replying_phase_id});
               then:
                 - wait_until:
-                    lambda: return !(id(voice_assistant_phase) == ${voice_assist_replying_phase_id});
+                    condition:
+                      lambda: return !(id(voice_assistant_phase) == ${voice_assist_replying_phase_id});
+                      # normally this would complete and move to next phase with on_tts_stream_end, 
+                      # but sometimes this is missed so put a time limit on the wait
+                    timeout: 10s
                 - delay: 1s  # Give time for the stream to end and the phase to be switched back to listening and this timeout to be reset
           - logger.log: "(stt_timeout_to_idle) Returning to idle by script"
           - script.execute: return_to_idle
