@@ -51,7 +51,7 @@ esphome:
             lambda: return id(init_in_progress);
           then:
             - lambda: id(init_in_progress) = false;
-            - script.execute: draw_display
+      - script.execute: draw_display  # Draw the display again in case the on_client_connected cannot do so
 
 esp32:
   board: esp32s3box
