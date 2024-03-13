@@ -197,8 +197,8 @@ voice_assistant:
         then:
           - script.execute: stt_timeout_to_idle
           - lambda: id(va).set_use_wake_word(false);
-  on_stt_vad_end:
-    # - logger.log: "(on_stt_vad_end) started"
+  # on_stt_vad_end:
+  # thinking phase change moved to stt_end so that the stt x variable could be accessed
   on_stt_end:
     # - logger.log:
     #     format: "(on_stt_end) User: %s"
