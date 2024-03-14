@@ -370,7 +370,7 @@ font:
       italic: true
     glyphs: ${allowed_characters}
     id: font_request
-    size: 15  
+    size: 15
   - file:
       type: gfonts
       family: Figtree
@@ -378,7 +378,6 @@ font:
     glyphs: ${allowed_characters}
     id: font_response
     size: 15
-
 
 text_sensor:
   - id: text_request
@@ -445,7 +444,7 @@ display:
             it.filled_rectangle(20 , 20 , 280 , 30 , Color::WHITE );
             it.rectangle(20 , 20 , 280 , 30 , Color::BLACK );
             it.printf(30, 25, id(font_request), Color::BLACK, "%s", id(text_request).state.c_str());
-          } 
+          }
       - id: replying_page
         lambda: |-
           it.fill(id(replying_color));
