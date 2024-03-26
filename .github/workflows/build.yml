@@ -103,7 +103,7 @@ jobs:
           - project: esphome-web
             name: ESPHome Web
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.project }}
           path: files
@@ -134,7 +134,7 @@ jobs:
           - project: media-player
             name: Media Player
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.project }}
           path: files
@@ -162,7 +162,7 @@ jobs:
       - full-manifests
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           path: output
       - run: cp -R static/* output/
