@@ -796,33 +796,25 @@ display:
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
           if ( id(display_text).state ) {
 
-            int x1, y1, width, height;
-            it.get_text_bounds(0, 0, "${wake_word_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &width, &height);
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, "${wake_word_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height);
   
             // Calculate the rectangle dimensions with a 5-pixel padding
-            int rect_width = width + 10;
-            int rect_height = height + 10;
+            int rect_width = text_width + 10;
+            int rect_height = text_height + 10;
   
-            // Calculate the position to center the rectangle
-            int rect_x = (it.get_width() - rect_width) / 2;
-            int rect_y = (it.get_height() - rect_height) / 2;
+            // Calculate the position to rectangle top-left
+            int rect_x = (it.get_width() - rect_width) / 2; // Centered
+            int rect_y = 15; // Margin from the top is 15
   
-            // Draw the black rectangle
-            it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK);
-  
-            // Draw the white outline
-            it.rectangle(rect_x, rect_y, rect_width, rect_height, Color::WHITE);
+            it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK); // Draw the black rectangle
+            it.rectangle(rect_x, rect_y, rect_width, rect_height, Color::WHITE); // Draw the white outline
   
             // Calculate the position to center the text inside the rectangle
-            int text_x = rect_x + (rect_width - width) / 2;
-            int text_y = rect_y + (rect_height - height) / 2;
+            int text_x = rect_x + (rect_width - text_width) / 2;
+            int text_y = rect_y + 5;
   
-            // Print the text in white
-            it.print( text_x, text_y, id(font_text), Color::WHITE, "${wake_word_prompt}" );
-          
-            // it.filled_rectangle(20 , 20 , width + 20 , 30 , Color::BLACK );
-            // it.rectangle(20 , 20 , 280 , 30 , Color::WHITE );
-            // it.print( 30, 25, id(font_text), Color::WHITE, "${wake_word_prompt}" );
+            it.print( text_x, text_y, id(font_text), Color::WHITE, "${wake_word_prompt}" ); // Print the text in white
           }
 
           if ( std::string(id(date_format_string).c_str()) != "" or std::string(id(time_format_string).c_str()) != "" ) {
@@ -848,7 +840,26 @@ display:
                 pos = date_time_text.find(" 0", pos); // Find the next occurrence
               }
             }
-            it.printf( it.get_width() / 2, it.get_height() - 10, id(font_text), Color::WHITE, TextAlign::BOTTOM_CENTER, "%s", date_time_text.c_str() );
+            
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, date_time_text, id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height);
+  
+            // Calculate the rectangle dimensions with a 5-pixel padding
+            int rect_width = text_width + 10;
+            int rect_height = text_height + 10;
+  
+            // Calculate the position to rectangle top-left
+            int rect_x = (it.get_width() - rect_width) / 2; // Centered
+            int rect_y = it.get_height() - rect_height - 15; // margin from the bottom is 15
+  
+            it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK); // Draw the black rectangle
+            it.rectangle(rect_x, rect_y, rect_width, rect_height, Color::WHITE); // Draw the white outline
+  
+            // Calculate the position to center the text inside the rectangle
+            int text_x = rect_x + (rect_width - text_width) / 2;
+            int text_y = rect_y + 5;
+
+            it.printf( text_x, text_y, id(font_text), Color::WHITE, TextAlign::TOP_LEFT, "%s", date_time_text.c_str() ); // Print the text in white
           }
       - id: listening_page
         lambda: |-
