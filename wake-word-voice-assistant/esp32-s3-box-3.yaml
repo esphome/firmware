@@ -797,7 +797,7 @@ display:
           if ( id(display_text).state ) {
 
             int x1, y1, text_width, text_height;
-            it.get_text_bounds(0, 0, "${wake_word_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height);
+            it.get_text_bounds(0, 0, "${wake_word_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
   
             // Calculate the rectangle dimensions with a 5-pixel padding
             int rect_width = text_width + 10;
@@ -842,7 +842,7 @@ display:
             }
             
             int x1, y1, text_width, text_height;
-            it.get_text_bounds(0, 0, date_time_text.c_str(), id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height);
+            it.get_text_bounds(0, 0, date_time_text.c_str(), id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
   
             // Calculate the rectangle dimensions with a 5-pixel padding
             int rect_width = text_width + 10;
@@ -853,7 +853,7 @@ display:
             int rect_y = it.get_height() - rect_height - 15; // margin from the bottom is 15
   
             it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK); // Draw the black rectangle
-            it.rectangle(rect_x, rect_y, rect_width, rect_height, Color::WHITE); // Draw the white outline
+            it.rectangle(rect_x, rect_y, rect_width, rect_height, Color::GREY); // Draw the white outline
   
             // Calculate the position to center the text inside the rectangle
             int text_x = rect_x + (rect_width - text_width) / 2;
@@ -894,7 +894,11 @@ display:
           it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_text), Color::WHITE, "${error_prompt}" );
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, "${error_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
+            it.filled_rectangle(10, 10, text_width + 10, text_height + 10, Color::BLACK); // Draw the black rectangle
+            it.rectangle(10, 10, text_width + 10, text_height + 10, Color::WHITE); // Draw the white outline
+            it.print( 15, 15, id(font_text), Color::WHITE, "${error_prompt}" ); // Print the text in white
           }
       - id: no_ha_page
         lambda: |-
@@ -907,7 +911,11 @@ display:
           it.fill(id(loading_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_text), Color::WHITE, "${starting_up}" );
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, "${starting_up}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
+            it.filled_rectangle(10, 10, text_width + 10, text_height + 10, Color::BLACK); // Draw the black rectangle
+            it.rectangle(10, 10, text_width + 10, text_height + 10, Color::GREY); // Draw the white outline
+            it.print( 15, 15, id(font_text), Color::WHITE, "${starting_up}" ); // Print the text in white
           }
       - id: muted_page
         lambda: |-
