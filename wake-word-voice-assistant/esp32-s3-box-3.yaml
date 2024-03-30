@@ -444,10 +444,10 @@ switch:
       - script.execute: draw_display
 
   - platform: template
-    name: Display text
+    name: Display text prompts
     id: display_text
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
+    restore_mode: RESTORE_DEFAULT_ON
     entity_category: config
     on_turn_off:
       - script.execute: draw_display
@@ -578,7 +578,7 @@ select:
       - None
       - 12 hour
       - 24 hour
-    initial_option: None
+    initial_option: 12 hour
     on_value:
       - lambda: |-
           switch (i) {
