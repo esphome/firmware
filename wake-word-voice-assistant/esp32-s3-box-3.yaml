@@ -798,7 +798,7 @@ display:
 
 
             // Get the text bounds
-            auto text_bounds = id(font_text).get_text_bounds(${wake_word_prompt});
+            auto text_bounds = id(font_text).get_text_bounds("${wake_word_prompt}");
   
             // Calculate the rectangle dimensions with a 5-pixel padding
             int rect_width = text_bounds.width + 10;
@@ -819,7 +819,7 @@ display:
             int text_y = rect_y + (rect_height - text_bounds.height) / 2;
   
             // Print the text in white
-            it.print(${wake_word_prompt}, text_x, text_y, id(font_text), COLOR_WHITE);
+            it.print("${wake_word_prompt}", text_x, text_y, id(font_text), COLOR_WHITE);
           
             # auto *font = &id(font_text);
             # std::string wake_word_prompt = "${wake_word_prompt}";
