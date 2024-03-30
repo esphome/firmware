@@ -842,7 +842,7 @@ display:
             }
             
             int x1, y1, text_width, text_height;
-            it.get_text_bounds(0, 0, date_time_text, id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height);
+            it.get_text_bounds(0, 0, date_time_text.c_str(), id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height);
   
             // Calculate the rectangle dimensions with a 5-pixel padding
             int rect_width = text_width + 10;
