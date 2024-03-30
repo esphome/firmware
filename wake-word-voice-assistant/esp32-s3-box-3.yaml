@@ -469,7 +469,7 @@ switch:
     on_turn_on:
       - script.execute: draw_display
 
-- platform: template
+  - platform: template
     name: Display text
     id: display_text
     optimistic: true
