@@ -795,11 +795,13 @@ display:
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-          
-            auto font = id(font_text).get_font();
-            int16_t x1, y1, x2, y2;
-            gfx::glyph_bounds(font, "${wake_word_prompt}", &x1, &y1, &x2, &y2);
-            int width = x2 - x1 + 1; // Estimate the width
+
+            auto *font = &id(font_text);
+            std::string wake_word_prompt = "${wake_word_prompt}";
+            int width = 0;
+            for (char c : wake_word_prompt) {
+              width += font->get_glyph_width(c);
+            }
             
             it.filled_rectangle(20 , 20 , width + 20 , 30 , Color::BLACK );
             it.rectangle(20 , 20 , 280 , 30 , Color::WHITE );
