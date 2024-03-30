@@ -189,12 +189,16 @@ voice_assistant:
   vad_threshold: 3
   on_listening:
     - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
-    - text_sensor.template.publish:
-        id: text_request
-        state: "..."
-    - text_sensor.template.publish:
-        id: text_response
-        state: "..."
+    - if:
+        condition:
+          - switch.is_off: continued_conversation
+        then:
+          - text_sensor.template.publish:
+              id: text_request
+              state: "..."
+          - text_sensor.template.publish:
+              id: text_response
+              state: "..."
     - script.execute: draw_display
     - if:
         condition:
