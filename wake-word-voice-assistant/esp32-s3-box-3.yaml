@@ -172,7 +172,7 @@ micro_wake_word:
           switch.is_on: continued_conversation
         then:
           - lambda: id(va).set_use_wake_word(false);
-          - voice_assistant.start_continuous:
+          - voice_assistant.start_continuous: //wake_word: !lambda return wake_word; not yet supported for continuous
         else:
           - lambda: id(va).set_use_wake_word(false);
           - voice_assistant.start:
