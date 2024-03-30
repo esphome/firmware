@@ -15,6 +15,7 @@ substitutions:
   thinking_illustration_background_color: "FFFFFF"
   replying_illustration_background_color: "FFFFFF"
   error_illustration_background_color: "000000"
+  text_outline_color: "888888"
 
   voice_assist_idle_phase_id: "1"
   voice_assist_listening_phase_id: "2"
@@ -752,7 +753,8 @@ color:
     hex: ${loading_illustration_background_color}
   - id: error_color
     hex: ${error_illustration_background_color}
-
+  - id: text_outline_color
+    hex: ${text_outline_color}
 spi:
   clk_pin: 7
   mosi_pin: 6
@@ -808,7 +810,7 @@ display:
             int rect_y = 15; // Margin from the top is 15
   
             it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK); // Draw the black rectangle
-            it.rectangle(rect_x, rect_y, rect_width, rect_height, Color::WHITE); // Draw the white outline
+            it.rectangle(rect_x, rect_y, rect_width, rect_height, text_outline_color); // Draw the outline
   
             // Calculate the position to center the text inside the rectangle
             int text_x = rect_x + (rect_width - text_width) / 2;
@@ -853,7 +855,7 @@ display:
             int rect_y = it.get_height() - rect_height - 15; // margin from the bottom is 15
   
             it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK); // Draw the black rectangle
-            it.rectangle(rect_x, rect_y, rect_width, rect_height, Color::GREY); // Draw the white outline
+            it.rectangle(rect_x, rect_y, rect_width, rect_height, text_outline_color); // Draw the outline
   
             // Calculate the position to center the text inside the rectangle
             int text_x = rect_x + (rect_width - text_width) / 2;
@@ -897,7 +899,7 @@ display:
             int x1, y1, text_width, text_height;
             it.get_text_bounds(0, 0, "${error_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
             it.filled_rectangle(10, 10, text_width + 10, text_height + 10, Color::BLACK); // Draw the black rectangle
-            it.rectangle(10, 10, text_width + 10, text_height + 10, Color::WHITE); // Draw the white outline
+            it.rectangle(10, 10, text_width + 10, text_height + 10, text_outline_color); // Draw the outline
             it.print( 15, 15, id(font_text), Color::WHITE, "${error_prompt}" ); // Print the text in white
           }
       - id: no_ha_page
@@ -914,7 +916,7 @@ display:
             int x1, y1, text_width, text_height;
             it.get_text_bounds(0, 0, "${starting_up}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
             it.filled_rectangle(10, 10, text_width + 10, text_height + 10, Color::BLACK); // Draw the black rectangle
-            it.rectangle(10, 10, text_width + 10, text_height + 10, Color::GREY); // Draw the white outline
+            it.rectangle(10, 10, text_width + 10, text_height + 10, text_outline_color); // Draw the outline
             it.print( 15, 15, id(font_text), Color::WHITE, "${starting_up}" ); // Print the text in white
           }
       - id: muted_page
