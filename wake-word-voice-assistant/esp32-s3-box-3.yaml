@@ -25,7 +25,7 @@ substitutions:
   voice_assist_muted_phase_id: "12"
 
   # These unqiue characters have been extracted from every test file of every language available on https://github.com/home-assistant/intents (14 March 2024)
-  allowed_characters: " !""#%'()+,-./0123456789:;<>?@ABCDEFGHIJKLMNOPQRSTUVWYZ[]_abcdefghijklmnopqrstuvwxyz{|}，？"
+  allowed_characters: " !"""#%'()+,-./0123456789:;<>?@ABCDEFGHIJKLMNOPQRSTUVWYZ[]_abcdefghijklmnopqrstuvwxyz{|}，？"
 
   micro_wake_word_model: okay_nabu
 
