@@ -15,6 +15,7 @@ substitutions:
   thinking_illustration_background_color: "FFFFFF"
   replying_illustration_background_color: "FFFFFF"
   error_illustration_background_color: "000000"
+  text_outline_color: "888888"
 
   voice_assist_idle_phase_id: "1"
   voice_assist_listening_phase_id: "2"
@@ -180,7 +181,6 @@ micro_wake_word:
           - voice_assistant.start:
               wake_word: !lambda return wake_word;
 
-
 voice_assistant:
   id: va
   microphone: box_mic
@@ -343,7 +343,7 @@ script:
                 - wait_until:
                     condition:
                       lambda: return !(id(voice_assistant_phase) == ${voice_assist_replying_phase_id});
-                      # normally this would complete and move to next phase with on_tts_stream_end, 
+                      # normally this would complete and move to next phase with on_tts_stream_end,
                       # but sometimes this is missed so put a time limit on the wait
                     timeout: 10s
                 - delay: 1s  # Give time for the stream to end and the phase to be switched back to listening and this timeout to be reset
@@ -752,7 +752,8 @@ color:
     hex: ${loading_illustration_background_color}
   - id: error_color
     hex: ${error_illustration_background_color}
-
+  - id: text_outline_color
+    hex: ${text_outline_color}
 spi:
   clk_pin: 7
   mosi_pin: 6
@@ -795,7 +796,19 @@ display:
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_text), Color::WHITE, "${wake_word_prompt}" );
+
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, "${wake_word_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
+            int rect_width = text_width + 10; // 5-pixel padding
+            int rect_height = text_height + 10; // 5-pixel padding
+            int rect_x = 10; // Margin from the left
+            int rect_y = 10; // Margin from the top
+            int text_x = rect_x + 5; // 5-pixel padding
+            int text_y = rect_y + 5; // 5-pixel padding
+
+            it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK); // Draw the black rectangle
+            it.rectangle(rect_x, rect_y, rect_width, rect_height, text_outline_color); // Draw the outline
+            it.print( text_x, text_y, id(font_text), Color::WHITE, "${wake_word_prompt}" ); // Print the text in white
           }
 
           if ( std::string(id(date_format_string).c_str()) != "" or std::string(id(time_format_string).c_str()) != "" ) {
@@ -821,14 +834,30 @@ display:
                 pos = date_time_text.find(" 0", pos); // Find the next occurrence
               }
             }
-            it.printf( it.get_width() / 2, it.get_height() - 10, id(font_text), Color::WHITE, TextAlign::BOTTOM_CENTER, "%s", date_time_text.c_str() );
+
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, date_time_text.c_str(), id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
+            int rect_width = text_width + 10; // 5-pixel padding
+            int rect_height = text_height + 10; // 5-pixel padding
+            int rect_x = (it.get_width() - rect_width) / 2; // Centered
+            int rect_y = it.get_height() - rect_height - 10; // margin from the bottom is 10
+            int text_x = rect_x + (rect_width - text_width) / 2; // Centered
+            int text_y = rect_y + 5; // 5-pixel padding
+
+            it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK); // Draw the black rectangle
+            it.rectangle(rect_x, rect_y, rect_width, rect_height, text_outline_color); // Draw the outline
+            it.printf( text_x, text_y, id(font_text), Color::WHITE, TextAlign::TOP_LEFT, "%s", date_time_text.c_str() ); // Print the text in white
           }
       - id: listening_page
         lambda: |-
           it.fill(id(listening_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_text), Color::BLACK, "${listening_prompt}" );
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, "${listening_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
+            it.filled_rectangle(10, 10, text_width + 10, text_height + 10, Color::WHITE); // Draw the white rectangle
+            it.rectangle(10, 10, text_width + 10, text_height + 10, text_outline_color); // Draw the outline
+            it.print( 15, 15, id(font_text), Color::BLACK, "${listening_prompt}" ); // Print the text in black
           }
       - id: thinking_page
         lambda: |-
@@ -856,7 +885,11 @@ display:
           it.fill(id(error_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_error), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_text), Color::WHITE, "${error_prompt}" );
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, "${error_prompt}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
+            it.filled_rectangle(10, 10, text_width + 10, text_height + 10, Color::BLACK); // Draw the black rectangle
+            it.rectangle(10, 10, text_width + 10, text_height + 10, text_outline_color); // Draw the outline
+            it.print( 15, 15, id(font_text), Color::WHITE, "${error_prompt}" ); // Print the text in white
           }
       - id: no_ha_page
         lambda: |-
@@ -869,7 +902,11 @@ display:
           it.fill(id(loading_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            it.print( 10, 10, id(font_text), Color::WHITE, "${starting_up}" );
+            int x1, y1, text_width, text_height;
+            it.get_text_bounds(0, 0, "${starting_up}", id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
+            it.filled_rectangle(10, 10, text_width + 10, text_height + 10, Color::BLACK); // Draw the black rectangle
+            it.rectangle(10, 10, text_width + 10, text_height + 10, text_outline_color); // Draw the outline
+            it.print( 15, 15, id(font_text), Color::WHITE, "${starting_up}" ); // Print the text in white
           }
       - id: muted_page
         lambda: |-
