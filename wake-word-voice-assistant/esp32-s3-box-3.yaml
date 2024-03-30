@@ -701,7 +701,7 @@ font:
     glyphs: 
       '&@!"''%()+=,-_.:°/$€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'
     id: font_text
-    size: 15
+    size: 16
   - file:
       type: gfonts
       family: Figtree
