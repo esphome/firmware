@@ -796,21 +796,17 @@ display:
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
           if ( id(display_text).state ) {
 
-            int GetTextBounds(esphome::display::Display* it, esphome::font::Font *font, const char *buffer) {
-              int x1 = 0;
-              int y1 = 0;
-              int width = 0;
-              int height = 0;
-              it->get_text_bounds(0, 0, buffer, font, TextAlign::TOP_LEFT, &x1, &y1, &width, &height);
-              return width;
-            }
+            esphome::Font *font = &id(font_text);
+            const char *text = "${wake_word_prompt}";
         
-            int GetTextWidth(esphome::display::Display* it, esphome::font::Font *font, const char* text) {
-              return GetTextBounds(it, font, text);
-            }
+            int x1 = 0;
+            int y1 = 0;
+            int width = 0;
+            int height = 0;
+            it.get_text_bounds(0, 0, text, font, TextAlign::TOP_LEFT, &x1, &y1, &width, &height);
         
-            // Example usage
-            int text_width = GetTextWidth(&it, id(font_text), "${wake_word_prompt}");
+            // Use the calculated width value
+            int text_width = width;
     
             // Estimate the text width based on the font size and number of characters
             // int text_width = id(font_text).get_width(' ') * (strlen("${wake_word_prompt}"));
