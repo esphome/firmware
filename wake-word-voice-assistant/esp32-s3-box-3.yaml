@@ -181,7 +181,6 @@ micro_wake_word:
           - voice_assistant.start:
               wake_word: !lambda return wake_word;
 
-
 voice_assistant:
   id: va
   microphone: box_mic
@@ -344,7 +343,7 @@ script:
                 - wait_until:
                     condition:
                       lambda: return !(id(voice_assistant_phase) == ${voice_assist_replying_phase_id});
-                      # normally this would complete and move to next phase with on_tts_stream_end, 
+                      # normally this would complete and move to next phase with on_tts_stream_end,
                       # but sometimes this is missed so put a time limit on the wait
                     timeout: 10s
                 - delay: 1s  # Give time for the stream to end and the phase to be switched back to listening and this timeout to be reset
@@ -806,7 +805,7 @@ display:
             int rect_y = 10; // Margin from the top
             int text_x = rect_x + 5; // 5-pixel padding
             int text_y = rect_y + 5; // 5-pixel padding
-  
+
             it.filled_rectangle(rect_x, rect_y, rect_width, rect_height, Color::BLACK); // Draw the black rectangle
             it.rectangle(rect_x, rect_y, rect_width, rect_height, text_outline_color); // Draw the outline
             it.print( text_x, text_y, id(font_text), Color::WHITE, "${wake_word_prompt}" ); // Print the text in white
@@ -835,7 +834,7 @@ display:
                 pos = date_time_text.find(" 0", pos); // Find the next occurrence
               }
             }
-            
+
             int x1, y1, text_width, text_height;
             it.get_text_bounds(0, 0, date_time_text.c_str(), id(font_text), TextAlign::TOP_LEFT, &x1, &y1, &text_width, &text_height); // Get the text dimensions
             int rect_width = text_width + 10; // 5-pixel padding
