@@ -696,10 +696,9 @@ image:
 font:
   - file:
       type: gfonts
-      family: Figtree
+      family: Roboto
       weight: 300
-    glyphs: 
-      '&@!"''%()+=,-_.:°/$€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'
+    glyphs: ${allowed_characters}
     id: font_text
     size: 16
   - file:
