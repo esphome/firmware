@@ -810,7 +810,7 @@ display:
             }
         
             // Example usage
-            int text_width = GetTextWidth(&it, id(my_font), "${wake_word_prompt}");
+            int text_width = GetTextWidth(&it, id(font_text), "${wake_word_prompt}");
     
             // Estimate the text width based on the font size and number of characters
             // int text_width = id(font_text).get_width(' ') * (strlen("${wake_word_prompt}"));
