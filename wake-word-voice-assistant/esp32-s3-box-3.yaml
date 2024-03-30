@@ -795,7 +795,7 @@ display:
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
           if ( id(display_text).state ) {
-            auto width = id(my_font).get_string_width("${wake_word_prompt}"); // Estimate the width
+            auto width = id(font_text).get_string_width("${wake_word_prompt}"); // Estimate the width
             it.filled_rectangle(20 , 20 , width + 20 , 30 , Color::BLACK );
             it.rectangle(20 , 20 , 280 , 30 , Color::WHITE );
             it.print( 30, 25, id(font_text), Color::WHITE, "${wake_word_prompt}" );
