@@ -796,7 +796,7 @@ display:
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
           if ( id(display_text).state ) {
 
-            esphome::Font *font = &id(font_text);
+            auto *font = &id(font_text);
             const char *text = "${wake_word_prompt}";
         
             int x1 = 0;
