@@ -91,6 +91,7 @@ binary_sensor:
       number: GPIO21
     name: "Presence detect"
     disabled_by_default: false
+    publish_initial_state: true
     device_class: "occupancy"
     filters:
       - delayed_off: !lambda return id(radar_delayed_off).state * 1000;
