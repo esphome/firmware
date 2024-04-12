@@ -361,7 +361,12 @@ script:
                 condition:
                   micro_wake_word.is_running
                 then:
-                  micro_wake_word.stop:
+                  - micro_wake_word.stop:
+                  - wait_until:
+                      condition:
+                        not:
+                          micro_wake_word.is_running
+                      timeout: 5s
             - wait_until:
                 condition:
                   not:
