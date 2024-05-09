@@ -90,7 +90,7 @@ jobs:
           path: output
 
   combined-manifests:
-    if: contains(['workflow_dispatch', 'push', 'schedule'], github.event_name) && github.ref == 'refs/heads/main'
+    if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
     name: Combine ${{ matrix.project }} manifests
     runs-on: ubuntu-latest
     needs: build
@@ -117,7 +117,7 @@ jobs:
           path: manifest.json
 
   full-manifests:
-    if: contains(['workflow_dispatch', 'push', 'schedule'], github.event_name) && github.ref == 'refs/heads/main'
+    if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
     name: Create ${{ matrix.project }} manifest
     runs-on: ubuntu-latest
     needs: build
@@ -154,7 +154,7 @@ jobs:
           path: output
 
   consolidate:
-    if: contains(['workflow_dispatch', 'push', 'schedule'], github.event_name) && github.ref == 'refs/heads/main'
+    if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
     name: Consolidate firmwares
     runs-on: ubuntu-latest
     needs:
@@ -171,7 +171,7 @@ jobs:
           path: output
 
   deploy:
-    if: contains(['workflow_dispatch', 'push', 'schedule'], github.event_name) && github.ref == 'refs/heads/main'
+    if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     needs: consolidate
