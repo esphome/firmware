@@ -17,7 +17,8 @@ concurrency:
 
 env:
   FIRMWARES: esp-web-tools esphome-web voice-assistant wake-word-voice-assistant bluetooth-proxy media-player
-  # VOICE_ASSISTANT_VERSION: beta
+  VOICE_ASSISTANT_VERSION: 2024.4.2
+  WAKE_WORD_VOICE_ASSISTANT_VERSION: 2024.4.2
 
 jobs:
   prepare:
