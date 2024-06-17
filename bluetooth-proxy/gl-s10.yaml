@@ -41,6 +41,7 @@ ethernet:
 api:
 logger:
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/gl-s10.yaml@main

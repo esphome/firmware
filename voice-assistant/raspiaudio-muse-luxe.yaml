@@ -15,7 +15,9 @@ esp32:
 
 logger:
 api:
+
 ota:
+  - platform: esphome
 
 i2c:
   sda: GPIO18

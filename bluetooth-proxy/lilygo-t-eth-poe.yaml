@@ -29,6 +29,7 @@ ethernet:
 api:
 logger:
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/lilygo-t-eth-poe.yaml@main

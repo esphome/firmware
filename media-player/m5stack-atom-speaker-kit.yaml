@@ -13,7 +13,9 @@ esp32:
 
 logger:
 api:
+
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/media-player/m5stack-atom-speaker-kit.yaml@main

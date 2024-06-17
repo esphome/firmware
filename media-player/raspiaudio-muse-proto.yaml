@@ -14,7 +14,9 @@ esp32:
 
 logger:
 api:
+
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/media-player/raspiaudio-muse-proto.yaml@main

@@ -27,8 +27,10 @@ wifi:
 
 api:
 logger:
-ota:
 improv_serial:
+
+ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/esp32-generic.yaml@main

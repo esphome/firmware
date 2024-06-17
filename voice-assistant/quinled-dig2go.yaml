@@ -15,7 +15,9 @@ esp32:
 
 logger:
 api:
+
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/quinled-dig2go.yaml@main

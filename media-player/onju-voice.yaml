@@ -52,6 +52,7 @@ api:
         - voice_assistant.stop
 
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/onju-voice.yaml@main

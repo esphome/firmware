@@ -26,6 +26,7 @@ ethernet:
 api:
 logger:
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/wt32-eth01.yaml@main
