@@ -85,10 +85,11 @@ jobs:
         if: ${{ matrix.device != 'pico-w' }}
         run: |
           sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/${{ matrix.device }}/manifest.json
-      - uses: actions/upload-artifact@v3.1.3
+      - uses: actions/upload-artifact@v4.3.3
         with:
-          name: ${{ matrix.firmware }}
+          name: ${{ matrix.firmware }}-${{ matrix.device }}
           path: output
+          retention-days: 1
 
   combined-manifests:
     if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
@@ -104,18 +105,20 @@ jobs:
           - project: esphome-web
             name: ESPHome Web
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
-          name: ${{ matrix.project }}
+          pattern: ${{ matrix.project }}-*
+          merge-multiple: true
           path: files
       - name: Generate manifest.json
         run: |
           version=$(cat files/*/version | sort -V | tail -n 1)
           jq -s --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "builds":.}' files/*/manifest.json > manifest.json
-      - uses: actions/upload-artifact@v3.1.3
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: ${{ matrix.project }}
-          path: manifest.json
+          path: files
+          retention-days: 1
 
   full-manifests:
     if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
@@ -135,9 +138,10 @@ jobs:
           - project: media-player
             name: Media Player
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
-          name: ${{ matrix.project }}
+          pattern: ${{ matrix.project }}-*
+          merge-multiple: true
           path: files
       - name: Generate manifest.json files
         run: |
@@ -146,13 +150,14 @@ jobs:
             mkdir -p ../output/$device
             pushd $device
             version=$(cat version)
-            jq --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":[.]}' manifest.json > ../../output/$device/manifest.json
+            jq --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":[.]}' manifest.json > manifest.json
             popd
           done
       - uses: actions/upload-artifact@v3.1.3
         with:
           name: ${{ matrix.project }}
-          path: output
+          path: files
+          retention-days: 1
 
   consolidate:
     if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
@@ -163,13 +168,15 @@ jobs:
       - full-manifests
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           path: output
+          merge-multiple: true
       - run: cp -R static/* output/
       - uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: output
+          retention-days: 1
 
   deploy:
     if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
