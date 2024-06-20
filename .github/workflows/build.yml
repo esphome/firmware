@@ -92,7 +92,6 @@ jobs:
           retention-days: 1
 
   combined-manifests:
-    if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
     name: Combine ${{ matrix.project }} manifests
     runs-on: ubuntu-latest
     needs: build
@@ -121,7 +120,6 @@ jobs:
           retention-days: 1
 
   full-manifests:
-    if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
     name: Create ${{ matrix.project }} manifest
     runs-on: ubuntu-latest
     needs: build
@@ -160,7 +158,6 @@ jobs:
           retention-days: 1
 
   consolidate:
-    if: contains(fromJSON('["workflow_dispatch", "push", "schedule"]'), github.event_name) && github.ref == 'refs/heads/main'
     name: Consolidate firmwares
     runs-on: ubuntu-latest
     needs:
