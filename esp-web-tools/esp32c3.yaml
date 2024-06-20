@@ -5,6 +5,7 @@ substitutions:
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
+  min_version: 2024.6.0
   name_add_mac_suffix: true
   project:
     name: esphome.esp_web_tools_example
@@ -23,6 +24,7 @@ api:
 
 # Allow OTA updates
 ota:
+  - platform: esphome
 
 # Allow provisioning Wi-Fi via serial
 improv_serial:

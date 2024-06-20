@@ -7,6 +7,7 @@ substitutions:
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
+  min_version: 2024.6.0
   name_add_mac_suffix: true
   project:
     name: esphome.bluetooth-proxy
@@ -41,6 +42,7 @@ ethernet:
 api:
 logger:
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/gl-s10.yaml@main
