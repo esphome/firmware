@@ -1,11 +1,11 @@
 esphome:
   name: raspiaudio-muse-luxe
   friendly_name: RaspiAudio Muse Luxe
+  min_version: 2024.6.0
   name_add_mac_suffix: true
   project:
     name: raspiaudio.muse-luxe
     version: "1.0"
-  min_version: 2023.5.0
 
 esp32:
   board: esp-wrover-kit
@@ -14,7 +14,9 @@ esp32:
 
 logger:
 api:
+
 ota:
+  - platform: esphome
 
 i2c:
   sda: GPIO18

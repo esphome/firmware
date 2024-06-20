@@ -1,6 +1,7 @@
 esphome:
   name: m5stack-atom-speaker-kit
   friendly_name: M5Stack Atom Speaker Kit
+  min_version: 2024.6.0
   name_add_mac_suffix: true
   project:
     name: m5stack.atom-speaker-kit
@@ -13,7 +14,9 @@ esp32:
 
 logger:
 api:
+
 ota:
+  - platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/media-player/m5stack-atom-speaker-kit.yaml@main
