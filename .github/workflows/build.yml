@@ -168,7 +168,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4.1.7
         with:
-          pattern: "!(build-*)"
+          pattern: "!build-*"
           path: output
       - run: cp -R static/* output/
       - uses: actions/upload-pages-artifact@v3.0.1
