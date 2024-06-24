@@ -238,10 +238,10 @@ voice_assistant:
     - wait_until:
         not: ble.enabled
     - lambda: id(init_in_progress) = false;
-    - script.execute: start_voice_assistant 
+    - script.execute: start_voice_assistant
     - script.execute: draw_display
   on_client_disconnected:
-    - script.execute: stop_voice_assistant 
+    - script.execute: stop_voice_assistant
     - script.execute: draw_display
   on_timer_started:
     - script.execute: draw_display
@@ -257,19 +257,19 @@ voice_assistant:
     - switch.turn_on: timer_ringing
     - script.execute: draw_display
     - wait_until:
-        not: 
-          microphone.is_capturing:  
+        not:
+          microphone.is_capturing:
     - while:
-        condition: 
+        condition:
           switch.is_on: timer_ringing
         then:
           - lambda: id(box_speaker).play(id(timer_finished_wave_file), sizeof(id(timer_finished_wave_file)));
           - delay: 1s
     - wait_until:
-        not: 
-          speaker.is_playing:      
-    - switch.turn_off: timer_ringing      
-    - script.execute: start_voice_assistant 
+        not:
+          speaker.is_playing:
+    - switch.turn_off: timer_ringing
+    - script.execute: start_voice_assistant
     - script.execute: draw_display
 
 script:
@@ -330,7 +330,7 @@ script:
           else:
             - display.page.show: initializing_page
             - component.update: s3_box_lcd
-            
+
   - id: fetch_first_active_timer
     then:
       - lambda: |
@@ -375,7 +375,7 @@ script:
             output = true;
           }
           id(global_is_timer) = output;
-  
+
   - id: draw_timer_timeline
     then:
       - lambda: |
@@ -395,7 +395,7 @@ script:
               id(s3_box_lcd).filled_rectangle(0 , 225 , 320 , 15 , Color::WHITE );
               id(s3_box_lcd).filled_rectangle(0 , 226 , active_pixels , 13 , id(paused_timer_color) );
             }
-          } 
+          }
   - id: draw_active_timer_widget
     then:
       - lambda: |
@@ -418,7 +418,7 @@ script:
             } else {
               display_string = display_minute + ":" + display_seconds;
             }
-            id(s3_box_lcd).printf(120, 47, id(font_timer), Color::BLACK, "%s", display_string.c_str());            
+            id(s3_box_lcd).printf(120, 47, id(font_timer), Color::BLACK, "%s", display_string.c_str());
           }
 
   - id: start_voice_assistant
@@ -441,7 +441,7 @@ script:
             - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
           else:
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
-  
+
   - id: stop_voice_assistant
     then:
       - if:
