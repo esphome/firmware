@@ -737,7 +737,7 @@ color:
 file:
   - id: timer_finished_wave_file
     #path: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav TO BE FIXED ONCE `file` SUPPORTS REMOTE PATH
-    path: /voice-assistant/sounds/timer_finished.wav
+    path: ..//voice-assistant/sounds/timer_finished.wav
 
 spi:
   clk_pin: 7
