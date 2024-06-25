@@ -185,7 +185,7 @@ binary_sensor:
       inverted: true
     name: Left Top Button
     disabled_by_default: true
-    on_multi_click:      
+    on_multi_click:
       - timing:
           - ON for at least 50ms
           - OFF for at least 50ms
