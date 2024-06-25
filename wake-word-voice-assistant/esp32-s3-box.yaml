@@ -129,6 +129,11 @@ binary_sensor:
     entity_category: diagnostic
     on_multi_click:
       - timing:
+          - ON for at least 50ms
+          - OFF for at least 50ms
+        then:
+          - switch.turn_off: timer_ringing
+      - timing:
           - ON for at least 10s
         then:
           - button.press: factory_reset_btn
@@ -676,8 +681,7 @@ color:
 
 file:
   - id: timer_finished_wave_file
-    # path: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav TO BE FIXED ONCE `file` SUPPORTS REMOTE PATH
-    path: ..//voice-assistant/sounds/timer_finished.wav
+    file: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav
 
 spi:
   clk_pin: 7
@@ -750,17 +754,4 @@ display:
           it.fill(Color::BLACK);
           id(draw_timer_timeline).execute();
           id(draw_active_timer_widget).execute();
-
-i2c:
-  scl: GPIO18
-  sda: GPIO8
-  scan: true
-
-touchscreen:
-  platform: tt21100
-  display: s3_box_lcd
-  id: s3_box_touchscreen
-  update_interval: 50ms
-  on_touch:
-    - switch.turn_off: timer_ringing
 
