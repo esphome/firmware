@@ -185,12 +185,12 @@ binary_sensor:
       inverted: true
     name: Left Top Button
     disabled_by_default: true
+    on_multi_click:      
       - timing:
           - ON for at least 50ms
           - OFF for at least 50ms
         then:
           - switch.turn_off: timer_ringing
-    on_multi_click:
       - timing:
           - ON for at least 10s
         then:
