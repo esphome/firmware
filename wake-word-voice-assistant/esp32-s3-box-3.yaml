@@ -532,28 +532,36 @@ select:
       - On device
     initial_option: On device
     on_value:
-      - wait_until:
-          lambda: return id(voice_assistant_phase) == ${voice_assist_muted_phase_id} || id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
-      - if:
+       - if:
           condition:
-            lambda: return x == "In Home Assistant";
+            lambda: return !id(init_in_progress);
           then:
-            - micro_wake_word.stop
-            - delay: 500ms
+            - wait_until:
+                lambda: return id(voice_assistant_phase) == ${voice_assist_muted_phase_id} || id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
             - if:
                 condition:
-                  switch.is_off: mute
+                  lambda: return x == "In Home Assistant";
                 then:
-                  - lambda: id(va).set_use_wake_word(true);
-                  - voice_assistant.start_continuous:
-      - if:
-          condition:
-            lambda: return x == "On device";
-          then:
-            - lambda: id(va).set_use_wake_word(false);
-            - voice_assistant.stop
-            - delay: 500ms
-            - micro_wake_word.start
+                  - micro_wake_word.stop
+                  - delay: 500ms
+                  - if:
+                      condition:
+                        switch.is_off: mute
+                      then:
+                        - lambda: id(va).set_use_wake_word(true);
+                        - voice_assistant.start_continuous:
+            - if:
+                condition:
+                  lambda: return x == "On device";
+                then:
+                  - lambda: id(va).set_use_wake_word(false);
+                  - voice_assistant.stop
+                  - delay: 500ms
+                  - if:
+                      condition:
+                        switch.is_off: mute
+                      then:
+                        - micro_wake_word.start
 
 globals:
   - id: init_in_progress
