@@ -53,6 +53,7 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/onju-voice.yaml@main
@@ -91,8 +92,9 @@ interval:
           button: 2
 
 i2s_audio:
-  i2s_lrclk_pin: GPIO13
-  i2s_bclk_pin: GPIO18
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO13
+    i2s_bclk_pin: GPIO18
 
 media_player:
   - platform: i2s_audio
@@ -183,7 +185,7 @@ binary_sensor:
   - platform: esp32_touch
     id: volume_down
     pin: GPIO4
-    threshold: 539000  # will automatically be tuned at runtime
+    threshold: 539000 # will automatically be tuned at runtime
     on_press:
       then:
         - light.turn_on: left_led
@@ -206,7 +208,7 @@ binary_sensor:
   - platform: esp32_touch
     id: volume_up
     pin: GPIO2
-    threshold: 580000  # will automatically be tuned at runtime
+    threshold: 580000 # will automatically be tuned at runtime
     on_press:
       then:
         - light.turn_on: right_led
@@ -229,7 +231,7 @@ binary_sensor:
   - platform: esp32_touch
     id: action
     pin: GPIO3
-    threshold: 751000  # will automatically be tuned at runtime
+    threshold: 751000 # will automatically be tuned at runtime
     on_click:
       - if:
           condition:
