@@ -18,10 +18,12 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 i2c:
-  sda: GPIO18
-  scl: GPIO23
+  - id: i2c_bus
+    sda: GPIO18
+    scl: GPIO23
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/raspiaudio-muse-luxe.yaml@main
@@ -56,7 +58,8 @@ external_components:
 es8388:
 
 i2s_audio:
-  - i2s_lrclk_pin: GPIO25
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO25
     i2s_bclk_pin: GPIO5
 
 microphone:
@@ -141,6 +144,7 @@ sensor:
   - platform: adc
     pin: GPIO33
     name: Battery
+    id: battery_sensor
     icon: "mdi:battery-outline"
     device_class: voltage
     state_class: measurement
@@ -166,6 +170,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Volume Up
+    id: volume_up
     disabled_by_default: true
   - platform: gpio
     pin:
@@ -175,6 +180,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Volume Down
+    id: volume_down
     disabled_by_default: true
   - platform: gpio
     pin:
@@ -184,6 +190,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Action
+    id: action_button
     disabled_by_default: true
     on_multi_click:
       - timing:

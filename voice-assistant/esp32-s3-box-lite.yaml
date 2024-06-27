@@ -75,6 +75,7 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 logger:
   hardware_uart: USB_SERIAL_JTAG
@@ -171,6 +172,7 @@ binary_sensor:
       mode: INPUT_PULLUP
       inverted: true
     name: Left Top Button
+    id: left_top_button
     disabled_by_default: true
     on_multi_click:
       - timing:
@@ -471,8 +473,9 @@ color:
     hex: ${error_illustration_background_color}
 
 spi:
-  clk_pin: 7
-  mosi_pin: 6
+  - id: spi_bus
+    clk_pin: 7
+    mosi_pin: 6
 
 display:
   - platform: ili9xxx

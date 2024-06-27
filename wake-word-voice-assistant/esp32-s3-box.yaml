@@ -83,6 +83,7 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 logger:
   hardware_uart: USB_SERIAL_JTAG
@@ -116,6 +117,7 @@ binary_sensor:
       number: GPIO1
       inverted: true
     name: "Mute"
+    id: mute_switch
     disabled_by_default: true
     entity_category: diagnostic
 
@@ -125,6 +127,7 @@ binary_sensor:
       mode: INPUT_PULLUP
       inverted: true
     name: Top Left Button
+    id: top_left_button
     disabled_by_default: true
     entity_category: diagnostic
     on_multi_click:
@@ -692,8 +695,9 @@ file:
     file: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav
 
 spi:
-  clk_pin: 7
-  mosi_pin: 6
+  - id: spi_bus
+    clk_pin: 7
+    mosi_pin: 6
 
 display:
   - platform: ili9xxx
@@ -762,4 +766,3 @@ display:
           it.fill(Color::BLACK);
           id(draw_timer_timeline).execute();
           id(draw_active_timer_widget).execute();
-

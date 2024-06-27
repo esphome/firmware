@@ -17,6 +17,7 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/media-player/m5stack-atom-speaker-kit.yaml@main
@@ -29,7 +30,8 @@ captive_portal:
 improv_serial:
 
 i2s_audio:
-  - i2s_lrclk_pin: GPIO21
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO21
     i2s_bclk_pin: GPIO22
 
 media_player:
@@ -45,12 +47,14 @@ binary_sensor:
     pin:
       number: GPIO39
       inverted: true
+    id: top_button
     name: Button
     on_click:
       - media_player.toggle: media_out
 
 light:
   - platform: fastled_clockless
+    id: led
     name: None
     pin: GPIO27
     chipset: SK6812

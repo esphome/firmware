@@ -18,6 +18,7 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/raspiaudio-muse-proto.yaml@main
@@ -47,7 +48,8 @@ external_components:
     refresh: 0s
 
 i2s_audio:
-  - i2s_lrclk_pin: GPIO25
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO25
     i2s_bclk_pin: GPIO5
 
 microphone:
@@ -148,6 +150,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Action
+    id: action_button
     disabled_by_default: true
     on_multi_click:
       - timing:

@@ -53,6 +53,7 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/onju-voice.yaml@main
@@ -91,8 +92,9 @@ interval:
           button: 2
 
 i2s_audio:
-  i2s_lrclk_pin: GPIO13
-  i2s_bclk_pin: GPIO18
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO13
+    i2s_bclk_pin: GPIO18
 
 media_player:
   - platform: i2s_audio
