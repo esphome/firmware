@@ -117,7 +117,7 @@ binary_sensor:
       number: GPIO1
       inverted: true
     name: "Mute"
-    id: hardware_mute_button
+    id: mute_switch
     disabled_by_default: true
     entity_category: diagnostic
 
