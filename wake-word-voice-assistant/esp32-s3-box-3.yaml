@@ -101,7 +101,7 @@ wifi:
   ap:
   on_connect:
     - script.execute: draw_display
-    - delay: 5s # Gives time for improv results to be transmitted
+    - delay: 5s  # Gives time for improv results to be transmitted
     - ble.disable:
   on_disconnect:
     - script.execute: draw_display
