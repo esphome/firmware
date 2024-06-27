@@ -76,6 +76,7 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 logger:
   hardware_uart: USB_SERIAL_JTAG
@@ -87,7 +88,7 @@ wifi:
   ap:
   on_connect:
     - script.execute: draw_display
-    - delay: 5s  # Gives time for improv results to be transmitted
+    - delay: 5s # Gives time for improv results to be transmitted
     - ble.disable:
   on_disconnect:
     - script.execute: draw_display
@@ -109,6 +110,7 @@ binary_sensor:
       number: GPIO1
       inverted: true
     name: "Mute"
+    id: mute
     disabled_by_default: true
     entity_category: diagnostic
 
@@ -118,6 +120,7 @@ binary_sensor:
       mode: INPUT_PULLUP
       inverted: true
     name: Top Left Button
+    id: top_left_button
     disabled_by_default: true
     entity_category: diagnostic
     on_multi_click:
@@ -417,8 +420,9 @@ color:
     hex: ${error_illustration_background_color}
 
 spi:
-  clk_pin: 7
-  mosi_pin: 6
+  - id: spi_bus
+    clk_pin: 7
+    mosi_pin: 6
 
 display:
   - platform: ili9xxx

@@ -18,6 +18,7 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/quinled-dig2go.yaml@main
@@ -36,8 +37,9 @@ external_components:
     refresh: 0s
 
 i2s_audio:
-  i2s_lrclk_pin: GPIO4
-  i2s_bclk_pin: GPIO18
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO4
+    i2s_bclk_pin: GPIO18
 
 microphone:
   - platform: i2s_audio
@@ -112,6 +114,7 @@ power_supply:
 
 remote_receiver:
   - pin: GPIO5
+    id: ir_receiver
     dump: all
 
 light:
@@ -143,6 +146,7 @@ light:
 binary_sensor:
   - platform: gpio
     name: Button
+    id: action_button
     disabled_by_default: true
     pin:
       number: GPIO0

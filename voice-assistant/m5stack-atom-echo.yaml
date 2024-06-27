@@ -18,13 +18,14 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/m5stack-atom-echo.yaml@main
 
 wifi:
   on_connect:
-    - delay: 5s  # Gives time for improv results to be transmitted
+    - delay: 5s # Gives time for improv results to be transmitted
     - ble.disable:
   on_disconnect:
     - ble.enable:
@@ -41,8 +42,9 @@ button:
     name: Factory reset
 
 i2s_audio:
-  i2s_lrclk_pin: GPIO33
-  i2s_bclk_pin: GPIO19
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO33
+    i2s_bclk_pin: GPIO19
 
 microphone:
   - platform: i2s_audio

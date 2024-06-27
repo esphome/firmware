@@ -18,17 +18,19 @@ api:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 i2c:
-  sda: GPIO18
-  scl: GPIO23
+  - id: i2c_bus
+    sda: GPIO18
+    scl: GPIO23
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/raspiaudio-muse-luxe.yaml@main
 
 wifi:
   on_connect:
-    - delay: 5s  # Gives time for improv results to be transmitted
+    - delay: 5s # Gives time for improv results to be transmitted
     - ble.disable:
   on_disconnect:
     - ble.enable:
@@ -45,7 +47,7 @@ button:
     name: Factory reset
 
 external_components:
-  - source: github://pr#3552  # DAC support https://github.com/esphome/esphome/pull/3552
+  - source: github://pr#3552 # DAC support https://github.com/esphome/esphome/pull/3552
     components: [es8388]
     refresh: 0s
   - source: github://pr#5230
@@ -56,7 +58,8 @@ external_components:
 es8388:
 
 i2s_audio:
-  - i2s_lrclk_pin: GPIO25
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO25
     i2s_bclk_pin: GPIO5
 
 microphone:
@@ -141,6 +144,7 @@ sensor:
   - platform: adc
     pin: GPIO33
     name: Battery
+    id: battery_sensor
     icon: "mdi:battery-outline"
     device_class: voltage
     state_class: measurement
@@ -151,7 +155,7 @@ sensor:
     attenuation: 11db
     raw: true
     filters:
-      - multiply: 0.00173913  # 2300 -> 4, for attenuation 11db, based on Olivier's code
+      - multiply: 0.00173913 # 2300 -> 4, for attenuation 11db, based on Olivier's code
       - exponential_moving_average:
           alpha: 0.2
           send_every: 2
@@ -166,6 +170,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Volume Up
+    id: volume_up
     disabled_by_default: true
   - platform: gpio
     pin:
@@ -175,6 +180,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Volume Down
+    id: volume_down
     disabled_by_default: true
   - platform: gpio
     pin:
@@ -184,6 +190,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Action
+    id: action_button
     disabled_by_default: true
     on_multi_click:
       - timing:
