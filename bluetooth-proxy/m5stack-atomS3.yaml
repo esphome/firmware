@@ -28,6 +28,7 @@ improv_serial:
 
 ota:
   - platform: esphome
+    id: ota_esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/m5stack-atomS3.yaml@main
@@ -44,5 +45,6 @@ bluetooth_proxy:
 
 button:
   - platform: safe_mode
+    id: button_safe_mode
     name: Safe Mode Boot
     entity_category: diagnostic

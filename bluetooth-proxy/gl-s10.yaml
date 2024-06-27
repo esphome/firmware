@@ -43,6 +43,7 @@ api:
 logger:
 ota:
   - platform: esphome
+    id: ota_esphome
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/gl-s10.yaml@main
@@ -70,6 +71,7 @@ bluetooth_proxy:
 
 button:
   - platform: safe_mode
+    id: button_safe_mode
     name: Safe Mode Boot
     entity_category: diagnostic
 
@@ -87,6 +89,7 @@ binary_sensor:
       number: GPIO33
       inverted: true
     name: "Reset Button"
+    id: binary_sensor_reset_button
 
 # output settings for LED's marked Power and Bluetooth
 # power LED use: see code line 15
@@ -103,6 +106,7 @@ output:
 
 # since these pins are broken out inside and labeled as I2C pins they're configured here
 i2c:
-  sda: 15
-  scl: 13
-  scan: true
+  - id: i2c_bus
+    sda: 15
+    scl: 13
+    scan: true
