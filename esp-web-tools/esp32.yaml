@@ -39,7 +39,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://esphome/example-configs/esp-web-tools/esp32.yaml@v1
+  package_import_url: github://esphome/example-configs/esp-web-tools/esp32.yaml@main
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.

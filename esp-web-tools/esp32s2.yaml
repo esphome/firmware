@@ -41,7 +41,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/esp-web-tools/esp32s2.yaml@v2
+  package_import_url: github://esphome/firmware/esp-web-tools/esp32s2.yaml@main
 
 # To have a "next url" for improv serial
 web_server:
