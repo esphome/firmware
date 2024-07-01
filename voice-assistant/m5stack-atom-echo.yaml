@@ -163,8 +163,8 @@ voice_assistant:
                 - homeassistant.service:
                   service: media_player.play_media
                   data:
-                    entity_id: media_player.study_speaker # <- change this
-                    media_content_id: !lambda 'return x;'
+                    entity_id: !lambda 'return media_player.state;' # <- change this
+                    media_content_id: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav
                     media_content_type: music
                     announce: "false"
               else:
