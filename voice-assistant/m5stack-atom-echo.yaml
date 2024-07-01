@@ -60,6 +60,14 @@ speaker:
     dac_type: external
     mode: mono
 
+text_sensor:
+  - platform: template
+    name: "media player"
+    id: "media_player"
+    lambda: |-
+      return {"media_player.study_speaker"};
+    update_interval: 60s
+
 voice_assistant:
   id: va
   microphone: echo_microphone
@@ -90,6 +98,14 @@ voice_assistant:
         green: 0%
         brightness: 100%
         effect: none
+  on_tts_end:
+     - homeassistant.service:
+         service: media_player.play_media
+         data:
+           entity_id: !lambda 'return media_player.state;' # <- change this
+           media_content_id: !lambda 'return x;'
+           media_content_type: music
+           announce: "false"
   on_end:
     - delay: 100ms
     - wait_until:
@@ -137,7 +153,22 @@ voice_assistant:
         condition:
           switch.is_on: timer_ringing
         then:
-          - lambda: id(echo_speaker).play(id(timer_finished_wave_file), sizeof(id(timer_finished_wave_file)));
+          - if:
+              condition:
+                not:
+                  media_player.state:
+                  id: my_text_sensor
+                  state: ''
+              then:
+                - homeassistant.service:
+                  service: media_player.play_media
+                  data:
+                    entity_id: media_player.study_speaker # <- change this
+                    media_content_id: !lambda 'return x;'
+                    media_content_type: music
+                    announce: "false"
+              else:
+                - lambda: id(echo_speaker).play(id(timer_finished_wave_file), sizeof(id(timer_finished_wave_file)));
           - delay: 1s
     - wait_until:
         not:
