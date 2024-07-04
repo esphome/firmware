@@ -130,7 +130,6 @@ button:
   - platform: template
     id: check_for_update_button
     name: Check for firmware update
-    entity_category: diagnostic
     device_class: update
     on_press:
       then:
