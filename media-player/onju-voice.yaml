@@ -64,6 +64,7 @@ update:
     source: https://firmware.esphome.io/media-player/onju-voice/manifest.json
 
 http_request:
+  verify_ssl: false
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/onju-voice.yaml@main

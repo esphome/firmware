@@ -28,6 +28,7 @@ update:
     source: https://firmware.esphome.io/media-player/raspiaudio-muse-luxe/manifest.json
 
 http_request:
+  verify_ssl: false
 
 i2c:
   - id: i2c_bus
