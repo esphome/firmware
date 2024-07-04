@@ -127,14 +127,6 @@ button:
     id: factory_reset_btn
     name: Factory reset
 
-  - platform: template
-    id: check_for_update_button
-    name: Check for firmware update
-    device_class: update
-    on_press:
-      then:
-        - component.update: update_http_request
-
 binary_sensor:
   - platform: gpio
     pin:
