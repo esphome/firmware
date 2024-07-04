@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build Firmware
-        uses: esphome/build-action@jesserockz-2024-269
+        uses: esphome/build-action@v3.2.0
         id: esphome-build
         with:
           yaml_file: ${{ matrix.firmware }}/${{ matrix.device }}.yaml
