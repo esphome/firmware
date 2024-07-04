@@ -1,2 +1,1 @@
-packages:
-  voice_assistant: github://esphome/firmware/voice-assistant/m5stack-atom-echo.yaml@main
+<<: !include ../voice-assistant/m5stack-atom-echo.yaml

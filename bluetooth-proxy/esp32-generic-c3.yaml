@@ -9,7 +9,7 @@ esphome:
   name_add_mac_suffix: true
   project:
     name: esphome.bluetooth-proxy
-    version: "1.0"
+    version: "24.7.4.1"
   platformio_options:
     board_build.f_flash: 40000000L
     board_build.flash_mode: dio
@@ -33,6 +33,16 @@ improv_serial:
 ota:
   - platform: esphome
     id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
+
+update:
+  - platform: http_request
+    id: update_http_request
+    name: Firmware
+    source: https://firmware.esphome.io/bluetooth-proxy/esp32-generic-c3/manifest.json
+
+http_request:
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/esp32-generic-c3.yaml@main
@@ -51,4 +61,7 @@ button:
   - platform: safe_mode
     id: button_safe_mode
     name: Safe Mode Boot
-    entity_category: diagnostic
+
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset

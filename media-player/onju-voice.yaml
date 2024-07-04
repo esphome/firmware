@@ -5,7 +5,7 @@ esphome:
   name_add_mac_suffix: true
   project:
     name: onju.voice-voice-assistant
-    version: "3.0"
+    version: "24.7.4.1"
   on_boot:
     then:
       - light.turn_on:
@@ -54,6 +54,17 @@ api:
 ota:
   - platform: esphome
     id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
+
+update:
+  - platform: http_request
+    id: update_http_request
+    name: Firmware
+    source: https://firmware.esphome.io/media-player/onju-voice/manifest.json
+
+http_request:
+  verify_ssl: false
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/onju-voice.yaml@main
@@ -478,3 +489,12 @@ switch:
       - script.execute: turn_on_wake_word
     on_turn_off:
       - script.execute: turn_off_wake_word
+
+button:
+  - platform: safe_mode
+    id: button_safe_mode
+    name: Safe Mode Boot
+
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset

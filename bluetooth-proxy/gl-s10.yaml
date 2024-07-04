@@ -11,7 +11,7 @@ esphome:
   name_add_mac_suffix: true
   project:
     name: esphome.bluetooth-proxy
-    version: "1.0"
+    version: "24.7.4.1"
   # turn on Power LED when esphome boots
   on_boot:
     then:
@@ -44,6 +44,16 @@ logger:
 ota:
   - platform: esphome
     id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
+
+update:
+  - platform: http_request
+    id: update_http_request
+    name: Firmware
+    source: https://firmware.esphome.io/bluetooth-proxy/gl-s10/manifest.json
+
+http_request:
 
 dashboard_import:
   package_import_url: github://esphome/firmware/bluetooth-proxy/gl-s10.yaml@main
@@ -73,7 +83,10 @@ button:
   - platform: safe_mode
     id: button_safe_mode
     name: Safe Mode Boot
-    entity_category: diagnostic
+
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset
 
 ## DEVICE SPECIFIC CONFIGURATION
 # network LED (white one) configured as status led

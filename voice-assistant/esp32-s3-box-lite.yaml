@@ -35,7 +35,7 @@ esphome:
     board_build.flash_mode: dio
   project:
     name: esphome.voice-assistant
-    version: "1.0"
+    version: "24.7.4.1"
   on_boot:
     priority: 600
     then:
@@ -76,6 +76,16 @@ api:
 ota:
   - platform: esphome
     id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
+
+update:
+  - platform: http_request
+    id: update_http_request
+    name: Firmware
+    source: https://firmware.esphome.io/voice-assistant/esp32-s3-box-lite/manifest.json
+
+http_request:
 
 logger:
   hardware_uart: USB_SERIAL_JTAG
@@ -101,6 +111,10 @@ esp32_improv:
   authorizer: none
 
 button:
+  - platform: safe_mode
+    id: button_safe_mode
+    name: Safe Mode Boot
+
   - platform: factory_reset
     id: factory_reset_btn
     name: Factory reset
