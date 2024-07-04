@@ -60,7 +60,10 @@ jobs:
           matrix="{\"include\":[$matrix]}"
           echo matrix=$matrix >> $GITHUB_OUTPUT
 
-          echo firmwares-to-build=$(echo $matrix | jq -c '[.include.[].firmware] | unique | {"firmwares": .}') >> $GITHUB_OUTPUT
+          echo "$matrix"
+          firmwares_to_build=$(echo "$matrix" | jq -c '[.include.[].firmware] | unique | {"firmwares": .}')
+          echo "$firmwares_to_build"
+          echo firmwares-to-build=$firmwares_to_build >> $GITHUB_OUTPUT
 
   build:
     name: ${{ matrix.firmware }} / ${{ matrix.device }}
