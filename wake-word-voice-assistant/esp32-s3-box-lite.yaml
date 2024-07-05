@@ -248,7 +248,6 @@ voice_assistant:
   id: va
   microphone: box_mic
   speaker: box_speaker
-  use_wake_word: true
   noise_suppression_level: 2
   auto_gain: 31dBFS
   volume_multiplier: 2.0
@@ -510,6 +509,7 @@ script:
                 condition:
                   lambda: return id(wake_word_engine_location).state == "On device";
                 then:
+                  - lambda: id(va).set_use_wake_word(false);
                   - micro_wake_word.start
             - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
           else:
@@ -566,6 +566,7 @@ switch:
                       condition:
                         lambda: return id(wake_word_engine_location).state == "On device";
                       then:
+                        - lambda: id(va).set_use_wake_word(false);
                         - micro_wake_word.start
             - script.execute: draw_display
     on_turn_on:
