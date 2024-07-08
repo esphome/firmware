@@ -118,18 +118,15 @@ esp32_improv:
   authorizer: none
 
 button:
-  - platform: safe_mode
-    id: button_safe_mode
-    name: Safe Mode Boot
-
   - platform: factory_reset
     id: factory_reset_btn
-    name: Factory reset
+    internal: true
 
 sensor:
   - platform: adc
     pin: GPIO1
     id: front_buttons
+    internal: true
     update_interval: 16ms
     attenuation: 11db
     on_value:
@@ -179,17 +176,17 @@ sensor:
 binary_sensor:
   - platform: template
     id: left
-    name: "Left"
+    internal: true
     on_press:
       - switch.turn_off: timer_ringing
   - platform: template
     id: middle
-    name: "Middle"
+    internal: true
     on_press:
       - switch.turn_off: timer_ringing
   - platform: template
     id: right
-    name: "Right"
+    internal: true
     on_press:
       - switch.turn_off: timer_ringing
 
@@ -198,9 +195,8 @@ binary_sensor:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: true
-    name: Left Top Button
     id: left_top_button
-    disabled_by_default: true
+    internal: true
     on_multi_click:
       - timing:
           - ON for at least 50ms
@@ -221,7 +217,8 @@ output:
 light:
   - platform: monochromatic
     id: led
-    name: LCD Backlight
+    name: Screen
+    icon: "mdi:television"
     entity_category: config
     output: backlight_output
     restore_mode: RESTORE_DEFAULT_ON
@@ -533,15 +530,9 @@ script:
 
 switch:
   - platform: template
-    name: Display conversation
-    id: display_conversation
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
-    entity_category: config
-
-  - platform: template
     name: Mute
     id: mute
+    icon: "mdi:microphone-off"
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
     entity_category: config
@@ -594,6 +585,7 @@ select:
     entity_category: config
     name: Wake word engine location
     id: wake_word_engine_location
+    icon: "mdi:account-voice"
     optimistic: true
     restore_value: true
     options:
@@ -798,24 +790,20 @@ display:
         lambda: |-
           it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
-          if (id(display_conversation).state) {
-            it.filled_rectangle(20 , 20 , 280 , 30 , Color::WHITE );
-            it.rectangle(20 , 20 , 280 , 30 , Color::BLACK );
-            it.printf(30, 25, id(font_request), Color::BLACK, "%s", id(text_request).state.c_str());
-          }
+          it.filled_rectangle(20 , 20 , 280 , 30 , Color::WHITE );
+          it.rectangle(20 , 20 , 280 , 30 , Color::BLACK );
+          it.printf(30, 25, id(font_request), Color::BLACK, "%s", id(text_request).state.c_str());
           id(draw_timer_timeline).execute();
       - id: replying_page
         lambda: |-
           it.fill(id(replying_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
-          if (id(display_conversation).state) {
-            it.filled_rectangle(20 , 20 , 280 , 30 , Color::WHITE );
-            it.rectangle(20 , 20 , 280 , 30 , Color::BLACK );
-            it.filled_rectangle(20 , 190 , 280 , 30 , Color::WHITE );
-            it.rectangle(20 , 190 , 280 , 30 , Color::BLACK );
-            it.printf(30, 25, id(font_request), Color::BLACK, "%s", id(text_request).state.c_str());
-            it.printf(30, 195, id(font_response), Color::BLACK, "%s", id(text_response).state.c_str());
-          }
+          it.filled_rectangle(20 , 20 , 280 , 30 , Color::WHITE );
+          it.rectangle(20 , 20 , 280 , 30 , Color::BLACK );
+          it.filled_rectangle(20 , 190 , 280 , 30 , Color::WHITE );
+          it.rectangle(20 , 190 , 280 , 30 , Color::BLACK );
+          it.printf(30, 25, id(font_request), Color::BLACK, "%s", id(text_request).state.c_str());
+          it.printf(30, 195, id(font_response), Color::BLACK, "%s", id(text_response).state.c_str());
           id(draw_timer_timeline).execute();
       - id: timer_finished_page
         lambda: |-
