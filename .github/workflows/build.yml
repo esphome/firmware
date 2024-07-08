@@ -102,7 +102,7 @@ jobs:
           - project: esphome-web
             name: ESPHome Web
     steps:
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v4.1.8
         with:
           pattern: build-${{ matrix.project }}-*
           merge-multiple: true
@@ -134,7 +134,7 @@ jobs:
           - project: media-player
             name: Media Player
     steps:
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v4.1.8
         with:
           pattern: build-${{ matrix.project }}-*
           merge-multiple: true
@@ -164,7 +164,7 @@ jobs:
       - full-manifests
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v4.1.8
         with:
           pattern: "!build-*"
           path: output
