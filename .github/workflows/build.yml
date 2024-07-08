@@ -83,7 +83,7 @@ jobs:
         if: ${{ matrix.device != 'pico-w' }}
         run: |
           sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/${{ matrix.device }}/manifest.json
-      - uses: actions/upload-artifact@v4.3.3
+      - uses: actions/upload-artifact@v4.3.4
         with:
           name: build-${{ matrix.firmware }}-${{ matrix.device }}
           path: output
@@ -111,7 +111,7 @@ jobs:
         run: |
           version=$(cat files/*/version | sort -V | tail -n 1)
           jq -s --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "builds":.}' files/*/manifest.json > files/manifest.json
-      - uses: actions/upload-artifact@v4.3.3
+      - uses: actions/upload-artifact@v4.3.4
         with:
           name: ${{ matrix.project }}
           path: files
@@ -150,7 +150,7 @@ jobs:
             mv manifest.tmp.json manifest.json
             popd
           done
-      - uses: actions/upload-artifact@v4.3.3
+      - uses: actions/upload-artifact@v4.3.4
         with:
           name: ${{ matrix.project }}
           path: files
