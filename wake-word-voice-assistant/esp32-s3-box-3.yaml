@@ -183,7 +183,7 @@ speaker:
     id: box_speaker
 
 micro_wake_word:
-  models: 
+  models:
     - ${micro_wake_word_model}
   on_wake_word_detected:
     - voice_assistant.start:
