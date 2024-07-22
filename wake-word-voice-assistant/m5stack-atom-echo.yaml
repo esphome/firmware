@@ -37,17 +37,17 @@ dashboard_import:
   package_import_url: github://esphome/firmware/wake-word-voice-assistant/m5stack-atom-echo.yaml@main
 
 wifi:
-  on_connect:
-    - delay: 5s  # Gives time for improv results to be transmitted
-    - ble.disable:
-  on_disconnect:
-    - ble.enable:
+#  on_connect:
+#    - delay: 5s  # Gives time for improv results to be transmitted
+#    - ble.disable:
+#  on_disconnect:
+#    - ble.enable:
   ap:
 
 improv_serial:
 
-esp32_improv:
-  authorizer: none
+#esp32_improv:
+#  authorizer: none
 
 button:
   - platform: factory_reset
