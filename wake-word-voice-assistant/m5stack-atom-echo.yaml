@@ -260,7 +260,7 @@ script:
           else:
            - if:
               condition:
-                - lambda: return id(wake_word_engine_location).state == "On device";
+                - lambda: return id(wake_word_engine_location).state != "On device";
                 - switch.is_on: use_listen_light
               then:
                 - light.turn_on:
