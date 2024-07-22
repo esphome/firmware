@@ -106,7 +106,7 @@ voice_assistant:
           switch.is_on: timer_ringing
     - if:
         condition:
-          switch.is_on: use_micro_wake_word
+          lambda: return id(wake_word_engine_location).state == "On device";
         then:
           - micro_wake_word.start:
           - script.execute: reset_led
@@ -127,7 +127,7 @@ voice_assistant:
     - delay: 5s
     - if:
         condition:
-          switch.is_on: use_micro_wake_word
+          lambda: return id(wake_word_engine_location).state == "On device";
         then:
           - micro_wake_word.start:
         else:
@@ -163,7 +163,7 @@ voice_assistant:
     - switch.turn_off: timer_ringing
     - if:
         condition:
-          switch.is_on: use_micro_wake_word 
+          lambda: return id(wake_word_engine_location).state == "On device"; 
         then:
           - micro_wake_word.start:
           - script.execute: reset_led
@@ -196,7 +196,7 @@ binary_sensor:
               else:
                 - if:
                     condition:
-                      switch.is_on: use_micro_wake_word
+                      lambda: return id(wake_word_engine_location).state == "On device";
                     then:
                       - voice_assistant.stop
                       - micro_wake_word.stop:
@@ -247,7 +247,7 @@ script:
     then:
       - if:
           condition:
-            - switch.is_on: use_micro_wake_word
+            - lambda: return id(wake_word_engine_location).state == "On device";
             - switch.is_on: use_listen_light
           then:
             - light.turn_on:
@@ -310,6 +310,35 @@ switch:
     on_turn_on:
       - delay: 15min
       - switch.turn_off: timer_ringing
+
+select:
+  - platform: template
+    entity_category: config
+    name: Wake word engine location
+    id: wake_word_engine_location
+    optimistic: true
+    restore_value: true
+    options:
+      - In Home Assistant
+      - On device
+    initial_option: On device
+    on_value:
+      - if:
+          condition:
+            lambda: return x == "In Home Assistant";
+          then:
+            - micro_wake_word.stop
+            - delay: 500ms
+            - lambda: id(va).set_use_wake_word(true);
+            - voice_assistant.start_continuous:
+      - if:
+          condition:
+            lambda: return x == "On device";
+          then:
+            - lambda: id(va).set_use_wake_word(false);
+            - voice_assistant.stop
+            - delay: 500ms
+            - micro_wake_word.start
 
 external_components:
   - source: github://pr#5230
