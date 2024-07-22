@@ -8,7 +8,7 @@ esphome:
   friendly_name: ${friendly_name}
   min_version: 2024.7.1
   project:
-    name: m5stack.atom-echo-voice-assistant
+    name: m5stack.atom-echo-wake-word-voice-assistant
     version: "24.7.4.1"
 
 esp32:
