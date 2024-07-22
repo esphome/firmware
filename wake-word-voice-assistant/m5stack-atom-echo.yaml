@@ -172,8 +172,9 @@ voice_assistant:
           - script.execute: reset_led
 
 binary_sensor:
-  # butto does the following:
-  # short click - stop a timer, if no timer then restart either microwakeword or voice assistant continuous
+  # button does the following:
+  # short click - stop a timer
+  # if no timer then restart either microwakeword or voice assistant continuous
   - platform: gpio
     pin:
       number: GPIO39
