@@ -1,7 +1,7 @@
 substitutions:
   name: m5stack-atom-echo
   friendly_name: M5Stack Atom Echo
-
+  micro_wake_word_model: okay_nabu # hey_jarvis and hey_mycroft are also supported
 esphome:
   name: ${name}
   name_add_mac_suffix: true
@@ -345,6 +345,4 @@ micro_wake_word:
         wake_word: !lambda return wake_word; 
   vad:
   models:
-    - model: okay_nabu
-#    - model: hey_jarvis
-#    - model: hey_mycroft
+    - model: ${micro_wake_word_model}
