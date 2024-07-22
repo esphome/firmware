@@ -344,8 +344,7 @@ micro_wake_word:
     - voice_assistant.start: 
         wake_word: !lambda return wake_word; 
   vad:
-    model: https://github.com/kahrendt/microWakeWord/releases/download/v2.1_models/vad.json
   models:
-    - model: https://github.com/kahrendt/microWakeWord/releases/download/v2.1_models/okay_nabu.json
-#    - model: https://github.com/kahrendt/microWakeWord/releases/download/v2.1_models/hey_jarvis.json
-#    - model: https://github.com/kahrendt/microWakeWord/releases/download/v2.1_models/hey_mycroft.json
+    - model: okay_nabu
+#    - model: hey_jarvis
+#    - model: hey_mycroft
