@@ -260,7 +260,7 @@ script:
           else:
            - if:
               condition:
-                - switch.is_off: use_micro_wake_word
+                - lambda: return id(wake_word_engine_location).state == "On device";
                 - switch.is_on: use_listen_light
               then:
                 - light.turn_on:
@@ -274,24 +274,6 @@ script:
                - light.turn_off: led
 
 switch:
-  - platform: template
-    name: Use micro wake word
-    id: use_micro_wake_word
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
-    entity_category: config
-    on_turn_on:
-      - voice_assistant.stop:
-      - lambda: id(va).set_use_wake_word(false);
-      - delay: 1s
-      - micro_wake_word.start:
-      - script.execute: reset_led
-    on_turn_off:
-      - micro_wake_word.stop:
-      - lambda: id(va).set_use_wake_word(true);
-      - delay: 1s
-      - voice_assistant.start_continuous:
-      - script.execute: reset_led
   - platform: template
     name: Use listen light
     id: use_listen_light
