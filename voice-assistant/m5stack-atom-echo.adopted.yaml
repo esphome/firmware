@@ -13,6 +13,10 @@ esp32:
 logger:
 api:
 
+ota:
+  - platform: esphome
+    id: ota_esphome
+
 wifi:
   ap:
 
