@@ -84,7 +84,7 @@ jobs:
         run: |
           sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/${{ matrix.device }}/manifest.json
       - uses: actions/upload-artifact@v4.3.4
-        if: ! contains(matrix.device, 'adopted')
+        if: ${{ ! contains(matrix.device, 'adopted') }}
         with:
           name: build-${{ matrix.firmware }}-${{ matrix.device }}
           path: output
