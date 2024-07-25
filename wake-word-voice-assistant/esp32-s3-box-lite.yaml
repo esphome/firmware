@@ -1,3 +1,4 @@
+---
 substitutions:
   name: esp32-s3-box-lite
   friendly_name: ESP32 S3 Box Lite
@@ -275,18 +276,24 @@ voice_assistant:
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
   on_tts_stream_end:
-    - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+    - if:
+        condition:
+          switch.is_off: mute
+        then:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+        else:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
     - script.execute: draw_display
   on_end:
+    - wait_until:
+        not:
+          voice_assistant.is_running:
     - if:
         condition:
           and:
             - switch.is_off: mute
             - lambda: return id(wake_word_engine_location).state == "On device";
         then:
-          - wait_until:
-              not:
-                voice_assistant.is_running:
           - micro_wake_word.start:
   on_error:
     - if:
