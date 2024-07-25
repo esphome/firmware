@@ -1,7 +1,7 @@
 substitutions:
   name: m5stack-atom-echo
   friendly_name: M5Stack Atom Echo
-  micro_wake_word_model: okay_nabu # alexa, hey_jarvis, hey_mycroft are also supported
+  micro_wake_word_model: okay_nabu  # alexa, hey_jarvis, hey_mycroft are also supported
 esphome:
   name: ${name}
   name_add_mac_suffix: true
@@ -61,7 +61,7 @@ microphone:
 speaker:
   - platform: i2s_audio
     id: echo_speaker
-    i2s_dout_pin: GPIO22 
+    i2s_dout_pin: GPIO22
     dac_type: external
     mode: mono
 
@@ -163,7 +163,7 @@ voice_assistant:
     - switch.turn_off: timer_ringing
     - if:
         condition:
-          lambda: return id(wake_word_engine_location).state == "On device"; 
+          lambda: return id(wake_word_engine_location).state == "On device";
         then:
           - micro_wake_word.start:
           - script.execute: reset_led
@@ -210,7 +210,7 @@ binary_sensor:
                           then:
                             - voice_assistant.stop:
                             - script.execute: reset_led
-                      - voice_assistant.start_continuous: 
+                      - voice_assistant.start_continuous:
       - timing:
           - ON for at least 10s
         then:
@@ -258,7 +258,7 @@ script:
                 brightness: 60%
                 effect: none
           else:
-           - if:
+            - if:
               condition:
                 - lambda: return id(wake_word_engine_location).state != "On device";
                 - switch.is_on: use_listen_light
@@ -271,7 +271,7 @@ script:
                     brightness: 60%
                     effect: none
               else:
-               - light.turn_off: led
+                - light.turn_off: led
 
 switch:
   - platform: template
@@ -333,9 +333,9 @@ external_components:
   - source:
       type: git
       url: https://github.com/kahrendt/esphome
-      ref:  mww-v2-external-library
+      ref: mww-v2-external-library
     refresh: 0s
-    components: [ micro_wake_word ] 
+    components: [micro_wake_word]
 
 esp_adf:
 
