@@ -4,9 +4,6 @@ esphome:
   friendly_name: M5Stack Atom Echo
   min_version: 2024.6.0
   name_add_mac_suffix: true
-  project:
-    name: m5stack.atom-echo-voice-assistant
-    version: "24.7.24"
 
 esp32:
   board: m5stack-atom
@@ -19,32 +16,9 @@ api:
 ota:
   - platform: esphome
     id: ota_esphome
-  - platform: http_request
-    id: ota_http_request
-
-update:
-  - platform: http_request
-    id: update_http_request
-    name: Firmware
-    source: https://firmware.esphome.io/voice-assistant/m5stack-atom-echo/manifest.json
-
-http_request:
-
-dashboard_import:
-  package_import_url: github://esphome/firmware/voice-assistant/m5stack-atom-echo.adopted.yaml@main
 
 wifi:
-  on_connect:
-    - delay: 5s  # Gives time for improv results to be transmitted
-    - ble.disable:
-  on_disconnect:
-    - ble.enable:
   ap:
-
-improv_serial:
-
-esp32_improv:
-  authorizer: none
 
 button:
   - platform: safe_mode
