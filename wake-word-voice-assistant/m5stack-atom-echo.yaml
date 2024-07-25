@@ -341,12 +341,12 @@ esp_adf:
 
 file:
   - id: timer_finished_wave_file
-    file: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav 
+    file: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav
 
 micro_wake_word:
   on_wake_word_detected:
-    - voice_assistant.start: 
+    - voice_assistant.start:
         wake_word: !lambda return wake_word; 
   vad:
-  models: 
-    - model: ${micro_wake_word_model} 
+  models:
+    - model: ${micro_wake_word_model}
