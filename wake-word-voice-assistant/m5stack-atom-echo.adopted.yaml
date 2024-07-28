@@ -109,7 +109,7 @@ voice_assistant:
     - delay: 2s
     - script.execute: reset_led
   on_client_connected:
-      - delay: 2s  # Give the api server time to settle
+    - delay: 2s  # Give the api server time to settle
     - if:
         condition:
           lambda: return id(wake_word_engine_location).state == "On device";
