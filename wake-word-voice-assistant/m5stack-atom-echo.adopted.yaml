@@ -8,9 +8,6 @@ esphome:
   name_add_mac_suffix: true
   friendly_name: ${friendly_name}
   min_version: 2024.7.1
-  project:
-    name: m5stack.atom-echo-wake-word-voice-assistant
-    version: "24.7.29"
 
 esp32:
   board: m5stack-atom
@@ -23,24 +20,9 @@ api:
 ota:
   - platform: esphome
     id: ota_esphome
-  - platform: http_request
-    id: ota_http_request
-
-update:
-  - platform: http_request
-    id: update_http_request
-    name: Firmware
-    source: https://firmware.esphome.io/wake-word-voice-assistant/m5stack-atom-echo/manifest.json
-
-http_request:
-
-dashboard_import:
-  package_import_url: github://esphome/firmware/wake-word-voice-assistant/m5stack-atom-echo.adopted.yaml@main
 
 wifi:
   ap:
-
-improv_serial:
 
 captive_portal:
 
