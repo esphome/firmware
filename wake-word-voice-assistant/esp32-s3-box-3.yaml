@@ -40,7 +40,7 @@ esphome:
     board_build.flash_mode: dio
   project:
     name: esphome.voice-assistant
-    version: "24.7.17.1"
+    version: "24.8.1"
   on_boot:
     priority: 600
     then:
