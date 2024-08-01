@@ -10,7 +10,7 @@ esphome:
   min_version: 2024.7.1
   project:
     name: m5stack.atom-echo-wake-word-voice-assistant
-    version: "24.7.29"
+    version: "24.8.1"
 
 esp32:
   board: m5stack-atom
