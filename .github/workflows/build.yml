@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   build-esp-web-tools-firmware:
-    name: Build ESP Web Tools Firmware
+    name: ESP Web Tools
     uses: esphome/workflows/.github/workflows/build.yml@main
     with:
       files: |
@@ -35,7 +35,7 @@ jobs:
       release-version: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
 
   build-esphome-web-firmware:
-    name: Build ESPHome Web Firmware
+    name: ESPHome Web
     uses: esphome/workflows/.github/workflows/build.yml@main
     with:
       files: |
