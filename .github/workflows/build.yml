@@ -1,4 +1,4 @@
-name: Build ESPHome Web
+name: Build
 
 on:
   push:
@@ -6,8 +6,9 @@ on:
       - main
   pull_request:
     paths:
+      - 'esp-web-tools/**'
       - 'esphome-web/**'
-      - '.github/workflows/build-esphome-web.yml'
+      - '.github/workflows/build.yml'
   workflow_dispatch:
   release:
     types: [published]
@@ -17,8 +18,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-firmware:
-    name: Build ESPHome Web Firmware
+  build-esp-web-tools-firmware:
+    name: ESP Web Tools
+    uses: esphome/workflows/.github/workflows/build.yml@main
+    with:
+      files: |
+        esp-web-tools/esp32.yaml
+        esp-web-tools/esp32c3.yaml
+        esp-web-tools/esp32s2.yaml
+        esp-web-tools/esp32s3.yaml
+        esp-web-tools/esp8266.yaml
+      esphome-version: 2024.7.3
+      combined-name: esp-web-tools
+      release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
+      release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
+      release-version: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
+
+  build-esphome-web-firmware:
+    name: ESPHome Web
     uses: esphome/workflows/.github/workflows/build.yml@main
     with:
       files: |
@@ -31,16 +48,17 @@ jobs:
       esphome-version: 2024.7.3
       combined-name: esphome-web
       release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
-      release-url: ${{ github.event_name == 'release' && github.event.release.url || '' }}
+      release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
       release-version: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
 
   upload:
     if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     name: Upload to R2
     needs:
-      - build-firmware
+      - build-esp-web-tools-firmware
+      - build-esphome-web-firmware
     uses: esphome/workflows/.github/workflows/upload.yml@main
     with:
-      name: esphome-web
-      version: ${{ needs.build-firmware.outputs.version }}
+      directory: "."
+      version: ${{ needs.build-esp-web-tools-firmware.outputs.version }}
     secrets: inherit
