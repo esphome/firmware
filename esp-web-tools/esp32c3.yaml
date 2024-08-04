@@ -9,7 +9,7 @@ esphome:
   name_add_mac_suffix: true
   project:
     name: esphome.esp_web_tools_example
-    version: "1.0"
+    version: dev
 
 esp32:
   board: esp32-c3-devkitm-1

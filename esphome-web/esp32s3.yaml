@@ -11,7 +11,7 @@ esphome:
     board_build.flash_mode: dio
   project:
     name: esphome.web
-    version: "1.0"
+    version: dev
 
 esp32:
   board: esp32-s3-devkitc-1
