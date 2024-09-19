@@ -2,7 +2,7 @@
 esphome:
   name: raspiaudio-muse-proto
   friendly_name: RaspiAudio Muse Proto
-  min_version: 2024.6.0
+  min_version: 2024.9.0
   name_add_mac_suffix: true
   project:
     name: raspiaudio.muse-proto-voice-assistant
@@ -79,7 +79,7 @@ speaker:
     id: board_speaker
     dac_type: external
     i2s_dout_pin: GPIO26
-    mode: mono
+    channel: mono
 
 output:
   - platform: gpio
