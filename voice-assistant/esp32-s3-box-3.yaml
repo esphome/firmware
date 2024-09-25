@@ -456,6 +456,7 @@ display:
       number: 48
       inverted: true
     update_interval: never
+    invert_colors: false
     pages:
       - id: idle_page
         lambda: |-
