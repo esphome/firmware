@@ -447,6 +447,7 @@ display:
     dc_pin: 4
     reset_pin: 48
     update_interval: never
+    invert_colors: false
     pages:
       - id: idle_page
         lambda: |-
