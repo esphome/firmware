@@ -1,0 +1,115 @@
+# This firmware is soley for the Espressif ESP32-S3-Box-3 with the Sensor dock
+# It sets up sensors and configuration entities in Home Assistant for this specific hardware
+
+substitutions:
+  name: esp32-s3-box-3-sensor
+  friendly_name: ESP32 S3 Box 3 Sensor
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: true
+  platformio_options:
+    board_build.flash_mode: dio
+  project:
+    name: esphome.esp32-s3-box-3-sensor_example
+    version: "1.0"
+
+esp32:
+  board: esp32s3box3
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow OTA updates
+ota:
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  # Set up a wifi access point
+  ap:
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/esp32-box-docks/box3-sensor-generic.yaml@main
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# To have a "next url" for improv serial
+web_server:
+
+# The yaml below is specific to the ESP32-S3-Box-3 with Sensor dock
+
+# Sensors for the battery if it is installed
+sensor:
+  - platform: adc
+    pin: GPIO10
+    name: "Battery voltage"
+    id: battery_voltage
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: "voltage"
+    entity_category: "diagnostic"
+    disabled_by_default: true
+    update_interval: 60s
+    attenuation: auto
+    filters:
+      - multiply: 4.01
+
+  - platform: copy
+    source_id: battery_voltage
+    name: "Battery level"
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    device_class: "battery"
+    entity_category: "diagnostic"
+    filters:
+      - lambda: return (x - 3.1) / (4.14 - 3.1) * 100;
+      - clamp:
+          min_value: 0
+          max_value: 100
+          ignore_out_of_range: true
+
+# Timeout to keep Presence detect true, default 60 seconds
+number:
+  - platform: template
+    name: "Presence duration"
+    id: radar_delayed_off
+    icon: mdi:account-clock
+    optimistic: true
+    restore_value: true
+    initial_value: 60
+    min_value: 0
+    step: 5
+    max_value: 300
+    unit_of_measurement: s
+    entity_category: config
+    mode: box
+
+# Binary sensor for automations in Home Assistant
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO21
+    name: "Presence detect"
+    disabled_by_default: false
+    device_class: "occupancy"
+    filters:
+      - delayed_off: !lambda return id(radar_delayed_off).state * 1000;
+    on_release:
+      then:  # do something in-device when absence is detected
+    on_press:
+      then:  # do something in-device when presence is detected
