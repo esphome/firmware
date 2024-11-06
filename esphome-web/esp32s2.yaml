@@ -5,12 +5,13 @@ substitutions:
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
+  min_version: 2024.6.0
   name_add_mac_suffix: true
   platformio_options:
     board_build.flash_mode: dio
   project:
     name: esphome.web
-    version: "1.0"
+    version: dev
 
 esp32:
   board: esp32-s2-saola-1
@@ -25,6 +26,7 @@ api:
 
 # Allow Over-The-Air updates
 ota:
+  - platform: esphome
 
 # Allow provisioning Wi-Fi via serial
 improv_serial:
@@ -38,7 +40,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/esphome-web/esp32s2.yaml@v2
+  package_import_url: github://esphome/firmware/esphome-web/esp32s2.yaml@main
   import_full_config: true
 
 # To have a "next url" for improv serial

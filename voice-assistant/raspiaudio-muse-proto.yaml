@@ -2,11 +2,11 @@
 esphome:
   name: raspiaudio-muse-proto
   friendly_name: RaspiAudio Muse Proto
+  min_version: 2024.9.0
   name_add_mac_suffix: true
   project:
     name: raspiaudio.muse-proto-voice-assistant
-    version: "1.0"
-  min_version: 2023.11.1
+    version: "24.7.4.1"
 
 esp32:
   board: esp-wrover-kit
@@ -15,7 +15,20 @@ esp32:
 
 logger:
 api:
+
 ota:
+  - platform: esphome
+    id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
+
+update:
+  - platform: http_request
+    id: update_http_request
+    name: Firmware
+    source: https://firmware.esphome.io/voice-assistant/raspiaudio-muse-proto/manifest.json
+
+http_request:
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/raspiaudio-muse-proto.yaml@main
@@ -34,6 +47,10 @@ esp32_improv:
   authorizer: none
 
 button:
+  - platform: safe_mode
+    id: button_safe_mode
+    name: Safe Mode Boot
+
   - platform: factory_reset
     id: factory_reset_btn
     name: Factory reset
@@ -45,7 +62,8 @@ external_components:
     refresh: 0s
 
 i2s_audio:
-  - i2s_lrclk_pin: GPIO25
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO25
     i2s_bclk_pin: GPIO5
 
 microphone:
@@ -61,7 +79,7 @@ speaker:
     id: board_speaker
     dac_type: external
     i2s_dout_pin: GPIO26
-    mode: mono
+    channel: mono
 
 output:
   - platform: gpio
@@ -146,6 +164,7 @@ binary_sensor:
         input: true
         pullup: true
     name: Action
+    id: action_button
     disabled_by_default: true
     on_multi_click:
       - timing:

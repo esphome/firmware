@@ -1,189 +1,64 @@
 name: Build
 
-# yamllint disable-line rule:truthy
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
   pull_request:
-  schedule:
-    - cron: "0 5 * * 1"
+    paths:
+      - 'esp-web-tools/**'
+      - 'esphome-web/**'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+  release:
+    types: [published]
 
 concurrency:
-  # yamllint disable-line rule:line-length
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  FIRMWARES: esp-web-tools esphome-web voice-assistant wake-word-voice-assistant bluetooth-proxy media-player
-  # VOICE_ASSISTANT_VERSION: beta
-
 jobs:
-  prepare:
-    name: Prepare matrix
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.prepare-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Get changed files
-        id: changes
-        uses: masesgroup/retrieve-changed-files@v3
-        if: github.event_name == 'pull_request'
-      - name: Prepare matrix
-        id: prepare-matrix
-        run: |-
-          matrix=""
-          full_run=$(! [[ "${{ github.event_name }}" != "pull_request" || "${{ steps.changes.outputs.modified }}" == *".github/workflows/build.yml"* ]]; echo $?)
-          for firmware in $FIRMWARES; do
-            for device in $firmware/*.yaml; do
-              # If pull_request event type and changed files do not contain the device, skip it
-              if [[ $full_run -eq 0 && "${{ steps.changes.outputs.added_modified }}" != *"${device}"* ]]; then
-                continue
-              fi
-              device=${device##*/}
-              device=${device%.yaml}
-              version="latest"
-              fw=${firmware//-/_}
-              fw=${fw^^}
-              fw_version=${fw}_VERSION
-              if [[ -n "${!fw_version}" ]]; then
-                version=${!fw_version}
-              fi
-              matrix="$matrix{\"firmware\":\"$firmware\",\"device\":\"$device\", \"version\":\"$version\"},"
-            done
-          done
-          matrix=${matrix%?}
-          matrix="{\"include\":[$matrix]}"
-          echo matrix=$matrix >> $GITHUB_OUTPUT
+  build-esp-web-tools-firmware:
+    name: ESP Web Tools
+    uses: esphome/workflows/.github/workflows/build.yml@main
+    with:
+      files: |
+        esp-web-tools/esp32.yaml
+        esp-web-tools/esp32c3.yaml
+        esp-web-tools/esp32s2.yaml
+        esp-web-tools/esp32s3.yaml
+        esp-web-tools/esp8266.yaml
+      esphome-version: 2024.7.3
+      combined-name: esp-web-tools
+      release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
+      release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
+      release-version: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
 
-  build:
-    name: ${{ matrix.firmware }} / ${{ matrix.device }}
-    runs-on: ubuntu-latest
-    needs: prepare
-    strategy:
-      max-parallel: 5
-      fail-fast: false
-      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build Firmware
-        uses: esphome/build-action@v2.0.0
-        id: esphome-build
-        with:
-          yaml_file: ${{ matrix.firmware }}/${{ matrix.device }}.yaml
-          version: ${{ matrix.version || 'latest' }}
-          cache: true
-      - name: Move generated files to output
-        run: |
-          mkdir -p output/${{ matrix.device }}
-          mv ${{ steps.esphome-build.outputs.name }}/* output/${{ matrix.device }}/
-          echo ${{ steps.esphome-build.outputs.version }} > output/${{ matrix.device }}/version
-      - name: Alter manifest path
-        if: ${{ matrix.device != 'pico-w' }}
-        run: |
-          sed -i 's/${{ steps.esphome-build.outputs.name }}\//\/${{ matrix.firmware }}\/${{ matrix.device }}\//g' output/${{ matrix.device }}/manifest.json
-      - uses: actions/upload-artifact@v3.1.3
-        with:
-          name: ${{ matrix.firmware }}
-          path: output
+  build-esphome-web-firmware:
+    name: ESPHome Web
+    uses: esphome/workflows/.github/workflows/build.yml@main
+    with:
+      files: |
+        esphome-web/esp32.yaml
+        esphome-web/esp32c3.yaml
+        esphome-web/esp32s2.yaml
+        esphome-web/esp32s3.yaml
+        esphome-web/esp8266.yaml
+        esphome-web/pico-w.yaml
+      esphome-version: 2024.7.3
+      combined-name: esphome-web
+      release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
+      release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
+      release-version: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
 
-  combined-manifests:
-    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
-    name: Combine ${{ matrix.project }} manifests
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - project: esp-web-tools
-            name: ESP Web Tools Example
-          - project: esphome-web
-            name: ESPHome Web
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.project }}
-          path: files
-      - name: Generate manifest.json
-        run: |
-          version=$(cat files/*/version | sort -V | tail -n 1)
-          jq -s --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "builds":.}' files/*/manifest.json > manifest.json
-      - uses: actions/upload-artifact@v3.1.3
-        with:
-          name: ${{ matrix.project }}
-          path: manifest.json
-
-  full-manifests:
-    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
-    name: Create ${{ matrix.project }} manifest
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - project: voice-assistant
-            name: Voice Assistant
-          - project: wake-word-voice-assistant
-            name: Voice Assistant
-          - project: bluetooth-proxy
-            name: Bluetooth Proxy
-          - project: media-player
-            name: Media Player
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.project }}
-          path: files
-      - name: Generate manifest.json files
-        run: |
-          cd files
-          for device in */; do
-            mkdir -p ../output/$device
-            pushd $device
-            version=$(cat version)
-            jq --arg version "$version" '{"name": "${{ matrix.name }}", "version": $version, "home_assistant_domain": "esphome", "new_install_skip_erase": false, "builds":[.]}' manifest.json > ../../output/$device/manifest.json
-            popd
-          done
-      - uses: actions/upload-artifact@v3.1.3
-        with:
-          name: ${{ matrix.project }}
-          path: output
-
-  consolidate:
-    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
-    name: Consolidate firmwares
-    runs-on: ubuntu-latest
+  upload:
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    name: Upload to R2
     needs:
-      - combined-manifests
-      - full-manifests
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v3
-        with:
-          path: output
-      - run: cp -R static/* output/
-      - uses: actions/upload-pages-artifact@v3.0.1
-        with:
-          path: output
-
-  deploy:
-    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
-    name: Deploy to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: consolidate
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4.0.5
+      - build-esp-web-tools-firmware
+      - build-esphome-web-firmware
+    uses: esphome/workflows/.github/workflows/upload.yml@main
+    with:
+      directory: "."
+      version: ${{ needs.build-esp-web-tools-firmware.outputs.version }}
+    secrets: inherit

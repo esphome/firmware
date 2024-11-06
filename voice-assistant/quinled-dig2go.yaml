@@ -2,11 +2,11 @@
 esphome:
   name: dig2go
   friendly_name: dig2go
+  min_version: 2024.6.0
   name_add_mac_suffix: true
   project:
     name: quinled.dig2go-voice-assistant
-    version: "1.0"
-  min_version: 2023.11.1
+    version: "24.7.4.1"
 
 esp32:
   board: esp32dev
@@ -15,7 +15,20 @@ esp32:
 
 logger:
 api:
+
 ota:
+  - platform: esphome
+    id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
+
+update:
+  - platform: http_request
+    id: update_http_request
+    name: Firmware
+    source: https://firmware.esphome.io/voice-assistant/quinled-dig2go/manifest.json
+
+http_request:
 
 dashboard_import:
   package_import_url: github://esphome/firmware/voice-assistant/quinled-dig2go.yaml@main
@@ -34,8 +47,9 @@ external_components:
     refresh: 0s
 
 i2s_audio:
-  i2s_lrclk_pin: GPIO4
-  i2s_bclk_pin: GPIO18
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO4
+    i2s_bclk_pin: GPIO18
 
 microphone:
   - platform: i2s_audio
@@ -110,6 +124,7 @@ power_supply:
 
 remote_receiver:
   - pin: GPIO5
+    id: ir_receiver
     dump: all
 
 light:
@@ -141,6 +156,7 @@ light:
 binary_sensor:
   - platform: gpio
     name: Button
+    id: action_button
     disabled_by_default: true
     pin:
       number: GPIO0
@@ -202,3 +218,12 @@ switch:
       - voice_assistant.stop
       - lambda: id(va).set_use_wake_word(false);
       - script.execute: reset_led
+
+button:
+  - platform: safe_mode
+    id: button_safe_mode
+    name: Safe Mode Boot
+
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset

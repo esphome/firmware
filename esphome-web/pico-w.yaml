@@ -5,16 +5,17 @@ substitutions:
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
+  min_version: 2024.6.0
   name_add_mac_suffix: true
   project:
     name: esphome.web
-    version: "1.0"
+    version: dev
 
 rp2040:
   board: rpipicow
   framework:
     # Required until https://github.com/platformio/platform-raspberrypi/pull/36 is merged
-    platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git
+    platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git#5e87ae34ca025274df25b3303e9e9cb6c120123c
 
 # Enable logging
 logger:
@@ -24,6 +25,7 @@ api:
 
 # Allow Over-The-Air updates
 ota:
+  - platform: esphome
 
 # Allow provisioning Wi-Fi via serial
 improv_serial:

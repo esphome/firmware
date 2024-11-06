@@ -1,15 +1,12 @@
 ---
 esphome:
-  name: raspiaudio-muse-luxe
-  friendly_name: RaspiAudio Muse Luxe
+  name: m5stack-atom-echo
+  friendly_name: M5Stack Atom Echo
   min_version: 2024.9.0
   name_add_mac_suffix: true
-  project:
-    name: raspiaudio.muse-luxe-voice-assistant
-    version: "24.7.4.1"
 
 esp32:
-  board: esp-wrover-kit
+  board: m5stack-atom
   framework:
     type: esp-idf
 
@@ -19,37 +16,9 @@ api:
 ota:
   - platform: esphome
     id: ota_esphome
-  - platform: http_request
-    id: ota_http_request
-
-update:
-  - platform: http_request
-    id: update_http_request
-    name: Firmware
-    source: https://firmware.esphome.io/voice-assistant/raspiaudio-muse-luxe/manifest.json
-
-http_request:
-
-i2c:
-  - id: i2c_bus
-    sda: GPIO18
-    scl: GPIO23
-
-dashboard_import:
-  package_import_url: github://esphome/firmware/voice-assistant/raspiaudio-muse-luxe.yaml@main
 
 wifi:
-  on_connect:
-    - delay: 5s  # Gives time for improv results to be transmitted
-    - ble.disable:
-  on_disconnect:
-    - ble.enable:
   ap:
-
-improv_serial:
-
-esp32_improv:
-  authorizer: none
 
 button:
   - platform: safe_mode
@@ -60,43 +29,29 @@ button:
     id: factory_reset_btn
     name: Factory reset
 
-external_components:
-  - source: github://pr#3552  # DAC support https://github.com/esphome/esphome/pull/3552
-    components: [es8388]
-    refresh: 0s
-  - source: github://pr#5230
-    components:
-      - esp_adf
-    refresh: 0s
-
-es8388:
-
 i2s_audio:
   - id: i2s_audio_bus
-    i2s_lrclk_pin: GPIO25
-    i2s_bclk_pin: GPIO5
+    i2s_lrclk_pin: GPIO33
+    i2s_bclk_pin: GPIO19
 
 microphone:
   - platform: i2s_audio
-    id: luxe_microphone
-    i2s_din_pin: GPIO35
+    id: echo_microphone
+    i2s_din_pin: GPIO23
     adc_type: external
-    pdm: false
+    pdm: true
 
 speaker:
   - platform: i2s_audio
-    id: luxe_out
+    id: echo_speaker
+    i2s_dout_pin: GPIO22
     dac_type: external
-    i2s_dout_pin: GPIO26
-    channel: stereo
-
-esp_adf:
+    channel: mono
 
 voice_assistant:
   id: va
-  microphone: luxe_microphone
-  speaker: luxe_out
-  use_wake_word: true
+  microphone: echo_microphone
+  speaker: echo_speaker
   noise_suppression_level: 2
   auto_gain: 31dBFS
   volume_multiplier: 2.0
@@ -132,9 +87,9 @@ voice_assistant:
   on_error:
     - light.turn_on:
         id: led
-        blue: 0%
         red: 100%
         green: 0%
+        blue: 0%
         brightness: 100%
         effect: none
     - delay: 1s
@@ -153,80 +108,74 @@ voice_assistant:
         then:
           - voice_assistant.stop:
           - light.turn_off: led
-
-sensor:
-  - platform: adc
-    pin: GPIO33
-    name: Battery
-    id: battery_sensor
-    icon: "mdi:battery-outline"
-    device_class: voltage
-    state_class: measurement
-    unit_of_measurement: V
-    update_interval: 15s
-    accuracy_decimals: 3
-    attenuation: 11db
-    raw: true
-    filters:
-      - multiply: 0.00173913  # 2300 -> 4, for attenuation 11db, based on Olivier's code
-      - exponential_moving_average:
-          alpha: 0.2
-          send_every: 2
-      - delta: 0.002
+  on_timer_finished:
+    - voice_assistant.stop:
+    - switch.turn_on: timer_ringing
+    - wait_until:
+        not:
+          microphone.is_capturing:
+    - light.turn_on:
+        id: led
+        red: 0%
+        green: 100%
+        blue: 0%
+        brightness: 100%
+        effect: "Fast Pulse"
+    - while:
+        condition:
+          switch.is_on: timer_ringing
+        then:
+          - lambda: id(echo_speaker).play(id(timer_finished_wave_file), sizeof(id(timer_finished_wave_file)));
+          - delay: 1s
+    - wait_until:
+        not:
+          speaker.is_playing:
+    - light.turn_off: led
+    - switch.turn_off: timer_ringing
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.start_continuous:
+          - script.execute: reset_led
 
 binary_sensor:
   - platform: gpio
     pin:
-      number: GPIO19
+      number: GPIO39
       inverted: true
-      mode:
-        input: true
-        pullup: true
-    name: Volume Up
-    id: volume_up
+    name: Button
     disabled_by_default: true
-  - platform: gpio
-    pin:
-      number: GPIO32
-      inverted: true
-      mode:
-        input: true
-        pullup: true
-    name: Volume Down
-    id: volume_down
-    disabled_by_default: true
-  - platform: gpio
-    pin:
-      number: GPIO12
-      inverted: true
-      mode:
-        input: true
-        pullup: true
-    name: Action
-    id: action_button
-    disabled_by_default: true
+    entity_category: diagnostic
+    id: echo_button
     on_multi_click:
       - timing:
-          - ON for at least 250ms
+          - ON for at least 50ms
           - OFF for at least 50ms
         then:
           - if:
               condition:
-                switch.is_off: use_wake_word
+                switch.is_on: timer_ringing
               then:
-                - if:
-                    condition: voice_assistant.is_running
-                    then:
-                      - voice_assistant.stop:
-                      - script.execute: reset_led
-                    else:
-                      - voice_assistant.start:
+                - switch.turn_off: timer_ringing
               else:
-                - voice_assistant.stop
-                - delay: 1s
-                - script.execute: reset_led
-                - script.wait: reset_led
-                - voice_assistant.start_continuous:
+                - if:
+                    condition:
+                      switch.is_off: use_wake_word
+                    then:
+                      - if:
+                          condition: voice_assistant.is_running
+                          then:
+                            - voice_assistant.stop:
+                            - script.execute: reset_led
+                          else:
+                            - voice_assistant.start:
+                    else:
+                      - voice_assistant.stop
+                      - delay: 1s
+                      - script.execute: reset_led
+                      - script.wait: reset_led
+                      - voice_assistant.start_continuous:
       - timing:
           - ON for at least 10s
         then:
@@ -234,15 +183,16 @@ binary_sensor:
 
 light:
   - platform: esp32_rmt_led_strip
-    rmt_channel: 0
-    name: None
     id: led
+    name: None
     disabled_by_default: true
-    pin: GPIO22
+    entity_category: config
+    pin: GPIO27
+    default_transition_length: 0s
     chipset: SK6812
     num_leds: 1
     rgb_order: grb
-    gamma_correct: 2.8
+    rmt_channel: 0
     effects:
       - pulse:
           name: "Slow Pulse"
@@ -262,7 +212,8 @@ script:
     then:
       - if:
           condition:
-            switch.is_on: use_wake_word
+            - switch.is_on: use_wake_word
+            - switch.is_on: use_listen_light
           then:
             - light.turn_on:
                 id: led
@@ -294,3 +245,36 @@ switch:
       - voice_assistant.stop
       - lambda: id(va).set_use_wake_word(false);
       - script.execute: reset_led
+  - platform: template
+    name: Use listen light
+    id: use_listen_light
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
+    on_turn_on:
+      - script.execute: reset_led
+    on_turn_off:
+      - script.execute: reset_led
+  - platform: template
+    id: timer_ringing
+    optimistic: true
+    internal: true
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - delay: 15min
+      - switch.turn_off: timer_ringing
+
+external_components:
+  - source: github://pr#5230
+    components:
+      - esp_adf
+    refresh: 0s
+  - source: github://jesserockz/esphome-components
+    components: [file]
+    refresh: 0s
+
+esp_adf:
+
+file:
+  - id: timer_finished_wave_file
+    file: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav

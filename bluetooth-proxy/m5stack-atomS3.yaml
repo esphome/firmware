@@ -1,0 +1,2 @@
+packages:
+  moved: github://esphome/bluetooth-proxies/m5stack/m5stack-atom-s3.yaml@main

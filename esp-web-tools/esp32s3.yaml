@@ -5,12 +5,13 @@ substitutions:
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
+  min_version: 2024.6.0
   name_add_mac_suffix: true
   platformio_options:
     board_build.flash_mode: dio
   project:
     name: esphome.esp_web_tools_example
-    version: "1.0"
+    version: dev
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -25,6 +26,7 @@ api:
 
 # Allow OTA updates
 ota:
+  - platform: esphome
 
 # Allow provisioning Wi-Fi via serial
 improv_serial:
@@ -39,7 +41,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://esphome/firmware/esp-web-tools/esp32s3.yaml@v2
+  package_import_url: github://esphome/firmware/esp-web-tools/esp32s3.yaml@main
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
