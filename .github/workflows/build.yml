@@ -25,7 +25,7 @@ jobs:
         esp-web-tools/esp32s2.yaml
         esp-web-tools/esp32s3.yaml
         esp-web-tools/esp8266.yaml
-      esphome-version: 2024.7.3
+      esphome-version: 2024.11.1
       combined-name: esp-web-tools
       release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
       release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
@@ -42,7 +42,7 @@ jobs:
         esphome-web/esp32s3.yaml
         esphome-web/esp8266.yaml
         esphome-web/pico-w.yaml
-      esphome-version: 2024.7.3
+      esphome-version: 2024.11.1
       combined-name: esphome-web
       release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
       release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
