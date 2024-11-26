@@ -1,0 +1,113 @@
+# This firmware is soley for the Espressif ESP32-S3-Box-3 with the Sensor dock.
+# It sets up sensors and configuration entities in Home Assistant for the radar and battery in the sensor dock.
+# It is designed to be added as a second package to be inserted after the esp32-s3-box-3.yaml package.
+#
+# Enables the box:
+# - to be carried around as a portable VA and have an idea when the battery is about to go out.
+# - goes offline and stops listening/streaming when no-one is in the room (the screen is too bright at night).
+# - consume much less power when no-one is in the room in order to preserve the battery the VA .
+#
+# The following are provided:
+#
+# Sensor:
+# battery voltage (hidden)
+# battery level (%)
+#
+# Binary Sensor:
+# Presence detect (occupancy)
+#
+# Number:
+# Presence duration (timeout to keep Presence detect true, default 60 seconds)
+#
+# Switch:
+# Mute when absent (turns microphone and backlight off for low power, default OFF)
+#
+# To use, add the following to your device's yaml:
+# ------------------------------------------------
+# packages:
+#   esphome.voice-assistant-sensor: github://esphome/firmware/esp32-box-docks/box3-sensor-for-voice-assistant.yaml
+# ------------------------------------------------
+
+substitutions:
+  name: esp32-s3-box-3-sensor
+  friendly_name: ESP32 S3 Box 3 Sensor
+
+sensor:
+  - platform: adc
+    pin: GPIO10
+    name: "Battery voltage"
+    id: battery_voltage
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: "voltage"
+    entity_category: "diagnostic"
+    disabled_by_default: true
+    update_interval: 60s
+    attenuation: auto
+    filters:
+      - multiply: 4.01
+
+  - platform: copy
+    source_id: battery_voltage
+    name: "Battery level"
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    device_class: "battery"
+    entity_category: "diagnostic"
+    filters:
+      - lambda: return (x - 3.1) / (4.14 - 3.1) * 100;
+      - clamp:
+          min_value: 0
+          max_value: 100
+          ignore_out_of_range: true
+
+switch:
+  - platform: template
+    name: "Mute when absent"
+    id: mute_when_absent
+    icon: mdi:account-right-arrow
+    optimistic: true
+    entity_category: config
+    restore_mode: RESTORE_DEFAULT_OFF
+
+number:
+  - platform: template
+    name: "Presence duration"
+    id: radar_delayed_off
+    icon: mdi:account-clock
+    optimistic: true
+    restore_value: true
+    initial_value: 60
+    min_value: 0
+    step: 5
+    max_value: 300
+    unit_of_measurement: s
+    entity_category: config
+    mode: box
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO21
+    name: "Presence detect"
+    disabled_by_default: false
+    publish_initial_state: true
+    device_class: "occupancy"
+    filters:
+      - delayed_off: !lambda return id(radar_delayed_off).state * 1000;
+    on_release:
+      then:
+        - if:
+            condition:
+              switch.is_on: mute_when_absent
+            then:
+              - switch.turn_on: mute
+              - light.turn_off: led
+    on_press:
+      then:
+        - if:
+            condition:
+              switch.is_on: mute_when_absent
+            then:
+              - switch.turn_off: mute
+              - light.turn_on: led
