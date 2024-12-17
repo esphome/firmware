@@ -1,3 +1,6 @@
+packages:
+  esp32: !include esp32.yaml
+
 esphome:
   name_add_mac_suffix: true
   project:
