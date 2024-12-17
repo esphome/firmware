@@ -36,12 +36,12 @@ jobs:
     uses: esphome/workflows/.github/workflows/build.yml@2024.12.0
     with:
       files: |
-        esphome-web/esp32.yaml
-        esphome-web/esp32c3.yaml
-        esphome-web/esp32s2.yaml
-        esphome-web/esp32s3.yaml
-        esphome-web/esp8266.yaml
-        esphome-web/pico-w.yaml
+        esphome-web/esp32.factory.yaml
+        esphome-web/esp32c3.factory.yaml
+        esphome-web/esp32s2.factory.yaml
+        esphome-web/esp32s3.factory.yaml
+        esphome-web/esp8266.factory.yaml
+        esphome-web/pico-w.factory.yaml
       esphome-version: 2024.11.1
       combined-name: esphome-web
       release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
