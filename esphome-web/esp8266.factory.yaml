@@ -1,0 +1,23 @@
+packages:
+  esp8266: !include esp8266.yaml
+
+esphome:
+  name_add_mac_suffix: true
+  project:
+    name: esphome.web
+    version: dev
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  # Set up a wifi access point
+  ap: {}
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/esphome-web/esp8266.yaml@main
+  import_full_config: true
