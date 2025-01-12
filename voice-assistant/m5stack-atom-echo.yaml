@@ -290,6 +290,25 @@ switch:
       - delay: 15min
       - switch.turn_off: timer_ringing
 
+number:
+  - platform: template
+    name: "Volume"
+    device_class: volume
+    id: volume
+    unit_of_measurement: "%"
+    min_value: 0
+    max_value: 100
+    step: 5
+    mode: SLIDER
+    update_interval: 5s
+    optimistic: true
+    restore_value: true
+    initial_value: 50
+    icon: "mdi:knob"
+    entity_category: config
+    on_value:
+      - echo_speaker.volume_set: !lambda "return x/100;" 
+
 external_components:
   - source: github://pr#5230
     components:
