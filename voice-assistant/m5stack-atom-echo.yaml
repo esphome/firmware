@@ -307,7 +307,7 @@ number:
     icon: "mdi:knob"
     entity_category: config
     on_value:
-      - echo_speaker.volume_set: !lambda "return x/100;" 
+      - echo_speaker.volume_set: !lambda "return x/100;"
 
 external_components:
   - source: github://pr#5230
