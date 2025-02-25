@@ -1,6 +1,6 @@
 ---
 substitutions:
-  micro_wake_word_model: okay_nabu # Can be changed to hey_arvis or hey mycroft 
+  micro_wake_word_model: okay_nabu  # Can be changed to hey_arvis or hey mycroft
 
 esphome:
   name: raspiaudio-muse-proto
@@ -9,7 +9,7 @@ esphome:
   name_add_mac_suffix: true
   project:
     name: raspiaudio.muse-proto-voice-assistant
-    version: "24.7.5.0" # Moved it to a point release due to the amount of changes
+    version: "24.7.4.1"
 
 esp32:
   board: esp-wrover-kit
@@ -23,7 +23,7 @@ api:
 
 ota:
   - platform: esphome
-    password: 
+    password:
 
 wifi:
   ssid: !secret wifi_ssid
@@ -31,7 +31,7 @@ wifi:
   # Fallback access point if WiFi connection fails
   ap:
     ssid: "RaspiAudio-Muse Fallback"
-    password: 
+    password:
 
 captive_portal:
 
@@ -68,7 +68,6 @@ media_player:
     files:
       - id: timer_finished_wave_file
         file: https://github.com/esphome/wake-word-voice-assistants/raw/main/sounds/timer_finished.wav
-    
     on_announcement:
       - if:
           condition:
@@ -100,7 +99,6 @@ voice_assistant:
   id: va
   microphone: board_microphone
   media_player: muse_media_player
-  
   on_listening:
     - light.turn_on:
         id: led
@@ -218,7 +216,7 @@ button:
   - platform: factory_reset
     id: factory_reset_btn
     name: Factory reset
-    
+
 script:
   - id: reset_led
     then:
@@ -249,7 +247,6 @@ script:
                       effect: none
                 else:
                   - light.turn_off: led
-  
   - id: start_wake_word
     then:
       - wait_until:
@@ -277,10 +274,9 @@ script:
 switch:
   - platform: gpio
     id: mute_switch
-    pin: 
+    pin:
       number: GPIO21
       inverted: true
-  
   - platform: template
     name: Use listen light
     id: use_listen_light
@@ -291,7 +287,6 @@ switch:
       - script.execute: reset_led
     on_turn_off:
       - script.execute: reset_led
-  
   - platform: template
     id: timer_ringing
     optimistic: true
