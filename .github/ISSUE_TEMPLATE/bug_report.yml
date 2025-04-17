@@ -1,0 +1,58 @@
+name: ESPHome Web and esp-web-tools demo firmware issue
+description: Report an issue with ESPHome Web adoption firmware, or esp-web-tools demo firmware.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue form is for reporting bugs with the ESPHome Web adoption firmware, or the esp-web-tools demo firmware.
+
+        If you are experiencing issues with the ESPHome Builder or other firmware, please report them in the correct repository.
+
+  - type: textarea
+    validations:
+      required: true
+    id: problem
+    attributes:
+      label: The problem
+      description: >-
+        Describe the issue you are experiencing here to communicate to the
+        maintainers. Tell us what you were trying to do and what happened.
+
+        Provide a clear and concise description of what the problem is.
+
+  - type: dropdown
+    validations:
+      required: true
+    id: chip
+    attributes:
+      label: What microcontroller chip are you using?
+      options:
+        - ESP8266
+        - ESP32
+        - ESP32-C3
+        - ESP32-S2
+        - ESP32-S3
+        - RP2040
+
+  - type: input
+    id: board
+    attributes:
+      label: Board
+      description: >
+        The name of the board you are using. For example, esp32dev, d1_mini, rpipicow.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Anything in the logs that might be useful for us?
+      description: For example, error message, or stack traces. Serial or USB logs are much more useful than WiFi logs.
+      render: txt
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional information
+      description: >
+        If you have any additional information for us, use the field below.
+        Please note, you can attach screenshots or screen recordings here, by
+        dragging and dropping files in the field below.
