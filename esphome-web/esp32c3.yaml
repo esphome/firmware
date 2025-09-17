@@ -1,11 +1,11 @@
 esphome:
   name: esphome-web
   friendly_name: ESPHome Web
-  min_version: 2025.5.0
+  min_version: 2025.9.0
   name_add_mac_suffix: true
 
 esp32:
-  board: esp32-c3-devkitm-1
+  variant: esp32c3
   framework:
     type: esp-idf
 
@@ -20,3 +20,5 @@ ota:
   - platform: esphome
 
 wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password

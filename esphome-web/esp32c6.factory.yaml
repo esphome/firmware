@@ -1,11 +1,27 @@
-packages:
-  esp32c3: !include esp32c6.yaml
 
 esphome:
+  name: esphome-web
+  friendly_name: ESPHome Web
+  min_version: 2025.9.0
   name_add_mac_suffix: true
   project:
     name: esphome.web
     version: dev
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+  - platform: esphome
 
 # Allow provisioning Wi-Fi via serial
 improv_serial:
@@ -18,11 +34,12 @@ wifi:
 # to provision wifi credentials to the device via WiFi AP.
 captive_portal:
 
+# Allows taking control of the device in the ESPHome Builder/Dashboard
 dashboard_import:
   package_import_url: github://esphome/firmware/esphome-web/esp32c6.yaml@main
   import_full_config: true
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
-# esp32_improv:
-#   authorizer: none
+esp32_improv:
+  authorizer: none
