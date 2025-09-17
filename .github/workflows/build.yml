@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build-esp-web-tools-firmware:
     name: ESP Web Tools
-    uses: esphome/workflows/.github/workflows/build.yml@2025.8.0
+    uses: esphome/workflows/.github/workflows/build.yml@2025.8.1
     with:
       files: |
         esp-web-tools/esp32.yaml
@@ -26,7 +26,7 @@ jobs:
         esp-web-tools/esp32s2.yaml
         esp-web-tools/esp32s3.yaml
         esp-web-tools/esp8266.yaml
-      esphome-version: 2025.8.0
+      esphome-version: 2025.9.0
       combined-name: esp-web-tools
       release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
       release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
@@ -34,7 +34,7 @@ jobs:
 
   build-esphome-web-firmware:
     name: ESPHome Web
-    uses: esphome/workflows/.github/workflows/build.yml@2025.8.0
+    uses: esphome/workflows/.github/workflows/build.yml@2025.8.1
     with:
       files: |
         esphome-web/esp32.factory.yaml
@@ -44,7 +44,7 @@ jobs:
         esphome-web/esp32s3.factory.yaml
         esphome-web/esp8266.factory.yaml
         esphome-web/pico-w.factory.yaml
-      esphome-version: 2025.8.0
+      esphome-version: 2025.9.0
       combined-name: esphome-web
       release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
       release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
@@ -56,7 +56,7 @@ jobs:
     needs:
       - build-esp-web-tools-firmware
       - build-esphome-web-firmware
-    uses: esphome/workflows/.github/workflows/upload-to-r2.yml@2025.8.0
+    uses: esphome/workflows/.github/workflows/upload-to-r2.yml@2025.8.1
     with:
       directory: "."
     secrets: inherit
@@ -67,7 +67,7 @@ jobs:
     needs:
       - build-esp-web-tools-firmware
       - build-esphome-web-firmware
-    uses: esphome/workflows/.github/workflows/upload-to-gh-release.yml@2025.8.0
+    uses: esphome/workflows/.github/workflows/upload-to-gh-release.yml@2025.8.1
     with:
       version: ${{ github.event.release.tag_name }}
     secrets: inherit
@@ -75,7 +75,7 @@ jobs:
   promote:
     name: Promote esp-web-tools to Production
     if: github.event_name == 'release' && github.event.release.prerelease == false
-    uses: esphome/workflows/.github/workflows/promote-r2.yml@2025.8.0
+    uses: esphome/workflows/.github/workflows/promote-r2.yml@2025.8.1
     needs:
       - upload-to-r2
     with:
