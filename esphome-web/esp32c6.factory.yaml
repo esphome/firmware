@@ -1,4 +1,3 @@
-
 esphome:
   name: esphome-web
   friendly_name: ESPHome Web

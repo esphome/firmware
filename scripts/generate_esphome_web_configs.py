@@ -105,8 +105,7 @@ def create_base_config(platform_name: str, platform_config: PlatformConfig) -> s
             platform_section += f"  {key}: {value}\n"
 
     # Combine all sections
-    config: str = f"""
-esphome:
+    config: str = f"""esphome:
   name: esphome-web
   friendly_name: ESPHome Web
   min_version: {MIN_VERSION}
@@ -128,7 +127,7 @@ wifi:
   password: !secret wifi_password
 """
 
-    return config.strip()
+    return config
 
 
 def create_factory_config(platform_name: str, platform_config: PlatformConfig) -> str:
@@ -147,8 +146,7 @@ def create_factory_config(platform_name: str, platform_config: PlatformConfig) -
             platform_section += f"  {key}: {value}\n"
 
     # Build the factory config with full configuration
-    config: str = f"""
-esphome:
+    config: str = f"""esphome:
   name: esphome-web
   friendly_name: ESPHome Web
   min_version: {MIN_VERSION}
