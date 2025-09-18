@@ -1,11 +1,24 @@
-packages:
-  esp8266: !include esp8266.yaml
-
 esphome:
+  name: esphome-web
+  friendly_name: ESPHome Web
+  min_version: 2025.9.0
   name_add_mac_suffix: true
   project:
     name: esphome.web
     version: dev
+
+esp8266:
+  board: esp01_1m
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+  - platform: esphome
 
 # Allow provisioning Wi-Fi via serial
 improv_serial:
@@ -18,6 +31,7 @@ wifi:
 # to provision wifi credentials to the device via WiFi AP.
 captive_portal:
 
+# Allows taking control of the device in the ESPHome Builder/Dashboard
 dashboard_import:
   package_import_url: github://esphome/firmware/esphome-web/esp8266.yaml@main
   import_full_config: true
