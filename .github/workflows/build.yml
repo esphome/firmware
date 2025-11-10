@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build-esp-web-tools-firmware:
     name: ESP Web Tools
-    uses: esphome/workflows/.github/workflows/build.yml@2025.8.1
+    uses: esphome/workflows/.github/workflows/build.yml@2025.10.0
     with:
       files: |
         esp-web-tools/esp32.yaml
@@ -34,7 +34,7 @@ jobs:
 
   build-esphome-web-firmware:
     name: ESPHome Web
-    uses: esphome/workflows/.github/workflows/build.yml@2025.8.1
+    uses: esphome/workflows/.github/workflows/build.yml@2025.10.0
     with:
       files: |
         esphome-web/esp32.factory.yaml
