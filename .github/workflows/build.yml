@@ -56,7 +56,7 @@ jobs:
     needs:
       - build-esp-web-tools-firmware
       - build-esphome-web-firmware
-    uses: esphome/workflows/.github/workflows/upload-to-r2.yml@2025.8.1
+    uses: esphome/workflows/.github/workflows/upload-to-r2.yml@2025.10.0
     with:
       directory: "."
     secrets: inherit
