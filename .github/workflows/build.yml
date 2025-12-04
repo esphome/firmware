@@ -75,7 +75,7 @@ jobs:
   promote:
     name: Promote esp-web-tools to Production
     if: github.event_name == 'release' && github.event.release.prerelease == false
-    uses: esphome/workflows/.github/workflows/promote-r2.yml@2025.8.1
+    uses: esphome/workflows/.github/workflows/promote-r2.yml@2025.10.0
     needs:
       - upload-to-r2
     with:
