@@ -11,22 +11,26 @@ Generates all ESPHome Web configuration files from templates based on platform-s
 - **Platform Support**: Generates configs for ESP32 variants, ESP8266, and Raspberry Pi Pico W
 - **Bluetooth Awareness**: Automatically excludes Bluetooth features for platforms that don't support it:
   - ESP8266
-  - ESP32-S2  
+  - ESP32-C61
+  - ESP32-S2
   - Raspberry Pi Pico W
 - **Template-based**: Uses consistent templates for base and factory configurations
 - **Automatic File Generation**: Creates both regular and factory YAML files for each platform
 
 ### Platform Configurations
 
-| Platform | Variant/Board | Framework | Bluetooth | Min Version |
-| -------- | ------------- | --------- | --------- | ----------- |
-| ESP32    | esp32         | ESP-IDF   | ✅         | 2025.9.0    |
-| ESP32-C3 | esp32c3       | ESP-IDF   | ✅         | 2025.9.0    |
-| ESP32-C6 | esp32c6       | ESP-IDF   | ✅         | 2025.9.0    |
-| ESP32-S2 | esp32s2       | ESP-IDF   | ❌         | 2025.9.0    |
-| ESP32-S3 | esp32s3       | ESP-IDF   | ✅         | 2025.9.0    |
-| ESP8266  | esp01_1m      | Arduino   | ❌         | 2025.9.0    |
-| Pico W   | rpipicow      | Arduino   | ❌         | 2025.9.0    |
+| Platform   | Variant/Board | Framework | Bluetooth | Min Version |
+| ---------- | ------------- | --------- | --------- | ----------- |
+| ESP32      | esp32         | ESP-IDF   | ✅         | 2025.11.0   |
+| ESP32-C2   | esp32c2       | ESP-IDF   | ✅         | 2025.11.0   |
+| ESP32-C3   | esp32c3       | ESP-IDF   | ✅         | 2025.11.0   |
+| ESP32-C5   | esp32c5       | ESP-IDF   | ✅         | 2025.11.0   |
+| ESP32-C6   | esp32c6       | ESP-IDF   | ✅         | 2025.11.0   |
+| ESP32-C61  | esp32c61      | ESP-IDF   | ❌         | 2025.11.0   |
+| ESP32-S2   | esp32s2       | ESP-IDF   | ❌         | 2025.11.0   |
+| ESP32-S3   | esp32s3       | ESP-IDF   | ✅         | 2025.11.0   |
+| ESP8266    | esp01_1m      | Arduino   | ❌         | 2025.11.0   |
+| Pico W     | rpipicow      | RP2040    | ❌         | 2025.11.0   |
 
 ### Usage
 
@@ -44,8 +48,11 @@ The script generates files in the `esphome-web/` directory:
 
 **Base configurations** (for taking control with secrets):
 - `esp32.yaml`
-- `esp32c3.yaml` 
+- `esp32c2.yaml`
+- `esp32c3.yaml`
+- `esp32c5.yaml`
 - `esp32c6.yaml`
+- `esp32c61.yaml`
 - `esp32s2.yaml`
 - `esp32s3.yaml`
 - `esp8266.yaml`
@@ -53,8 +60,11 @@ The script generates files in the `esphome-web/` directory:
 
 **Factory configurations** (for distribution with provisioning):
 - `esp32.factory.yaml`
+- `esp32c2.factory.yaml`
 - `esp32c3.factory.yaml`
-- `esp32c6.factory.yaml` 
+- `esp32c5.factory.yaml`
+- `esp32c6.factory.yaml`
+- `esp32c61.factory.yaml`
 - `esp32s2.factory.yaml`
 - `esp32s3.factory.yaml`
 - `esp8266.factory.yaml`
@@ -83,6 +93,7 @@ Platforms **with** Bluetooth support get:
 
 Platforms **without** Bluetooth support:
 - ESP8266: Limited hardware capabilities
+- ESP32-C61: No Bluetooth radio (WiFi-only variant)
 - ESP32-S2: No Bluetooth radio
 - Raspberry Pi Pico W: No Bluetooth support in ESPHome
 
@@ -96,5 +107,5 @@ To modify the generated configurations:
 
 ### Dependencies
 
-- Python 3.13+
+- Python 3.11+
 - No external dependencies (uses only standard library)

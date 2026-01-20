@@ -21,8 +21,11 @@ jobs:
     with:
       files: |
         esp-web-tools/esp32.yaml
+        esp-web-tools/esp32c2.yaml
         esp-web-tools/esp32c3.yaml
+        esp-web-tools/esp32c5.yaml
         esp-web-tools/esp32c6.yaml
+        esp-web-tools/esp32c61.yaml
         esp-web-tools/esp32s2.yaml
         esp-web-tools/esp32s3.yaml
         esp-web-tools/esp8266.yaml
@@ -38,8 +41,11 @@ jobs:
     with:
       files: |
         esphome-web/esp32.factory.yaml
+        esphome-web/esp32c2.factory.yaml
         esphome-web/esp32c3.factory.yaml
+        esphome-web/esp32c5.factory.yaml
         esphome-web/esp32c6.factory.yaml
+        esphome-web/esp32c61.factory.yaml
         esphome-web/esp32s2.factory.yaml
         esphome-web/esp32s3.factory.yaml
         esphome-web/esp8266.factory.yaml

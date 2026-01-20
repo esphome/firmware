@@ -5,7 +5,7 @@ Script to generate ESPHome Web configuration files from templates.
 This script generates both regular and factory configurations for different
 ESP32 variants, ESP8266, and Raspberry Pi Pico W platforms.
 
-Requires Python 3.13+ for modern typing features (TypedDict, Literal, etc.)
+Requires Python 3.11+ for modern typing features (TypedDict, Literal, etc.)
 
 Usage:
     python3 scripts/generate_esphome_web_configs.py
@@ -16,13 +16,13 @@ from pathlib import Path
 from typing import Literal, NotRequired, TypedDict
 
 # Check Python version
-if sys.version_info < (3, 13):
-    print("Error: This script requires Python 3.13 or higher")
+if sys.version_info < (3, 11):
+    print("Error: This script requires Python 3.11 or higher")
     print(f"Current version: {sys.version}")
     sys.exit(1)
 
 # Configuration constants
-MIN_VERSION: str = "2025.9.0"
+MIN_VERSION: str = "2025.11.0"
 
 # Type definitions for platform configuration
 PlatformKey = Literal["esp32", "esp8266", "rp2040"]
@@ -34,7 +34,9 @@ class FrameworkConfig(TypedDict):
 
 class BoardConfig(TypedDict, total=False):
     # ESP32 platforms use variant
-    variant: Literal["esp32", "esp32c3", "esp32c6", "esp32s2", "esp32s3"]
+    variant: Literal[
+        "esp32", "esp32c2", "esp32c3", "esp32c5", "esp32c6", "esp32c61", "esp32s2", "esp32s3"
+    ]
     framework: FrameworkConfig
     # ESP8266 and RP2040 use board
     board: Literal["esp01_1m", "rpipicow"]
@@ -54,14 +56,29 @@ PLATFORMS: dict[str, PlatformConfig] = {
         "has_bluetooth": True,
         "has_captive_portal": True,
     },
+    "esp32c2": {
+        "board_config": {"variant": "esp32c2", "framework": {"type": "esp-idf"}},
+        "has_bluetooth": True,
+        "has_captive_portal": True,
+    },
     "esp32c3": {
         "board_config": {"variant": "esp32c3", "framework": {"type": "esp-idf"}},
+        "has_bluetooth": True,
+        "has_captive_portal": True,
+    },
+    "esp32c5": {
+        "board_config": {"variant": "esp32c5", "framework": {"type": "esp-idf"}},
         "has_bluetooth": True,
         "has_captive_portal": True,
     },
     "esp32c6": {
         "board_config": {"variant": "esp32c6", "framework": {"type": "esp-idf"}},
         "has_bluetooth": True,
+        "has_captive_portal": True,
+    },
+    "esp32c61": {
+        "board_config": {"variant": "esp32c61", "framework": {"type": "esp-idf"}},
+        "has_bluetooth": False,
         "has_captive_portal": True,
     },
     "esp32s2": {
