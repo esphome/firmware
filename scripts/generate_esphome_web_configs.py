@@ -34,9 +34,7 @@ class FrameworkConfig(TypedDict):
 
 class BoardConfig(TypedDict, total=False):
     # ESP32 platforms use variant
-    variant: Literal[
-        "esp32", "esp32c2", "esp32c3", "esp32c5", "esp32c6", "esp32c61", "esp32s2", "esp32s3"
-    ]
+    variant: Literal["esp32", "esp32c3", "esp32c6", "esp32s2", "esp32s3"]
     framework: FrameworkConfig
     # ESP8266 and RP2040 use board
     board: Literal["esp01_1m", "rpipicow"]
@@ -56,29 +54,14 @@ PLATFORMS: dict[str, PlatformConfig] = {
         "has_bluetooth": True,
         "has_captive_portal": True,
     },
-    "esp32c2": {
-        "board_config": {"variant": "esp32c2", "framework": {"type": "esp-idf"}},
-        "has_bluetooth": True,
-        "has_captive_portal": True,
-    },
     "esp32c3": {
         "board_config": {"variant": "esp32c3", "framework": {"type": "esp-idf"}},
-        "has_bluetooth": True,
-        "has_captive_portal": True,
-    },
-    "esp32c5": {
-        "board_config": {"variant": "esp32c5", "framework": {"type": "esp-idf"}},
         "has_bluetooth": True,
         "has_captive_portal": True,
     },
     "esp32c6": {
         "board_config": {"variant": "esp32c6", "framework": {"type": "esp-idf"}},
         "has_bluetooth": True,
-        "has_captive_portal": True,
-    },
-    "esp32c61": {
-        "board_config": {"variant": "esp32c61", "framework": {"type": "esp-idf"}},
-        "has_bluetooth": False,
         "has_captive_portal": True,
     },
     "esp32s2": {
