@@ -22,7 +22,7 @@ if sys.version_info < (3, 13):
     sys.exit(1)
 
 # Configuration constants
-MIN_VERSION: str = "2025.9.0"
+MIN_VERSION: str = "2026.4.0"
 
 # Type definitions for platform configuration
 PlatformKey = Literal["esp32", "esp8266", "rp2040"]
@@ -37,7 +37,7 @@ class BoardConfig(TypedDict, total=False):
     variant: Literal["esp32", "esp32c3", "esp32c6", "esp32s2", "esp32s3"]
     framework: FrameworkConfig
     # ESP8266 and RP2040 use board
-    board: Literal["esp01_1m", "rpipicow"]
+    board: Literal["esp01_1m", "rpipicow", "rpipico2w"]
 
 
 class PlatformConfig(TypedDict):
@@ -83,7 +83,13 @@ PLATFORMS: dict[str, PlatformConfig] = {
     "pico-w": {
         "board_config": {"board": "rpipicow"},
         "has_bluetooth": False,
-        "has_captive_portal": False,
+        "has_captive_portal": True,
+        "platform_key": "rp2040",
+    },
+    "pico-2-w": {
+        "board_config": {"board": "rpipico2w"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
         "platform_key": "rp2040",
     },
 }

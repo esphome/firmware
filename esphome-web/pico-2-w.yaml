@@ -4,10 +4,8 @@ esphome:
   min_version: 2026.4.0
   name_add_mac_suffix: true
 
-esp32:
-  variant: esp32c6
-  framework:
-    type: esp-idf
+rp2040:
+  board: rpipico2w
 
 # Enable logging
 logger:
