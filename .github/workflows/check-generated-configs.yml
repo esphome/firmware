@@ -1,0 +1,37 @@
+name: Check generated configs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "esphome-web/**"
+      - "scripts/generate_esphome_web_configs.py"
+      - ".github/workflows/check-generated-configs.yml"
+  pull_request:
+    paths:
+      - "esphome-web/**"
+      - "scripts/generate_esphome_web_configs.py"
+      - ".github/workflows/check-generated-configs.yml"
+
+jobs:
+  check-esphome-web-configs:
+    name: 🤖 esphome-web configs match generator
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out configuration from GitHub
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.13"
+      - name: 🔄 Regenerate esphome-web configs
+        run: python3 scripts/generate_esphome_web_configs.py
+      - name: ✅ Verify no changes
+        run: |
+          if [ -n "$(git status --porcelain -- esphome-web/)" ]; then
+            echo "::error::esphome-web/ is out of sync with scripts/generate_esphome_web_configs.py"
+            echo "Edit the generator script and re-run: python3 scripts/generate_esphome_web_configs.py"
+            git status --short -- esphome-web/
+            git --no-pager diff -- esphome-web/
+            exit 1
+          fi
