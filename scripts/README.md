@@ -20,13 +20,14 @@ Generates all ESPHome Web configuration files from templates based on platform-s
 
 | Platform | Variant/Board | Framework | Bluetooth | Min Version |
 | -------- | ------------- | --------- | --------- | ----------- |
-| ESP32    | esp32         | ESP-IDF   | ✅         | 2025.9.0    |
-| ESP32-C3 | esp32c3       | ESP-IDF   | ✅         | 2025.9.0    |
-| ESP32-C6 | esp32c6       | ESP-IDF   | ✅         | 2025.9.0    |
-| ESP32-S2 | esp32s2       | ESP-IDF   | ❌         | 2025.9.0    |
-| ESP32-S3 | esp32s3       | ESP-IDF   | ✅         | 2025.9.0    |
-| ESP8266  | esp01_1m      | Arduino   | ❌         | 2025.9.0    |
-| Pico W   | rpipicow      | Arduino   | ❌         | 2025.9.0    |
+| ESP32    | esp32         | ESP-IDF   | ✅         | 2026.4.0    |
+| ESP32-C3 | esp32c3       | ESP-IDF   | ✅         | 2026.4.0    |
+| ESP32-C6 | esp32c6       | ESP-IDF   | ✅         | 2026.4.0    |
+| ESP32-S2 | esp32s2       | ESP-IDF   | ❌         | 2026.4.0    |
+| ESP32-S3 | esp32s3       | ESP-IDF   | ✅         | 2026.4.0    |
+| ESP8266  | esp01_1m      | Arduino   | ❌         | 2026.4.0    |
+| Pico W   | rpipicow      | Arduino   | ❌         | 2026.4.0    |
+| Pico 2 W | rpipico2w     | Arduino   | ❌         | 2026.4.0    |
 
 ### Usage
 
@@ -50,6 +51,7 @@ The script generates files in the `esphome-web/` directory:
 - `esp32s3.yaml`
 - `esp8266.yaml`
 - `pico-w.yaml`
+- `pico-2-w.yaml`
 
 **Factory configurations** (for distribution with provisioning):
 - `esp32.factory.yaml`
@@ -59,6 +61,7 @@ The script generates files in the `esphome-web/` directory:
 - `esp32s3.factory.yaml`
 - `esp8266.factory.yaml`
 - `pico-w.factory.yaml`
+- `pico-2-w.factory.yaml`
 
 ### Configuration Differences
 
@@ -84,7 +87,7 @@ Platforms **with** Bluetooth support get:
 Platforms **without** Bluetooth support:
 - ESP8266: Limited hardware capabilities
 - ESP32-S2: No Bluetooth radio
-- Raspberry Pi Pico W: No Bluetooth support in ESPHome
+- Raspberry Pi Pico W / Pico 2 W: No BLE provisioning component in ESPHome (the chip's BLE radio is supported via `rp2040_ble`, but there is no equivalent of `esp32_improv`)
 
 ### Customization
 
