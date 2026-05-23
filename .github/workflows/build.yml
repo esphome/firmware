@@ -44,7 +44,6 @@ jobs:
         esphome-web/esp32s3.factory.yaml
         esphome-web/esp8266.factory.yaml
         esphome-web/pico-w.factory.yaml
-        esphome-web/pico-2-w.factory.yaml
       esphome-version: 2026.5.0
       combined-name: esphome-web
       release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
