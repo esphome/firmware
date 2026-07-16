@@ -7,80 +7,213 @@ on:
       - 'esphome-web/**'
       - '.github/workflows/build.yml'
   workflow_dispatch:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Release Drafter"]
+    types: [completed]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'workflow_run' && 'release-drafter' || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  discover-files:
+    name: Discover Configs
+    # Skip the entire pipeline if the Release Drafter run that triggered us failed.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      esp-web-tools-files: ${{ steps.find.outputs.esp-web-tools-files }}
+      esphome-web-files: ${{ steps.find.outputs.esphome-web-files }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - name: Find configs
+        id: find
+        run: |
+          set -euo pipefail
+          # The esp-web-tools demo firmware builds every plain <chip>.yaml.
+          esp_web_tools=$(find esp-web-tools -name '*.yaml' -print | sort)
+          # esphome-web ships a <chip>.factory.yaml per platform; the plain
+          # <chip>.yaml next to it is the adoptable base config, not a build
+          # target. pico-2-w is excluded until its output collision with
+          # pico-w in the combined build is resolved (see #351): needs
+          # ESPHome >= 2026.7.0 plus a build-action release that handles the
+          # rp2 platform, via a new esphome/workflows pin.
+          esphome_web=$(find esphome-web -name '*.factory.yaml' -print | sort \
+            | grep -vxF 'esphome-web/pico-2-w.factory.yaml')
+          if [[ -z "${esp_web_tools}" || -z "${esphome_web}" ]]; then
+            echo "::error::No configs found"
+            exit 1
+          fi
+          echo "Discovered esp-web-tools configs:"
+          echo "${esp_web_tools}"
+          echo "Discovered esphome-web factory configs:"
+          echo "${esphome_web}"
+          {
+            echo "esp-web-tools-files<<CONFIG_FILES_EOF"
+            echo "${esp_web_tools}"
+            echo "CONFIG_FILES_EOF"
+            echo "esphome-web-files<<CONFIG_FILES_EOF"
+            echo "${esphome_web}"
+            echo "CONFIG_FILES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  determine-version:
+    name: Determine Version
+    # Skip the entire pipeline if the Release Drafter run that triggered us failed.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.info.outputs.version }}
+      summary: ${{ steps.info.outputs.summary }}
+      url: ${{ steps.info.outputs.url }}
+    steps:
+      - name: Look up draft release info
+        id: info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag=""
+          url=""
+          body=""
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            release_json=$(gh api "repos/${{ github.repository }}/releases" \
+              --jq '[.[] | select(.draft == true)] | first')
+            if [[ -z "${release_json}" || "${release_json}" == "null" ]]; then
+              echo "::error::No draft release found"
+              exit 1
+            fi
+            tag=$(echo "${release_json}" | jq -r '.tag_name')
+            url=$(echo "${release_json}" | jq -r '.html_url')
+            # Strip the ASSETS_PENDING caution block from the draft body before
+            # baking it into the firmware as release-summary; the warning is
+            # only meant for the maintainer viewing the draft on GitHub.
+            body=$(echo "${release_json}" | jq -r '.body' \
+              | sed '/^> \[!CAUTION\]/,/<!-- ASSETS_PENDING -->/d' \
+              | sed 's/<!-- ASSETS_PENDING -->//g' \
+              | sed '/./,$!d')
+          fi
+          echo "version=${tag}" >> "$GITHUB_OUTPUT"
+          echo "url=${url}" >> "$GITHUB_OUTPUT"
+          {
+            echo "summary<<RELEASE_SUMMARY_EOF"
+            echo "${body}"
+            echo "RELEASE_SUMMARY_EOF"
+          } >> "$GITHUB_OUTPUT"
+
   build-esp-web-tools-firmware:
     name: ESP Web Tools
+    needs:
+      - discover-files
+      - determine-version
     uses: esphome/workflows/.github/workflows/build.yml@025a1e6255610c498ed590403b7e510b69e474df  # 2026.4.1
     with:
-      files: |
-        esp-web-tools/esp32.yaml
-        esp-web-tools/esp32c3.yaml
-        esp-web-tools/esp32c6.yaml
-        esp-web-tools/esp32s2.yaml
-        esp-web-tools/esp32s3.yaml
-        esp-web-tools/esp8266.yaml
+      files: ${{ needs.discover-files.outputs.esp-web-tools-files }}
       esphome-version: 2026.5.3
       combined-name: esp-web-tools
-      release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
-      release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
-      release-version: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
+      release-summary: ${{ needs.determine-version.outputs.summary }}
+      release-url: ${{ needs.determine-version.outputs.url }}
+      release-version: ${{ needs.determine-version.outputs.version }}
 
   build-esphome-web-firmware:
     name: ESPHome Web
+    needs:
+      - discover-files
+      - determine-version
     uses: esphome/workflows/.github/workflows/build.yml@025a1e6255610c498ed590403b7e510b69e474df  # 2026.4.1
     with:
-      files: |
-        esphome-web/esp32.factory.yaml
-        esphome-web/esp32c3.factory.yaml
-        esphome-web/esp32c6.factory.yaml
-        esphome-web/esp32s2.factory.yaml
-        esphome-web/esp32s3.factory.yaml
-        esphome-web/esp8266.factory.yaml
-        esphome-web/pico-w.factory.yaml
+      files: ${{ needs.discover-files.outputs.esphome-web-files }}
       esphome-version: 2026.5.3
       combined-name: esphome-web
-      release-summary: ${{ github.event_name == 'release' && github.event.release.body || '' }}
-      release-url: ${{ github.event_name == 'release' && github.event.release.html_url || '' }}
-      release-version: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
+      release-summary: ${{ needs.determine-version.outputs.summary }}
+      release-url: ${{ needs.determine-version.outputs.url }}
+      release-version: ${{ needs.determine-version.outputs.version }}
 
-  upload-to-r2:
-    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
-    name: Upload to R2
+  clean-draft-assets:
+    name: Clean Draft Release Assets
+    # Delete any pre-existing assets so renamed files (e.g. when the version
+    # bumps from .1 to .2) don't linger alongside the new ones. Gated on
+    # build success so a failed build doesn't leave the draft release empty.
+    if: github.event_name == 'workflow_run'
     needs:
       - build-esp-web-tools-firmware
       - build-esphome-web-firmware
-    uses: esphome/workflows/.github/workflows/upload-to-r2.yml@025a1e6255610c498ed590403b7e510b69e474df  # 2026.4.1
-    with:
-      directory: "."
-    secrets: inherit
+      - determine-version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete existing assets from draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="${{ needs.determine-version.outputs.version }}"
+          release=$(gh api "repos/${{ github.repository }}/releases" \
+            --jq "[.[] | select(.tag_name == \"${tag}\" and .draft == true)] | first")
+          if [[ -z "${release}" || "${release}" == "null" ]]; then
+            echo "Draft release ${tag} not found; nothing to clean"
+            exit 0
+          fi
+          release_id=$(echo "${release}" | jq -r '.id')
+          asset_ids=$(gh api "repos/${{ github.repository }}/releases/${release_id}/assets" \
+            --jq '.[].id')
+          for id in ${asset_ids}; do
+            echo "Deleting asset ${id}"
+            gh api "repos/${{ github.repository }}/releases/assets/${id}" \
+              --method DELETE --silent
+          done
 
-  upload-to-release:
-    if: github.event_name == 'release'
-    name: Upload to Release
+  upload-to-draft-release:
+    name: Upload to Draft Release
+    if: github.event_name == 'workflow_run'
     needs:
       - build-esp-web-tools-firmware
       - build-esphome-web-firmware
+      - determine-version
+      - clean-draft-assets
     uses: esphome/workflows/.github/workflows/upload-to-gh-release.yml@025a1e6255610c498ed590403b7e510b69e474df  # 2026.4.1
     with:
-      version: ${{ github.event.release.tag_name }}
-    secrets: inherit
+      version: ${{ needs.determine-version.outputs.version }}
+      draft: true
 
-  promote:
-    name: Promote esp-web-tools to Production
-    if: github.event_name == 'release' && github.event.release.prerelease == false
-    uses: esphome/workflows/.github/workflows/promote-r2.yml@025a1e6255610c498ed590403b7e510b69e474df  # 2026.4.1
+  remove-pending-warning:
+    name: Remove Pending Warning
+    if: github.event_name == 'workflow_run'
     needs:
-      - upload-to-r2
-    with:
-      version: ${{ github.event.release.tag_name }}
-      directory: "."
-      channel: production
-      manifest-filename: manifest.json
-    secrets: inherit
+      - upload-to-draft-release
+      - determine-version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Remove ASSETS_PENDING warning from draft release body
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="${{ needs.determine-version.outputs.version }}"
+          release=$(gh api "repos/${{ github.repository }}/releases" \
+            --jq "[.[] | select(.tag_name == \"${tag}\" and .draft == true)] | first")
+          if [[ -z "${release}" || "${release}" == "null" ]]; then
+            echo "Draft release ${tag} not found; nothing to clean up"
+            exit 0
+          fi
+          release_id=$(echo "${release}" | jq -r '.id')
+          body=$(echo "${release}" | jq -r '.body')
+          new_body=$(echo "${body}" \
+            | sed '/^> \[!CAUTION\]/,/<!-- ASSETS_PENDING -->/d' \
+            | sed 's/<!-- ASSETS_PENDING -->//g' \
+            | sed '/./,$!d')
+          if [[ "${new_body}" != "${body}" ]]; then
+            gh api "repos/${{ github.repository }}/releases/${release_id}" \
+              --method PATCH \
+              --field "body=${new_body}" \
+              --field "draft=true" \
+              --silent
+          fi

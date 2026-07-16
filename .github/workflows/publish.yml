@@ -1,0 +1,115 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: publish-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  discover-firmwares:
+    name: Discover firmwares in release
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.find.outputs.matrix }}
+    steps:
+      - name: List firmwares from release manifests
+        id: find
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p manifests
+          gh release download "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir manifests \
+            --pattern '*.manifest.json'
+          firmwares=$(ls manifests | sed 's/\.manifest\.json$//' \
+            | jq -R -s 'split("\n") | map(select(length > 0))')
+          if [[ "$(echo "${firmwares}" | jq 'length')" -eq 0 ]]; then
+            echo "::error::No <firmware>.manifest.json assets found on release"
+            exit 1
+          fi
+          echo "matrix=$(jq -c -n --argjson firmwares "${firmwares}" '{firmware: $firmwares}')" >> "$GITHUB_OUTPUT"
+          echo "Discovered firmwares: ${firmwares}"
+
+  prepare-artifact:
+    name: Prepare ${{ matrix.firmware }} artifact
+    needs: discover-firmwares
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover-firmwares.outputs.matrix) }}
+    steps:
+      - name: Download firmware assets and reconstruct layout
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FIRMWARE: ${{ matrix.firmware }}
+          VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          # Recreate the `<version>/{manifest.json,*.bin}` layout that
+          # upload-to-r2 / promote-r2 expect from a build.yml run. The
+          # artifact name (= firmware) becomes the surrounding directory when
+          # download-artifact runs in the reusable workflows.
+          target="output/${VERSION}"
+          mkdir -p "${target}"
+
+          # Pull just this firmware's manifest first so we know which
+          # binaries to fetch — avoids each matrix runner re-downloading
+          # every other firmware's bins.
+          gh release download "${VERSION}" \
+            --repo "${{ github.repository }}" \
+            --dir "${target}" \
+            --pattern "${FIRMWARE}.manifest.json"
+          mv "${target}/${FIRMWARE}.manifest.json" "${target}/manifest.json"
+
+          # Build a multi-pattern download for the bins the manifest
+          # references (ota + parts), then run a single gh call.
+          patterns=()
+          while IFS= read -r bin; do
+            [[ -z "${bin}" ]] && continue
+            patterns+=(--pattern "${bin}")
+          done < <(jq -r '[
+            (.builds[]?.ota.path // empty),
+            (.builds[]?.parts[]?.path // empty)
+          ] | unique | .[]' "${target}/manifest.json")
+
+          if [[ "${#patterns[@]}" -gt 0 ]]; then
+            gh release download "${VERSION}" \
+              --repo "${{ github.repository }}" \
+              --dir "${target}" \
+              "${patterns[@]}"
+          fi
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ matrix.firmware }}
+          path: output
+          if-no-files-found: error
+
+  upload-to-r2:
+    name: Upload to R2
+    needs: prepare-artifact
+    uses: esphome/workflows/.github/workflows/upload-to-r2.yml@025a1e6255610c498ed590403b7e510b69e474df  # 2026.4.1
+    with:
+      # The firmwares in this repository (esp-web-tools, esphome-web) live as
+      # top-level directories on https://firmware.esphome.io/, so upload to
+      # the bucket root rather than a per-repo directory.
+      directory: "."
+    secrets: inherit
+
+  promote-prod:
+    name: Promote to Production
+    if: github.event.release.prerelease == false
+    needs: upload-to-r2
+    uses: esphome/workflows/.github/workflows/promote-r2.yml@025a1e6255610c498ed590403b7e510b69e474df  # 2026.4.1
+    with:
+      version: ${{ github.event.release.tag_name }}
+      directory: "."
+      channel: production
+      manifest-filename: manifest.json
+    secrets: inherit
