@@ -13,6 +13,9 @@ on:
       - "scripts/generate_esphome_web_configs.py"
       - ".github/workflows/check-generated-configs.yml"
 
+permissions:
+  contents: read
+
 jobs:
   check-esphome-web-configs:
     name: 🤖 esphome-web configs match generator

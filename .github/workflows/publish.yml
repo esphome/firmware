@@ -4,8 +4,10 @@ on:
   release:
     types: [published]
 
-permissions:
-  contents: read
+# Jobs that download release assets request contents: read individually; the
+# upload/promote jobs only use the Cloudflare R2 secrets and never touch
+# GITHUB_TOKEN, so they run with no permissions at all.
+permissions: {}
 
 concurrency:
   group: publish-${{ github.event.release.tag_name }}
@@ -15,6 +17,9 @@ jobs:
   discover-firmwares:
     name: Discover firmwares in release
     runs-on: ubuntu-latest
+    permissions:
+      # Read release assets with gh release download.
+      contents: read
     outputs:
       matrix: ${{ steps.find.outputs.matrix }}
     steps:
@@ -42,6 +47,9 @@ jobs:
     name: Prepare ${{ matrix.firmware }} artifact
     needs: discover-firmwares
     runs-on: ubuntu-latest
+    permissions:
+      # Read release assets with gh release download.
+      contents: read
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.discover-firmwares.outputs.matrix) }}
