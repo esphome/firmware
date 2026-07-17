@@ -34,6 +34,7 @@ body:
         - ESP32-S2
         - ESP32-S3
         - RP2040
+        - RP2350
 
   - type: input
     id: board
