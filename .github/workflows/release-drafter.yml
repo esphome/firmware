@@ -16,8 +16,6 @@ concurrency:
 jobs:
   release-drafter:
     name: Update draft release
-    # Never draft releases in the template repository itself.
-    if: github.event.repository.name != 'ready-made-project-template'
     # Computes the next CalVer version (YY.M.N, reusing the current draft's
     # sequence number) and runs release-drafter with it. Reads this repo's
     # .github/release-drafter.yml for the changelog categories.
