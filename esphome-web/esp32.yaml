@@ -22,3 +22,7 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+
+esp32_ble_tracker:
+bluetooth_proxy:
+  active: true
