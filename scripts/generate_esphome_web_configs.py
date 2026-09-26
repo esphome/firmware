@@ -35,7 +35,7 @@ class FrameworkConfig(TypedDict):
 class BoardConfig(TypedDict, total=False):
     # ESP32 platforms use variant
     variant: Literal[
-        "esp32", "esp32c3", "esp32c5", "esp32c6", "esp32c61", "esp32s2", "esp32s3"
+        "esp32", "esp32c2", "esp32c3", "esp32c5", "esp32c6", "esp32c61", "esp32s2", "esp32s3"
     ]
     framework: FrameworkConfig
     # ESP8266 and RP2040 use board
@@ -53,6 +53,11 @@ class PlatformConfig(TypedDict):
 PLATFORMS: dict[str, PlatformConfig] = {
     "esp32": {
         "board_config": {"variant": "esp32", "framework": {"type": "esp-idf"}},
+        "has_bluetooth": True,
+        "has_captive_portal": True,
+    },
+    "esp32c2": {
+        "board_config": {"variant": "esp32c2", "framework": {"type": "esp-idf"}},
         "has_bluetooth": True,
         "has_captive_portal": True,
     },
