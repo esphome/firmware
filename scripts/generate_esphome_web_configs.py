@@ -58,7 +58,8 @@ PLATFORMS: dict[str, PlatformConfig] = {
     },
     "esp32c2": {
         "board_config": {"variant": "esp32c2", "framework": {"type": "esp-idf"}},
-        "has_bluetooth": True,
+        # Not enough RAM for esp32_improv alongside Wi-Fi
+        "has_bluetooth": False,
         "has_captive_portal": True,
     },
     "esp32c3": {
