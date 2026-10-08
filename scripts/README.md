@@ -8,7 +8,7 @@ Generates all ESPHome Web configuration files from templates based on platform-s
 
 ### Features
 
-- **Platform Support**: Generates configs for ESP32 variants, ESP8266, and Raspberry Pi Pico W
+- **Platform Support**: Generates configs for ESP32 variants, ESP8266, Raspberry Pi Pico W / Pico 2 W, and LibreTiny (BK72xx, LN882H, RTL87xx)
 - **Bluetooth Awareness**: Automatically excludes Bluetooth features for platforms that don't support it:
   - ESP8266
   - ESP32-C2
@@ -33,6 +33,13 @@ Generates all ESPHome Web configuration files from templates based on platform-s
 | ESP8266  | esp01_1m      | Arduino   | ❌         | 2026.4.0    |
 | Pico W   | rpipicow      | Arduino   | ❌         | 2026.4.0    |
 | Pico 2 W | rpipico2w     | Arduino   | ❌         | 2026.4.0    |
+| BK7231N | generic-bk7231n-qfn32-tuya | LibreTiny | ❌ | 2026.9.1 |
+| BK7231T | generic-bk7231t-qfn32-tuya | LibreTiny | ❌ | 2026.9.1 |
+| BK7238 | generic-bk7238-tuya | LibreTiny | ❌ | 2026.9.1 |
+| BK7252 | generic-bk7252 | LibreTiny | ❌ | 2026.9.1 |
+| LN882H | generic-ln882h-tuya | LibreTiny | ❌ | 2026.9.1 |
+| RTL8710B | generic-rtl8710bn-2mb-788k | LibreTiny | ❌ | 2026.9.1 |
+| RTL8720C | generic-rtl8720cf-2mb-992k | LibreTiny | ❌ | 2026.9.1 |
 
 ### Usage
 
@@ -61,6 +68,13 @@ The script generates files in the `esphome-web/` directory:
 - `esp8266.yaml`
 - `pico-w.yaml`
 - `pico-2-w.yaml`
+- `bk7231n.yaml`
+- `bk7231t.yaml`
+- `bk7238.yaml`
+- `bk7252.yaml`
+- `ln882h.yaml`
+- `rtl8710b.yaml`
+- `rtl8720c.yaml`
 
 **Factory configurations** (for distribution with provisioning):
 - `esp32.factory.yaml`
@@ -75,6 +89,13 @@ The script generates files in the `esphome-web/` directory:
 - `esp8266.factory.yaml`
 - `pico-w.factory.yaml`
 - `pico-2-w.factory.yaml`
+- `bk7231n.factory.yaml`
+- `bk7231t.factory.yaml`
+- `bk7238.factory.yaml`
+- `bk7252.factory.yaml`
+- `ln882h.factory.yaml`
+- `rtl8710b.factory.yaml`
+- `rtl8720c.factory.yaml`
 
 ### Configuration Differences
 
@@ -101,6 +122,7 @@ Platforms **without** Bluetooth support:
 - ESP8266: Limited hardware capabilities
 - ESP32-C2: Not enough RAM to run `esp32_improv` alongside Wi-Fi
 - ESP32-S2: No Bluetooth radio
+- LibreTiny (BK72xx, LN882H, RTL87xx): No BLE provisioning component in ESPHome
 - Raspberry Pi Pico W / Pico 2 W: No BLE provisioning component in ESPHome (the chip's BLE radio is supported via `rp2040_ble`, but there is no equivalent of `esp32_improv`)
 
 ### Customization

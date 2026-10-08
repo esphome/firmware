@@ -25,7 +25,7 @@ if sys.version_info < (3, 13):
 MIN_VERSION: str = "2026.4.0"
 
 # Type definitions for platform configuration
-PlatformKey = Literal["esp32", "esp8266", "rp2040"]
+PlatformKey = Literal["esp32", "esp8266", "rp2040", "bk72xx", "ln882x", "rtl87xx"]
 
 
 class FrameworkConfig(TypedDict):
@@ -48,8 +48,19 @@ class BoardConfig(TypedDict, total=False):
         "esp32s31",
     ]
     framework: FrameworkConfig
-    # ESP8266 and RP2040 use board
-    board: Literal["esp01_1m", "rpipicow", "rpipico2w"]
+    # ESP8266, RP2040 and LibreTiny use board
+    board: Literal[
+        "esp01_1m",
+        "rpipicow",
+        "rpipico2w",
+        "generic-bk7231n-qfn32-tuya",
+        "generic-bk7231t-qfn32-tuya",
+        "generic-bk7238-tuya",
+        "generic-bk7252",
+        "generic-ln882h-tuya",
+        "generic-rtl8710bn-2mb-788k",
+        "generic-rtl8720cf-2mb-992k",
+    ]
 
 
 class PlatformConfig(TypedDict):
@@ -131,6 +142,57 @@ PLATFORMS: dict[str, PlatformConfig] = {
         "has_bluetooth": False,
         "has_captive_portal": True,
         "platform_key": "rp2040",
+    },
+    # LibreTiny: generic boards with the Tuya flash layout where LibreTiny has
+    # one, so the Tuya data partition is left alone
+    "bk7231n": {
+        "board_config": {"board": "generic-bk7231n-qfn32-tuya"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "bk72xx",
+        "min_version": "2026.9.1",
+    },
+    "bk7231t": {
+        "board_config": {"board": "generic-bk7231t-qfn32-tuya"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "bk72xx",
+        "min_version": "2026.9.1",
+    },
+    "bk7238": {
+        "board_config": {"board": "generic-bk7238-tuya"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "bk72xx",
+        "min_version": "2026.9.1",
+    },
+    "bk7252": {
+        "board_config": {"board": "generic-bk7252"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "bk72xx",
+        "min_version": "2026.9.1",
+    },
+    "ln882h": {
+        "board_config": {"board": "generic-ln882h-tuya"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "ln882x",
+        "min_version": "2026.9.1",
+    },
+    "rtl8710b": {
+        "board_config": {"board": "generic-rtl8710bn-2mb-788k"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "rtl87xx",
+        "min_version": "2026.9.1",
+    },
+    "rtl8720c": {
+        "board_config": {"board": "generic-rtl8720cf-2mb-992k"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "rtl87xx",
+        "min_version": "2026.9.1",
     },
 }
 
