@@ -3,7 +3,8 @@
 Script to generate ESPHome Web configuration files from templates.
 
 This script generates both regular and factory configurations for different
-ESP32 variants, ESP8266, and Raspberry Pi Pico W platforms.
+ESP32 variants, ESP8266, Raspberry Pi Pico W / Pico 2 W, and LibreTiny (BK72xx,
+LN882H, RTL87xx) platforms.
 
 Requires Python 3.13+ for modern typing features (TypedDict, Literal, etc.)
 
