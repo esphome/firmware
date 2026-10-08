@@ -36,7 +36,15 @@ body:
         - ESP32-C61
         - ESP32-S2
         - ESP32-S3
+        - ESP32-S31
         - RP2040
+        - BK7231N
+        - BK7231T
+        - BK7238
+        - BK7252
+        - LN882H
+        - RTL8710B
+        - RTL8720C
 
   - type: input
     id: board

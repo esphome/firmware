@@ -3,7 +3,8 @@
 Script to generate ESPHome Web configuration files from templates.
 
 This script generates both regular and factory configurations for different
-ESP32 variants, ESP8266, and Raspberry Pi Pico W platforms.
+ESP32 variants, ESP8266, Raspberry Pi Pico W / Pico 2 W, and LibreTiny (BK72xx,
+LN882H, RTL87xx) platforms.
 
 Requires Python 3.13+ for modern typing features (TypedDict, Literal, etc.)
 
@@ -25,21 +26,42 @@ if sys.version_info < (3, 13):
 MIN_VERSION: str = "2026.4.0"
 
 # Type definitions for platform configuration
-PlatformKey = Literal["esp32", "esp8266", "rp2040"]
+PlatformKey = Literal["esp32", "esp8266", "rp2040", "bk72xx", "ln882x", "rtl87xx"]
 
 
 class FrameworkConfig(TypedDict):
     type: Literal["arduino", "esp-idf"]
+    # Pins a framework version other than ESPHome's recommended one
+    version: NotRequired[str]
 
 
 class BoardConfig(TypedDict, total=False):
     # ESP32 platforms use variant
     variant: Literal[
-        "esp32", "esp32c2", "esp32c3", "esp32c5", "esp32c6", "esp32c61", "esp32s2", "esp32s3"
+        "esp32",
+        "esp32c2",
+        "esp32c3",
+        "esp32c5",
+        "esp32c6",
+        "esp32c61",
+        "esp32s2",
+        "esp32s3",
+        "esp32s31",
     ]
     framework: FrameworkConfig
-    # ESP8266 and RP2040 use board
-    board: Literal["esp01_1m", "rpipicow", "rpipico2w"]
+    # ESP8266, RP2040 and LibreTiny use board
+    board: Literal[
+        "esp01_1m",
+        "rpipicow",
+        "rpipico2w",
+        "generic-bk7231n-qfn32-tuya",
+        "generic-bk7231t-qfn32-tuya",
+        "generic-bk7238-tuya",
+        "generic-bk7252",
+        "generic-ln882h-tuya",
+        "generic-rtl8710bn-2mb-788k",
+        "generic-rtl8720cf-2mb-992k",
+    ]
 
 
 class PlatformConfig(TypedDict):
@@ -47,6 +69,8 @@ class PlatformConfig(TypedDict):
     has_bluetooth: bool
     has_captive_portal: bool
     platform_key: NotRequired[PlatformKey]
+    # Overrides MIN_VERSION for a platform that needs a newer ESPHome
+    min_version: NotRequired[str]
 
 
 # Platform configurations
@@ -92,6 +116,16 @@ PLATFORMS: dict[str, PlatformConfig] = {
         "has_bluetooth": True,
         "has_captive_portal": True,
     },
+    "esp32s31": {
+        # ESP-IDF 6.1 is the first release with the ESP32-S31
+        "board_config": {
+            "variant": "esp32s31",
+            "framework": {"type": "esp-idf", "version": "6.1.0"},
+        },
+        "has_bluetooth": True,
+        "has_captive_portal": True,
+        "min_version": "2026.9.1",
+    },
     "esp8266": {
         "board_config": {"board": "esp01_1m"},
         "has_bluetooth": False,
@@ -109,6 +143,57 @@ PLATFORMS: dict[str, PlatformConfig] = {
         "has_bluetooth": False,
         "has_captive_portal": True,
         "platform_key": "rp2040",
+    },
+    # LibreTiny: generic boards with the Tuya flash layout where LibreTiny has
+    # one, so the Tuya data partition is left alone
+    "bk7231n": {
+        "board_config": {"board": "generic-bk7231n-qfn32-tuya"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "bk72xx",
+        "min_version": "2026.9.1",
+    },
+    "bk7231t": {
+        "board_config": {"board": "generic-bk7231t-qfn32-tuya"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "bk72xx",
+        "min_version": "2026.9.1",
+    },
+    "bk7238": {
+        "board_config": {"board": "generic-bk7238-tuya"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "bk72xx",
+        "min_version": "2026.9.1",
+    },
+    "bk7252": {
+        "board_config": {"board": "generic-bk7252"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "bk72xx",
+        "min_version": "2026.9.1",
+    },
+    "ln882h": {
+        "board_config": {"board": "generic-ln882h-tuya"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "ln882x",
+        "min_version": "2026.9.1",
+    },
+    "rtl8710b": {
+        "board_config": {"board": "generic-rtl8710bn-2mb-788k"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "rtl87xx",
+        "min_version": "2026.9.1",
+    },
+    "rtl8720c": {
+        "board_config": {"board": "generic-rtl8720cf-2mb-992k"},
+        "has_bluetooth": False,
+        "has_captive_portal": True,
+        "platform_key": "rtl87xx",
+        "min_version": "2026.9.1",
     },
 }
 
@@ -132,7 +217,7 @@ def create_base_config(platform_name: str, platform_config: PlatformConfig) -> s
     config: str = f"""esphome:
   name: esphome-web
   friendly_name: ESPHome Web
-  min_version: {MIN_VERSION}
+  min_version: {platform_config.get('min_version', MIN_VERSION)}
   name_add_mac_suffix: true
 
 {platform_section}
@@ -173,7 +258,7 @@ def create_factory_config(platform_name: str, platform_config: PlatformConfig) -
     config: str = f"""esphome:
   name: esphome-web
   friendly_name: ESPHome Web
-  min_version: {MIN_VERSION}
+  min_version: {platform_config.get('min_version', MIN_VERSION)}
   name_add_mac_suffix: true
   project:
     name: esphome.web
