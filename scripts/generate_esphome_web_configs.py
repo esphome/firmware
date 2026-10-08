@@ -30,12 +30,22 @@ PlatformKey = Literal["esp32", "esp8266", "rp2040"]
 
 class FrameworkConfig(TypedDict):
     type: Literal["arduino", "esp-idf"]
+    # Pins a framework version other than ESPHome's recommended one
+    version: NotRequired[str]
 
 
 class BoardConfig(TypedDict, total=False):
     # ESP32 platforms use variant
     variant: Literal[
-        "esp32", "esp32c2", "esp32c3", "esp32c5", "esp32c6", "esp32c61", "esp32s2", "esp32s3"
+        "esp32",
+        "esp32c2",
+        "esp32c3",
+        "esp32c5",
+        "esp32c6",
+        "esp32c61",
+        "esp32s2",
+        "esp32s3",
+        "esp32s31",
     ]
     framework: FrameworkConfig
     # ESP8266 and RP2040 use board
@@ -47,6 +57,8 @@ class PlatformConfig(TypedDict):
     has_bluetooth: bool
     has_captive_portal: bool
     platform_key: NotRequired[PlatformKey]
+    # Overrides MIN_VERSION for a platform that needs a newer ESPHome
+    min_version: NotRequired[str]
 
 
 # Platform configurations
@@ -92,6 +104,16 @@ PLATFORMS: dict[str, PlatformConfig] = {
         "has_bluetooth": True,
         "has_captive_portal": True,
     },
+    "esp32s31": {
+        # ESP-IDF 6.1 is the first release with the ESP32-S31
+        "board_config": {
+            "variant": "esp32s31",
+            "framework": {"type": "esp-idf", "version": "6.1.0"},
+        },
+        "has_bluetooth": True,
+        "has_captive_portal": True,
+        "min_version": "2026.9.1",
+    },
     "esp8266": {
         "board_config": {"board": "esp01_1m"},
         "has_bluetooth": False,
@@ -132,7 +154,7 @@ def create_base_config(platform_name: str, platform_config: PlatformConfig) -> s
     config: str = f"""esphome:
   name: esphome-web
   friendly_name: ESPHome Web
-  min_version: {MIN_VERSION}
+  min_version: {platform_config.get('min_version', MIN_VERSION)}
   name_add_mac_suffix: true
 
 {platform_section}
@@ -173,7 +195,7 @@ def create_factory_config(platform_name: str, platform_config: PlatformConfig) -
     config: str = f"""esphome:
   name: esphome-web
   friendly_name: ESPHome Web
-  min_version: {MIN_VERSION}
+  min_version: {platform_config.get('min_version', MIN_VERSION)}
   name_add_mac_suffix: true
   project:
     name: esphome.web

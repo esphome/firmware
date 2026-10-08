@@ -29,6 +29,7 @@ Generates all ESPHome Web configuration files from templates based on platform-s
 | ESP32-C61 | esp32c61     | ESP-IDF   | ✅         | 2026.4.0    |
 | ESP32-S2 | esp32s2       | ESP-IDF   | ❌         | 2026.4.0    |
 | ESP32-S3 | esp32s3       | ESP-IDF   | ✅         | 2026.4.0    |
+| ESP32-S31 | esp32s31     | ESP-IDF 6.1.0 | ✅     | 2026.9.1    |
 | ESP8266  | esp01_1m      | Arduino   | ❌         | 2026.4.0    |
 | Pico W   | rpipicow      | Arduino   | ❌         | 2026.4.0    |
 | Pico 2 W | rpipico2w     | Arduino   | ❌         | 2026.4.0    |
@@ -56,6 +57,7 @@ The script generates files in the `esphome-web/` directory:
 - `esp32c61.yaml`
 - `esp32s2.yaml`
 - `esp32s3.yaml`
+- `esp32s31.yaml`
 - `esp8266.yaml`
 - `pico-w.yaml`
 - `pico-2-w.yaml`
@@ -69,6 +71,7 @@ The script generates files in the `esphome-web/` directory:
 - `esp32c61.factory.yaml`
 - `esp32s2.factory.yaml`
 - `esp32s3.factory.yaml`
+- `esp32s31.factory.yaml`
 - `esp8266.factory.yaml`
 - `pico-w.factory.yaml`
 - `pico-2-w.factory.yaml`

@@ -45,6 +45,7 @@ jobs:
         esphome-web/esp32c61.factory.yaml
         esphome-web/esp32s2.factory.yaml
         esphome-web/esp32s3.factory.yaml
+        esphome-web/esp32s31.factory.yaml
         esphome-web/esp8266.factory.yaml
         esphome-web/pico-w.factory.yaml
         esphome-web/pico-2-w.factory.yaml
