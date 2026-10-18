@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build-esp-web-tools-firmware:
     name: ESP Web Tools
-    uses: esphome/workflows/.github/workflows/build.yml@cc3e76de337dc59bc1cba8da58d963cd23b873f1  # 2026.9.0
+    uses: esphome/workflows/.github/workflows/build.yml@31d160e5f0ffa0ee65d5b27cb55c153d415f2abe  # 2026.10.2
     with:
       files: |
         esp-web-tools/esp32.yaml
@@ -34,7 +34,7 @@ jobs:
 
   build-esphome-web-firmware:
     name: ESPHome Web
-    uses: esphome/workflows/.github/workflows/build.yml@cc3e76de337dc59bc1cba8da58d963cd23b873f1  # 2026.9.0
+    uses: esphome/workflows/.github/workflows/build.yml@31d160e5f0ffa0ee65d5b27cb55c153d415f2abe  # 2026.10.2
     with:
       files: |
         esphome-web/esp32.factory.yaml
@@ -68,7 +68,7 @@ jobs:
     needs:
       - build-esp-web-tools-firmware
       - build-esphome-web-firmware
-    uses: esphome/workflows/.github/workflows/upload-to-r2.yml@cc3e76de337dc59bc1cba8da58d963cd23b873f1  # 2026.9.0
+    uses: esphome/workflows/.github/workflows/upload-to-r2.yml@31d160e5f0ffa0ee65d5b27cb55c153d415f2abe  # 2026.10.2
     with:
       directory: "."
     secrets: inherit
@@ -79,7 +79,7 @@ jobs:
     needs:
       - build-esp-web-tools-firmware
       - build-esphome-web-firmware
-    uses: esphome/workflows/.github/workflows/upload-to-gh-release.yml@cc3e76de337dc59bc1cba8da58d963cd23b873f1  # 2026.9.0
+    uses: esphome/workflows/.github/workflows/upload-to-gh-release.yml@31d160e5f0ffa0ee65d5b27cb55c153d415f2abe  # 2026.10.2
     with:
       version: ${{ github.event.release.tag_name }}
     secrets: inherit
@@ -87,7 +87,7 @@ jobs:
   promote:
     name: Promote esp-web-tools to Production
     if: github.event_name == 'release' && github.event.release.prerelease == false
-    uses: esphome/workflows/.github/workflows/promote-r2.yml@cc3e76de337dc59bc1cba8da58d963cd23b873f1  # 2026.9.0
+    uses: esphome/workflows/.github/workflows/promote-r2.yml@31d160e5f0ffa0ee65d5b27cb55c153d415f2abe  # 2026.10.2
     needs:
       - upload-to-r2
     with:
