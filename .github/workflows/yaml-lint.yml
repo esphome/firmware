@@ -6,10 +6,12 @@ on:
     paths:
       - "**.yaml"
       - "**.yml"
+      - ".github/workflows/actions.lock"
   pull_request:
     paths:
       - "**.yaml"
       - "**.yml"
+      - ".github/workflows/actions.lock"
 
 jobs:
   yamllint:
