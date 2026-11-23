@@ -8,6 +8,9 @@ workflows:
         - 'actions/checkout@v6.0.3'
         - 'actions/setup-python@v7.1.0'
     '.github/workflows/lock.yml': []
+    '.github/workflows/publish.yml': []
+    '.github/workflows/release-drafter.yml': []
+    '.github/workflows/release.yml': []
     '.github/workflows/stale.yml':
         - 'actions/stale@v10.3.0'
     '.github/workflows/verify-lockfile.yml':
