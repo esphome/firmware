@@ -15,6 +15,9 @@ on:
       - ".github/workflows/check-generated-configs.yml"
       - ".github/workflows/actions.lock"
 
+permissions:
+  contents: read
+
 jobs:
   check-esphome-web-configs:
     name: 🤖 esphome-web configs match generator
