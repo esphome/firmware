@@ -7,11 +7,13 @@ on:
       - "esphome-web/**"
       - "scripts/generate_esphome_web_configs.py"
       - ".github/workflows/check-generated-configs.yml"
+      - ".github/workflows/actions.lock"
   pull_request:
     paths:
       - "esphome-web/**"
       - "scripts/generate_esphome_web_configs.py"
       - ".github/workflows/check-generated-configs.yml"
+      - ".github/workflows/actions.lock"
 
 jobs:
   check-esphome-web-configs:
@@ -19,9 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out configuration from GitHub
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        uses: actions/checkout@v6.0.3
       - name: 🐍 Set up Python
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
       - name: 🔄 Regenerate esphome-web configs
