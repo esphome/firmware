@@ -15,10 +15,10 @@ on:
 
 jobs:
   yamllint:
-    name: 🧹 yamllint
+    name: yamllint
     runs-on: ubuntu-latest
     steps:
-      - name: ⤵️ Check out configuration from GitHub
+      - name: Check out configuration from GitHub
         uses: actions/checkout@v6.0.3
-      - name: 🚀 Run yamllint
+      - name: Run yamllint
         run: yamllint --strict .
