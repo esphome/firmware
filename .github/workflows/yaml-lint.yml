@@ -13,6 +13,9 @@ on:
       - "**.yml"
       - ".github/workflows/actions.lock"
 
+permissions:
+  contents: read
+
 jobs:
   yamllint:
     name: yamllint
