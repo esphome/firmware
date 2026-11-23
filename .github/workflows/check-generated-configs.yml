@@ -20,18 +20,18 @@ permissions:
 
 jobs:
   check-esphome-web-configs:
-    name: 🤖 esphome-web configs match generator
+    name: esphome-web configs match generator
     runs-on: ubuntu-latest
     steps:
-      - name: ⤵️ Check out configuration from GitHub
+      - name: Check out configuration from GitHub
         uses: actions/checkout@v6.0.3
-      - name: 🐍 Set up Python
+      - name: Set up Python
         uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
-      - name: 🔄 Regenerate esphome-web configs
+      - name: Regenerate esphome-web configs
         run: python3 scripts/generate_esphome_web_configs.py
-      - name: ✅ Verify no changes
+      - name: Verify no changes
         run: |
           if [ -n "$(git status --porcelain -- esphome-web/)" ]; then
             echo "::error::esphome-web/ is out of sync with scripts/generate_esphome_web_configs.py"
