@@ -31,7 +31,7 @@ jobs:
     # is built.
     uses: esphome/workflows/.github/workflows/build-to-draft-release.yml@2026.11.2
     with:
-      esphome-version: 2026.11.0
+      esphome-version: 2026.11.1
       groups: |
         [
           {
